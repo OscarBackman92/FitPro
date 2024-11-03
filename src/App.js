@@ -17,8 +17,8 @@ import WorkoutForm from "../src/components/workouts/WorkoutForm";
 import WorkoutList from "../src/components/workouts/WorkoutList";
 import WorkoutDetail from "../src/components/workouts/WorkoutDetail";
 
-// // Profile
-// import ProfilePage from "./pages/profiles/ProfilePage";
+ // Profile
+import ProfilePage from "./components/profiles/ProfilePage";
 // import UsernameForm from "./pages/profiles/UsernameForm";
 // import UserPasswordForm from "./pages/profiles/UserPasswordForm";
 // import ProfileEditForm from "./pages/profiles/ProfileEditForm";
@@ -85,14 +85,14 @@ function App() {
           />
 
           {/* Profile Routes */}
-          {/* <Route
+          {<Route
             path="/profiles/:id"
             element={
               <PrivateRoute>
                 <ProfilePage />
               </PrivateRoute>
             }
-          /> */}
+          /> }
           {/* <Route
             path="/profiles/:id/edit/username"
             element={
