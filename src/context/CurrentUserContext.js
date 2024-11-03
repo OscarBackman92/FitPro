@@ -16,10 +16,11 @@ export const CurrentUserProvider = ({ children }) => {
 
   const handleMount = async () => {
     try {
-      const { data } = await axiosRes.get("/api/auth/user/");
+      // Changed from /api/auth/user/ to /profiles/me/
+      const { data } = await axiosRes.get("/api/profiles/me/");
       setCurrentUser(data);
     } catch (err) {
-      // console.log(err);
+      console.log("Error fetching current user:", err);
     }
   };
 
@@ -32,6 +33,7 @@ export const CurrentUserProvider = ({ children }) => {
       async (config) => {
         if (shouldRefreshToken()) {
           try {
+            // Changed from /api/auth/token/refresh/ to /api/auth/token/refresh/
             await axios.post("/api/auth/token/refresh/");
           } catch (err) {
             setCurrentUser((prevCurrentUser) => {

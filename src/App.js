@@ -86,7 +86,7 @@ function App() {
 
           {/* Profile Routes */}
           {<Route
-            path="/profiles/:id"
+            path="/api/profiles/me/"
             element={
               <PrivateRoute>
                 <ProfilePage />

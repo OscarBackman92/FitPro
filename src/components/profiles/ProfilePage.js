@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Button, Image } from 'react-bootstrap';
 import { axiosReq } from '../../api/axiosDefaults';
 import { useCurrentUser } from '../../context/CurrentUserContext';
-import { LineChart, XAxis, YAxis, CartesianGrid, Line, Tooltip } from 'recharts';
 import styles from '../../styles/ProfilePage.module.css';
 
 const ProfilePage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const currentUser = useCurrentUser();
   const [profileData, setProfileData] = useState({
     user: null,
@@ -18,43 +18,49 @@ const ProfilePage = () => {
       total_calories: 0,
       favorite_type: '',
       this_month: 0
-    },
-    chartData: []
+    }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const isOwner = currentUser?.profile_id === Number(id);
+  const isOwner = currentUser?.profile_id === parseInt(id);
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const [profileResponse, workoutsResponse] = await Promise.all([
-          axiosReq.get(`/profiles/${id}/`),
-          axiosReq.get(`/api/workouts/?user=${id}`)
-        ]);
+        let profileResponse;
+        
+        if (!id || currentUser?.profile_id === parseInt(id)) {
+          profileResponse = await axiosReq.get('/api/profiles/me/');
+          navigate(`/profiles/${currentUser.profile_id}`);
+        } else {
+          profileResponse = await axiosReq.get(`/api/profiles/me/`);
+        }
 
-        // Process workout data for statistics
+        const workoutsResponse = await axiosReq.get('/api/workouts/', {
+          params: {
+            user: profileResponse.data.id
+          }
+        });
+
         const workouts = workoutsResponse.data.results;
         const stats = calculateStats(workouts);
-        const chartData = processChartData(workouts);
 
         setProfileData({
           user: profileResponse.data,
           workouts,
-          stats,
-          chartData
+          stats
         });
       } catch (err) {
-        setError('Failed to load profile data');
-        console.error(err);
+        console.error('Error fetching profile:', err);
+        setError(err.response?.data?.message || 'Failed to load profile data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfileData();
-  }, [id]);
+  }, [id, currentUser, navigate]);
 
   const calculateStats = (workouts) => {
     const now = new Date();
@@ -78,22 +84,10 @@ const ProfilePage = () => {
     };
   };
 
-  const processChartData = (workouts) => {
-    // Get last 7 workouts for the chart
-    return workouts
-      .slice(0, 7)
-      .reverse()
-      .map(workout => ({
-        date: new Date(workout.date_logged).toLocaleDateString(),
-        duration: workout.duration,
-        calories: workout.calories
-      }));
-  };
-
   if (loading) return <div className="text-center p-4">Loading profile...</div>;
   if (error) return <div className="text-center p-4 text-danger">{error}</div>;
 
-  const { user, stats, chartData } = profileData;
+  const { user, workouts } = profileData;
 
   return (
     <div className="container py-4">
@@ -102,15 +96,15 @@ const ProfilePage = () => {
           <Card>
             <Card.Body className="text-center">
               <Image 
-                src={user.profile_image || '/default-avatar.png'} 
+                src={user?.profile_image || '/default-avatar.png'} 
                 roundedCircle 
                 className={styles.ProfileImage}
               />
-              <h3 className="mt-3">{user.username}</h3>
+              <h3 className="mt-3">{user?.username}</h3>
               {isOwner && (
                 <Button 
                   variant="outline-primary" 
-                  href={`/profiles/${id}/edit`}
+                  onClick={() => navigate(`/profiles/${id}/edit`)}
                   className="mt-2"
                 >
                   Edit Profile
@@ -128,23 +122,23 @@ const ProfilePage = () => {
               <Row>
                 <Col sm={6} md={4} className="text-center mb-3">
                   <h5>Total Workouts</h5>
-                  <p className="h2">{stats.total_workouts}</p>
+                  <p className="h2">{profileData.stats.total_workouts}</p>
                 </Col>
                 <Col sm={6} md={4} className="text-center mb-3">
                   <h5>This Month</h5>
-                  <p className="h2">{stats.this_month}</p>
+                  <p className="h2">{profileData.stats.this_month}</p>
                 </Col>
                 <Col sm={6} md={4} className="text-center mb-3">
                   <h5>Total Hours</h5>
-                  <p className="h2">{Math.round(stats.total_duration / 60)}</p>
+                  <p className="h2">{Math.round(profileData.stats.total_duration / 60)}</p>
                 </Col>
                 <Col sm={6} md={4} className="text-center">
                   <h5>Total Calories</h5>
-                  <p className="h2">{stats.total_calories}</p>
+                  <p className="h2">{profileData.stats.total_calories}</p>
                 </Col>
                 <Col sm={6} md={4} className="text-center">
                   <h5>Favorite Type</h5>
-                  <p className="h2 text-capitalize">{stats.favorite_type}</p>
+                  <p className="h2 text-capitalize">{profileData.stats.favorite_type}</p>
                 </Col>
               </Row>
             </Card.Body>
@@ -152,43 +146,12 @@ const ProfilePage = () => {
         </Col>
       </Row>
 
-      <Card className="mb-4">
-        <Card.Header>
-          <h4>Recent Activity</h4>
-        </Card.Header>
-        <Card.Body>
-          <div className="d-flex justify-content-center">
-            <LineChart width={600} height={300} data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-              <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-              <Tooltip />
-              <Line 
-                yAxisId="left"
-                type="monotone" 
-                dataKey="duration" 
-                stroke="#8884d8" 
-                name="Duration (min)"
-              />
-              <Line 
-                yAxisId="right"
-                type="monotone" 
-                dataKey="calories" 
-                stroke="#82ca9d" 
-                name="Calories"
-              />
-            </LineChart>
-          </div>
-        </Card.Body>
-      </Card>
-
       <Card>
         <Card.Header>
           <h4>Recent Workouts</h4>
         </Card.Header>
         <Card.Body>
-          {profileData.workouts.slice(0, 5).map(workout => (
+          {workouts.slice(0, 5).map(workout => (
             <div key={workout.id} className="border-bottom mb-3 pb-3">
               <h5 className="text-capitalize">{workout.workout_type}</h5>
               <Row>
