@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { 
   useCurrentUser,
   useSetCurrentUser,
-} from '../contexts/CurrentUserContext';
+} from '../context/CurrentUserContext';
 import Avatar from './Avatar';
 import axios from 'axios';
 import useClickOutsideToggle from '../hooks/useClickOutsideToggle';
