@@ -12,7 +12,6 @@ import styles from "../../styles/SignInUpForm.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import appStyles from "../../App.module.css";
 import { useSetCurrentUser } from "../../context/CurrentUserContext";
-import { setTokenTimestamp } from "../../utils/utils";
 import useRedirect from "../../hooks/useRedirect";
 
 const SignInForm = () => {
@@ -37,14 +36,28 @@ const SignInForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      // Using the correct endpoint from URLs.txt
       const { data } = await axios.post("/api/auth/login/", signInData);
-      setCurrentUser(data.user);
-      setTokenTimestamp(data);
-      navigate(-1);
+      // Log the response to see its structure
+      console.log("Login response:", data);
+
+      // Store the token
+      if (data.key) {
+        axios.defaults.headers.common["Authorization"] = `Token ${data.key}`;
+        localStorage.setItem("token", data.key);
+      }
+
+      // Fetch user data with the token
+      try {
+        const { data: userData } = await axios.get("/api/auth/user/");
+        setCurrentUser(userData);
+        navigate("/");
+      } catch (userErr) {
+        console.log("Error fetching user data:", userErr);
+        setErrors({ user: ["Could not fetch user data"] });
+      }
     } catch (err) {
       console.log("Sign in error:", err.response?.data);
-      setErrors(err.response?.data);
+      setErrors(err.response?.data || {});
     }
   };
 
@@ -65,7 +78,7 @@ const SignInForm = () => {
                 onChange={handleChange}
               />
             </Form.Group>
-            {errors.username?.map((message, idx) => (
+            {errors?.username?.map((message, idx) => (
               <Alert variant="warning" key={idx}>
                 {message}
               </Alert>
@@ -81,7 +94,7 @@ const SignInForm = () => {
                 onChange={handleChange}
               />
             </Form.Group>
-            {errors.password?.map((message, idx) => (
+            {errors?.password?.map((message, idx) => (
               <Alert variant="warning" key={idx}>
                 {message}
               </Alert>
@@ -92,7 +105,7 @@ const SignInForm = () => {
             >
               Sign in
             </Button>
-            {errors.non_field_errors?.map((message, idx) => (
+            {errors?.non_field_errors?.map((message, idx) => (
               <Alert key={idx} variant="warning" className="mt-3">
                 {message}
               </Alert>
