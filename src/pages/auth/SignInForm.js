@@ -37,11 +37,13 @@ const SignInForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const { data } = await axios.post("/dj-rest-auth/login/", signInData);
+      // Using the correct endpoint from URLs.txt
+      const { data } = await axios.post("/api/auth/login/", signInData);
       setCurrentUser(data.user);
       setTokenTimestamp(data);
       navigate(-1);
     } catch (err) {
+      console.log("Sign in error:", err.response?.data);
       setErrors(err.response?.data);
     }
   };
