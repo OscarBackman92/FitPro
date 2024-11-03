@@ -2,16 +2,28 @@ import axios from "axios";
 
 // Set up axios defaults
 axios.defaults.baseURL = "https://fitnessapi-d773a1148384.herokuapp.com";
-axios.defaults.headers.common["Content-Type"] = "application/json";
+axios.defaults.headers.post["Content-Type"] = "multipart/form-data";
 axios.defaults.withCredentials = true;
 
-// Add token from localStorage if it exists
-const token = localStorage.getItem("token");
-if (token) {
-    axios.defaults.headers.common["Authorization"] = `Token ${token}`;
-}
+export const axiosReq = axios.create();
+export const axiosRes = axios.create();
 
-// Debug interceptor
+// Add request interceptor for authorization
+axiosReq.interceptors.request.use(
+  async (config) => {
+    // Only add auth header if we have a token and it's not a login/register request
+    const token = localStorage.getItem("token");
+    if (token && !config.url.endsWith('login/') && !config.url.endsWith('register/')) {
+      config.headers["Authorization"] = `Token ${token}`;
+    }
+    return config;
+  },
+  (err) => {
+    return Promise.reject(err);
+  }
+);
+
+// For debugging
 axios.interceptors.request.use(
   (config) => {
     console.log('Request:', {
@@ -40,26 +52,5 @@ axios.interceptors.response.use(
       message: error.message
     });
     return Promise.reject(error);
-  }
-);
-
-export const axiosReq = axios.create();
-export const axiosRes = axios.create();
-
-// Add interceptors to created instances
-axiosReq.interceptors.request.use(
-  async (config) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (token) {
-        config.headers["Authorization"] = `Token ${token}`;
-      }
-      return config;
-    } catch (err) {
-      return config;
-    }
-  },
-  (err) => {
-    return Promise.reject(err);
   }
 );

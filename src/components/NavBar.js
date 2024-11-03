@@ -1,13 +1,14 @@
-import React from 'react';
-import { Navbar, Container, Nav } from 'react-bootstrap';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React from "react";
+import { Navbar, Container, Nav } from "react-bootstrap";
+import { NavLink, useNavigate } from "react-router-dom";
 import { 
   useCurrentUser,
   useSetCurrentUser,
-} from '../context/CurrentUserContext';
-import Avatar from './Avatar';
-import axios from 'axios';
-import useClickOutsideToggle from '../hooks/useClickOutsideToggle';
+} from "../context/CurrentUserContext";
+import Avatar from "./Avatar";
+import axios from "axios";
+import useClickOutsideToggle from "../hooks/useClickOutsideToggle";
+import styles from "../styles/NavBar.module.css";
 
 const NavBar = () => {
   const currentUser = useCurrentUser();
@@ -18,11 +19,28 @@ const NavBar = () => {
 
   const handleSignOut = async () => {
     try {
-      await axios.post("dj-rest-auth/logout/");
+      // Get token before removing it
+      const token = localStorage.getItem("token");
+      
+      // Make the logout request with the token
+      await axios.post("/api/auth/logout/", null, {
+        headers: {
+          Authorization: `Token ${token}`
+        }
+      });
+  
+      // Clean up after successful logout
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
       setCurrentUser(null);
       navigate("/");
     } catch (err) {
-      console.log(err);
+      console.log("Sign out error:", err);
+      // If we get an error, still clear everything locally
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
+      setCurrentUser(null);
+      navigate("/");
     }
   };
 
@@ -30,7 +48,7 @@ const NavBar = () => {
     <>
       <NavLink 
         className={({ isActive }) => 
-          `nav-link ${isActive ? "active" : ""}`
+          `${styles.NavLink} ${isActive ? styles.Active : ""}`
         }
         to="/workouts/create"
       >
@@ -39,7 +57,7 @@ const NavBar = () => {
       
       <NavLink
         className={({ isActive }) => 
-          `nav-link ${isActive ? "active" : ""}`
+          `${styles.NavLink} ${isActive ? styles.Active : ""}`
         }
         to="/feed"
       >
@@ -48,7 +66,7 @@ const NavBar = () => {
       
       <NavLink
         className={({ isActive }) => 
-          `nav-link ${isActive ? "active" : ""}`
+          `${styles.NavLink} ${isActive ? styles.Active : ""}`
         }
         to="/workouts"
       >
@@ -57,7 +75,7 @@ const NavBar = () => {
 
       <NavLink 
         className={({ isActive }) => 
-          `nav-link ${isActive ? "active" : ""}`
+          `${styles.NavLink} ${isActive ? styles.Active : ""}`
         }
         to="/goals"
       >
@@ -65,7 +83,7 @@ const NavBar = () => {
       </NavLink>
 
       <span 
-        className="nav-link"
+        className={styles.NavLink}
         onClick={handleSignOut}
         style={{ cursor: 'pointer' }}
       >
@@ -74,7 +92,7 @@ const NavBar = () => {
 
       <NavLink
         className={({ isActive }) => 
-          `nav-link ${isActive ? "active" : ""}`
+          `${styles.NavLink} ${isActive ? styles.Active : ""}`
         }
         to={`/profiles/${currentUser?.profile_id}`}
       >
@@ -91,7 +109,7 @@ const NavBar = () => {
     <>
       <NavLink 
         className={({ isActive }) => 
-          `nav-link ${isActive ? "active" : ""}`
+          `${styles.NavLink} ${isActive ? styles.Active : ""}`
         }
         to="/signin"
       >
@@ -99,7 +117,7 @@ const NavBar = () => {
       </NavLink>
       <NavLink 
         className={({ isActive }) => 
-          `nav-link ${isActive ? "active" : ""}`
+          `${styles.NavLink} ${isActive ? styles.Active : ""}`
         }
         to="/signup"
       >
@@ -109,10 +127,9 @@ const NavBar = () => {
   );
 
   return (
-    <Navbar expanded={expanded} className="bg-white" expand="md" fixed="top">
+    <Navbar expanded={expanded} className={styles.NavBar} expand="md" fixed="top">
       <Container>
-        <NavLink to="/" className="navbar-brand">
-          <img src="/logo.png" alt="logo" height="45" />
+        <NavLink to="/" className={styles.Logo}>
           FitTracker
         </NavLink>
 
@@ -123,10 +140,10 @@ const NavBar = () => {
         />
 
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto text-start">
+          <Nav className="ms-auto">
             <NavLink 
               className={({ isActive }) => 
-                `nav-link ${isActive ? "active" : ""}`
+                `${styles.NavLink} ${isActive ? styles.Active : ""}`
               }
               to="/"
               end
