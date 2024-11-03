@@ -1,0 +1,62 @@
+.Row {
+    height: calc(100vh - 81px);
+  }
+  
+  .Container {
+    padding: 30px 10px;
+    background-color: #ffffff;
+    border-radius: 2px;
+    border: 1px solid #dadadf;
+    margin-bottom: 15px;
+  }
+  
+  .Header {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 24px;
+    line-height: 19px;
+    text-align: center;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2142b2;
+    margin-bottom: 20px;
+  }
+  
+  .Link {
+    text-decoration: none;
+    text-align: center;
+    display: block;
+    margin: auto;
+  }
+  
+  .Link span {
+    color: #2142b2;
+  }
+  
+  .Button {
+    background-color: #2142b2;
+    color: #ffffff;
+    border: none;
+    border-radius: 2px;
+    padding: 10px 20px;
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .Button:hover {
+    background-color: #1a347f;
+    cursor: pointer;
+  }
+  
+  Form {
+    margin-top: 20px;
+  }
+  
+  Form Form.Control {
+    background: #ffffff;
+    border: 1px solid #dadadf;
+    border-radius: 2px;
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 15px;
+  }
