@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import Card from 'react-bootstrap/Card';
+import Alert from 'react-bootstrap/Alert';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import { LineChart, XAxis, YAxis, CartesianGrid, Line, Tooltip } from 'recharts';
-import { Card } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { format } from 'date-fns';
+import axios from 'axios';
 
 const WorkoutList = () => {
   const navigate = useNavigate();
@@ -58,47 +63,46 @@ const WorkoutList = () => {
   });
 
   if (loading) {
-    return <div className="flex justify-center p-8">Loading...</div>;
+    return <div className="text-center p-4">Loading...</div>;
   }
 
   if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    );
+    return <Alert variant="danger">{error}</Alert>;
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">My Workouts</h1>
-        <button
+    <div className="container py-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="h3 mb-0">My Workouts</h1>
+        <Button
+          variant="primary"
           onClick={() => navigate('/workouts/create')}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Log New Workout
-        </button>
+        </Button>
       </div>
 
-      <div className="bg-white rounded-lg p-4 shadow">
-        <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-        <LineChart width={600} height={300} data={chartData}>
-          <XAxis dataKey="date" />
-          <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-          <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-          <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-          <Tooltip />
-          <Line yAxisId="left" type="monotone" dataKey="duration" stroke="#8884d8" name="Duration (min)" />
-          <Line yAxisId="right" type="monotone" dataKey="calories" stroke="#82ca9d" name="Calories" />
-        </LineChart>
-      </div>
+      <Card className="mb-4">
+        <Card.Body>
+          <h4 className="mb-4">Recent Activity</h4>
+          <div className="d-flex justify-content-center">
+            <LineChart width={600} height={300} data={chartData}>
+              <XAxis dataKey="date" />
+              <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+              <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+              <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+              <Tooltip />
+              <Line yAxisId="left" type="monotone" dataKey="duration" stroke="#8884d8" name="Duration (min)" />
+              <Line yAxisId="right" type="monotone" dataKey="calories" stroke="#82ca9d" name="Calories" />
+            </LineChart>
+          </div>
+        </Card.Body>
+      </Card>
 
-      <div className="space-y-4">
-        <select
+      <Form.Group className="mb-4">
+        <Form.Select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="p-2 border rounded"
         >
           <option value="all">All Types</option>
           <option value="cardio">Cardio</option>
@@ -106,43 +110,56 @@ const WorkoutList = () => {
           <option value="flexibility">Flexibility</option>
           <option value="sports">Sports</option>
           <option value="other">Other</option>
-        </select>
+        </Form.Select>
+      </Form.Group>
 
-        {filteredWorkouts.map(workout => (
-          <Card key={workout.id} className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-semibold capitalize">
-                  {workout.workout_type} - {workout.intensity} Intensity
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {format(new Date(workout.date_logged), 'PPP')}
-                </p>
-                <p className="mt-2">
-                  Duration: {workout.duration} minutes | Calories: {workout.calories}
-                </p>
-                {workout.notes && (
-                  <p className="mt-2 text-gray-700">{workout.notes}</p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => navigate(`/workouts/${workout.id}/edit`)}
-                  className="px-3 py-1 text-sm border rounded hover:bg-gray-100"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(workout.id)}
-                  className="px-3 py-1 text-sm border rounded text-red-600 hover:bg-red-50"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+      {filteredWorkouts.length === 0 ? (
+        <Alert variant="info">No workouts found</Alert>
+      ) : (
+        <Row className="g-4">
+          {filteredWorkouts.map(workout => (
+            <Col key={workout.id} xs={12}>
+              <Card>
+                <Card.Body>
+                  <div className="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h5 className="text-capitalize mb-1">
+                        {workout.workout_type} - {workout.intensity} Intensity
+                      </h5>
+                      <p className="text-muted mb-2">
+                        {format(new Date(workout.date_logged), 'PPP')}
+                      </p>
+                      <p className="mb-2">
+                        Duration: {workout.duration} minutes | Calories: {workout.calories}
+                      </p>
+                      {workout.notes && (
+                        <p className="mb-0 text-muted">{workout.notes}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        className="me-2"
+                        onClick={() => navigate(`/workouts/${workout.id}`)}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => handleDelete(workout.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      )}
     </div>
   );
 };

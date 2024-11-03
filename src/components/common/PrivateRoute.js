@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useCurrentUser } from '../context/CurrentUserContext';
+import { useCurrentUser } from '../../context/CurrentUserContext';
 
 const PrivateRoute = ({ children }) => {
   const currentUser = useCurrentUser();

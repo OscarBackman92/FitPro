@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import Card from 'react-bootstrap/Card';
+import Alert from 'react-bootstrap/Alert';
+import Button from 'react-bootstrap/Button';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import { format } from 'date-fns';
+import axios from 'axios';
 
 const WorkoutDetail = () => {
   const { id } = useParams();
@@ -38,102 +42,106 @@ const WorkoutDetail = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8">Loading...</div>;
+    return <div className="text-center p-4">Loading...</div>;
   }
 
   if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    );
+    return <Alert variant="danger">{error}</Alert>;
   }
 
   if (!workout) {
-    return (
-      <Alert>
-        <AlertDescription>Workout not found</AlertDescription>
-      </Alert>
-    );
+    return <Alert variant="info">Workout not found</Alert>;
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <Card className="p-6 space-y-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold capitalize">
-              {workout.workout_type} Workout
-            </h1>
-            <p className="text-gray-600">
-              {format(new Date(workout.date_logged), 'PPP')}
-            </p>
+    <div className="container py-4">
+      <Card className="mx-auto" style={{ maxWidth: '700px' }}>
+        <Card.Body>
+          <div className="d-flex justify-content-between align-items-start mb-4">
+            <div>
+              <h1 className="h3 mb-1 text-capitalize">
+                {workout.workout_type} Workout
+              </h1>
+              <p className="text-muted">
+                {format(new Date(workout.date_logged), 'PPP')}
+              </p>
+            </div>
+            <div>
+              <Button
+                variant="outline-primary"
+                className="me-2"
+                onClick={() => navigate(`/workouts/${id}/edit`)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outline-danger"
+                onClick={handleDelete}
+              >
+                Delete
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => navigate(`/workouts/${id}/edit`)}
-              className="px-4 py-2 border rounded hover:bg-gray-100"
+
+          <Row className="g-4 mb-4">
+            <Col md={6}>
+              <Card className="h-100">
+                <Card.Body>
+                  <h5>Duration</h5>
+                  <p className="mb-0">{workout.duration} minutes</p>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card className="h-100">
+                <Card.Body>
+                  <h5>Calories Burned</h5>
+                  <p className="mb-0">{workout.calories} kcal</p>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card className="h-100">
+                <Card.Body>
+                  <h5>Intensity</h5>
+                  <p className="mb-0 text-capitalize">{workout.intensity}</p>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card className="h-100">
+                <Card.Body>
+                  <h5>Time</h5>
+                  <p className="mb-0">{format(new Date(workout.created_at), 'p')}</p>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {workout.notes && (
+            <Card className="mb-4">
+              <Card.Body>
+                <h5>Notes</h5>
+                <p className="mb-0">{workout.notes}</p>
+              </Card.Body>
+            </Card>
+          )}
+
+          <div className="d-flex justify-content-between mt-4">
+            <Button
+              variant="outline-secondary"
+              onClick={() => navigate('/workouts')}
             >
-              Edit
-            </button>
-            <button
-              onClick={handleDelete}
-              className="px-4 py-2 border rounded text-red-600 hover:bg-red-50"
+              ← Back to Workouts
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => navigate('/workouts/create')}
             >
-              Delete
-            </button>
+              Log Another Workout
+            </Button>
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 pt-4">
-          <div className="bg-gray-50 p-4 rounded">
-            <h3 className="font-semibold">Duration</h3>
-            <p>{workout.duration} minutes</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded">
-            <h3 className="font-semibold">Calories Burned</h3>
-            <p>{workout.calories} kcal</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded">
-            <h3 className="font-semibold">Intensity</h3>
-            <p className="capitalize">{workout.intensity}</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded">
-            <h3 className="font-semibold">Time of Day</h3>
-            <p>{format(new Date(workout.created_at), 'p')}</p>
-          </div>
-        </div>
-
-        {workout.notes && (
-          <div className="pt-4">
-            <h3 className="font-semibold mb-2">Notes</h3>
-            <p className="bg-gray-50 p-4 rounded">{workout.notes}</p>
-          </div>
-        )}
-
-        <div className="pt-4">
-          <h3 className="font-semibold mb-2">Stats</h3>
-          <div className="bg-gray-50 p-4 rounded">
-            <p>Average duration for {workout.workout_type} workouts: {workout.avg_duration} minutes</p>
-            <p>Average calories burned: {workout.avg_calories} kcal</p>
-            <p>Total workouts this month: {workout.workouts_this_month}</p>
-          </div>
-        </div>
-
-        <div className="flex justify-between pt-6">
-          <button
-            onClick={() => navigate('/workouts')}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
-          >
-            ← Back to Workouts
-          </button>
-          <button
-            onClick={() => navigate('/workouts/create')}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Log Another Workout
-          </button>
-        </div>
+        </Card.Body>
       </Card>
     </div>
   );

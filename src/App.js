@@ -1,77 +1,154 @@
-import { BrowserRouter as Router } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
-import { Routes, Route } from 'react-router-dom';
-import './api/axiosDefaults';
-import NavBar from './components/NavBar';
-import styles from './App.module.css';
-import { CurrentUserProvider } from './context/CurrentUserContext';
-import SignInForm from './pages/auth/SignInForm';
-import SignUpForm from './pages/auth/SignUpForm';
+import React from "react";
+import Container from "react-bootstrap/Container";
+import { Route, Routes } from "react-router-dom";
+import "./api/axiosDefaults";
+
+// Components
+import NavBar from "./components/NavBar";
+import PrivateRoute from "./components/common/PrivateRoute";
+
+// Auth
+import SignUpForm from "./pages/auth/SignUpForm";
+import SignInForm from "./pages/auth/SignInForm";
+import { useCurrentUser } from "../src/context/CurrentUserContext";
+
+// Workouts
+import WorkoutForm from "../src/components/workouts/WorkoutForm";
+import WorkoutList from "../src/components/workouts/WorkoutList";
+import WorkoutDetail from "../src/components/workouts/WorkoutDetail";
+
+// // Profile
+// import ProfilePage from "./pages/profiles/ProfilePage";
+// import UsernameForm from "./pages/profiles/UsernameForm";
+// import UserPasswordForm from "./pages/profiles/UserPasswordForm";
+// import ProfileEditForm from "./pages/profiles/ProfileEditForm";
+
+// Styles
+import styles from "./App.module.css";
 
 function App() {
+  const currentUser = useCurrentUser();
   return (
-    <Router>
-      <CurrentUserProvider>
-        <div className={styles.App}>
-          <NavBar />
-          <Container className={styles.Main}>
-            <Routes>
-              <Route 
-                exact 
-                path="/" 
-                element={
-                  <h1>Home page will go here</h1>
-                }
-              />
-              <Route 
-                path="/signin" 
-                element={<SignInForm />} 
-              />
-              <Route 
-                path="/signup" 
-                element={<SignUpForm />} 
-              />
-              <Route 
-                path="/workouts" 
-                element={
-                  <h1>Workouts page will go here</h1>
-                } 
-              />
-              <Route 
-                path="/workouts/create" 
-                element={
-                  <h1>Create workout form will go here</h1>
-                } 
-              />
-              <Route 
-                path="/feed" 
-                element={
-                  <h1>Feed page will go here</h1>
-                } 
-              />
-              <Route 
-                path="/goals" 
-                element={
-                  <h1>Goals page will go here</h1>
-                } 
-              />
-              <Route 
-                path="/profiles/:id" 
-                element={
-                  <h1>Profile page will go here</h1>
-                } 
-              />
-              <Route 
-                path="*" 
-                element={
-                  <h1>404 - Not Found</h1>
-                } 
-              />
-            </Routes>
-          </Container>
-        </div>
-      </CurrentUserProvider>
-    </Router>
+    <div className={styles.App}>
+      <NavBar />
+      <Container className={styles.Main}>
+        <Routes>
+          {/* Public Home Route */}
+          <Route 
+            exact 
+            path="/" 
+            element={<WorkoutList />}
+          />
+
+          {/* Auth Routes */}
+          <Route
+            path="/signin"
+            element={<SignInForm />}
+          />
+          <Route
+            path="/signup"
+            element={<SignUpForm />}
+          />
+
+          {/* Workout Routes */}
+          <Route 
+            path="/workouts" 
+            element={
+              <PrivateRoute>
+                <WorkoutList />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/workouts/create" 
+            element={
+              <PrivateRoute>
+                <WorkoutForm />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/workouts/:id" 
+            element={
+              <PrivateRoute>
+                <WorkoutDetail />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/workouts/:id/edit" 
+            element={
+              <PrivateRoute>
+                <WorkoutForm />
+              </PrivateRoute>
+            } 
+          />
+
+          {/* Profile Routes */}
+          {/* <Route
+            path="/profiles/:id"
+            element={
+              <PrivateRoute>
+                <ProfilePage />
+              </PrivateRoute>
+            }
+          /> */}
+          {/* <Route
+            path="/profiles/:id/edit/username"
+            element={
+              <PrivateRoute>
+                <UsernameForm />
+              </PrivateRoute>
+            }
+          /> */}
+          {/* <Route
+            path="/profiles/:id/edit/password"
+            element={
+              <PrivateRoute>
+                <UserPasswordForm />
+              </PrivateRoute>
+            }
+          /> */}
+          {/* <Route
+            path="/profiles/:id/edit"
+            element={
+              <PrivateRoute>
+                <ProfileEditForm />
+              </PrivateRoute>
+            }
+          /> */}
+
+          {/* Feed Routes */}
+          <Route
+            path="/feed"
+            element={
+              <PrivateRoute>
+                <WorkoutList filter={`owner__followed__owner__profile=${currentUser?.profile_id}&`} />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/liked"
+            element={
+              <PrivateRoute>
+                <WorkoutList filter={`likes__owner__profile=${currentUser?.profile_id}&ordering=-likes__created_at&`} />
+              </PrivateRoute>
+            }
+          />
+
+          {/* 404 Route */}
+          <Route 
+            path="*" 
+            element={
+              <div className="text-center mt-4">
+                <h1>404 - Page Not Found</h1>
+                <p>Sorry, the page you are looking for does not exist.</p>
+              </div>
+            } 
+          />
+        </Routes>
+      </Container>
+    </div>
   );
 }
 

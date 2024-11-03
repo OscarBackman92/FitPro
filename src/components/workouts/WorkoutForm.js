@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Alert from 'react-bootstrap/Alert';
+import { axiosReq } from '../../api/axiosDefaults';
 
 const WorkoutForm = ({ workout = null }) => {
   const navigate = useNavigate();
@@ -11,7 +14,8 @@ const WorkoutForm = ({ workout = null }) => {
     duration: workout?.duration || '',
     calories: workout?.calories || '',
     notes: workout?.notes || '',
-    intensity: workout?.intensity || 'moderate'
+    intensity: workout?.intensity || 'moderate',
+    date_logged: workout?.date_logged || new Date().toISOString().split('T')[0]
   });
 
   const [loading, setLoading] = useState(false);
@@ -30,144 +34,168 @@ const WorkoutForm = ({ workout = null }) => {
     setErrors({});
 
     try {
+      // Format the data
+      const formData = {
+        ...workoutData,
+        duration: parseInt(workoutData.duration, 10),
+        calories: parseInt(workoutData.calories, 10)
+      };
+
       if (workout) {
-        // Edit existing workout
-        await axios.put(`/api/workouts/${workout.id}/`, workoutData);
+        const { data } = await axiosReq.put(
+          `/api/workouts/${workout.id}/`, 
+          JSON.stringify(formData)
+        );
+        console.log('Workout updated:', data);
       } else {
-        // Create new workout
-        await axios.post('/api/workouts/', workoutData);
+        const { data } = await axiosReq.post(
+          '/api/workouts/', 
+          JSON.stringify(formData)
+        );
+        console.log('Workout created:', data);
       }
       navigate('/workouts');
     } catch (err) {
-      setErrors(err.response?.data || {});
+      console.log('Error submitting workout:', err);
+      if (err.response?.data) {
+        setErrors(err.response.data);
+      } else {
+        setErrors({ non_field_errors: ['There was a problem submitting your workout. Please try again.'] });
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const errorDisplay = (fieldName) => {
+    return errors[fieldName]?.map((error, idx) => (
+      <Alert variant="warning" key={idx}>
+        {error}
+      </Alert>
+    ));
+  };
+
   return (
-    <Card className="max-w-2xl mx-auto p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Workout Type
-          </label>
-          <select
-            name="workout_type"
-            value={workoutData.workout_type}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          >
-            <option value="">Select type</option>
-            <option value="cardio">Cardio</option>
-            <option value="strength">Strength Training</option>
-            <option value="flexibility">Flexibility</option>
-            <option value="sports">Sports</option>
-            <option value="other">Other</option>
-          </select>
-          {errors.workout_type?.map((error, idx) => (
-            <Alert variant="destructive" key={idx}>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ))}
-        </div>
+    <Card className="mx-auto" style={{ maxWidth: '700px' }}>
+      <Card.Header>
+        <h4 className="mb-0">
+          {workout ? 'Edit Workout' : 'Log New Workout'}
+        </h4>
+      </Card.Header>
+      <Card.Body>
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3">
+            <Form.Label>Date</Form.Label>
+            <Form.Control
+              type="date"
+              name="date_logged"
+              value={workoutData.date_logged}
+              onChange={handleChange}
+              required
+            />
+            {errorDisplay('date_logged')}
+          </Form.Group>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Duration (minutes)
-          </label>
-          <input
-            type="number"
-            name="duration"
-            value={workoutData.duration}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            min="1"
-            max="1440"
-          />
-          {errors.duration?.map((error, idx) => (
-            <Alert variant="destructive" key={idx}>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ))}
-        </div>
+          <Form.Group className="mb-3">
+            <Form.Label>Workout Type</Form.Label>
+            <Form.Select
+              name="workout_type"
+              value={workoutData.workout_type}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select type</option>
+              <option value="cardio">Cardio</option>
+              <option value="strength">Strength Training</option>
+              <option value="flexibility">Flexibility</option>
+              <option value="sports">Sports</option>
+              <option value="other">Other</option>
+            </Form.Select>
+            {errorDisplay('workout_type')}
+          </Form.Group>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Calories Burned
-          </label>
-          <input
-            type="number"
-            name="calories"
-            value={workoutData.calories}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            min="0"
-          />
-          {errors.calories?.map((error, idx) => (
-            <Alert variant="destructive" key={idx}>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ))}
-        </div>
+          <Form.Group className="mb-3">
+            <Form.Label>Duration (minutes)</Form.Label>
+            <Form.Control
+              type="number"
+              name="duration"
+              value={workoutData.duration}
+              onChange={handleChange}
+              min="1"
+              max="1440"
+              required
+            />
+            {errorDisplay('duration')}
+          </Form.Group>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Intensity
-          </label>
-          <select
-            name="intensity"
-            value={workoutData.intensity}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          >
-            <option value="low">Low</option>
-            <option value="moderate">Moderate</option>
-            <option value="high">High</option>
-          </select>
-          {errors.intensity?.map((error, idx) => (
-            <Alert variant="destructive" key={idx}>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ))}
-        </div>
+          <Form.Group className="mb-3">
+            <Form.Label>Calories Burned</Form.Label>
+            <Form.Control
+              type="number"
+              name="calories"
+              value={workoutData.calories}
+              onChange={handleChange}
+              min="0"
+              required
+            />
+            {errorDisplay('calories')}
+          </Form.Group>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Notes
-          </label>
-          <textarea
-            name="notes"
-            value={workoutData.notes}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            rows={4}
-          />
-          {errors.notes?.map((error, idx) => (
-            <Alert variant="destructive" key={idx}>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ))}
-        </div>
+          <Form.Group className="mb-3">
+            <Form.Label>Intensity</Form.Label>
+            <Form.Select
+              name="intensity"
+              value={workoutData.intensity}
+              onChange={handleChange}
+              required
+            >
+              <option value="low">Low</option>
+              <option value="moderate">Moderate</option>
+              <option value="high">High</option>
+            </Form.Select>
+            {errorDisplay('intensity')}
+          </Form.Group>
 
-        <div className="flex gap-4">
-          <button
-            type="button"
-            onClick={() => navigate('/workouts')}
-            className="px-4 py-2 border rounded hover:bg-gray-100"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            disabled={loading}
-          >
-            {loading ? 'Saving...' : (workout ? 'Update Workout' : 'Log Workout')}
-          </button>
-        </div>
-      </form>
+          <Form.Group className="mb-3">
+            <Form.Label>Notes</Form.Label>
+            <Form.Control
+              as="textarea"
+              name="notes"
+              value={workoutData.notes}
+              onChange={handleChange}
+              rows={4}
+            />
+            {errorDisplay('notes')}
+          </Form.Group>
+
+          {errorDisplay('non_field_errors')}
+
+          <div className="d-flex gap-2 justify-content-end">
+            <Button
+              variant="outline-secondary"
+              onClick={() => navigate('/workouts')}
+              disabled={loading}
+              type="button"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Saving...
+                </>
+              ) : (
+                workout ? 'Update Workout' : 'Log Workout'
+              )}
+            </Button>
+          </div>
+        </Form>
+      </Card.Body>
     </Card>
   );
 };
