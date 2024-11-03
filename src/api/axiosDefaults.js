@@ -5,6 +5,12 @@ axios.defaults.baseURL = "https://fitnessapi-d773a1148384.herokuapp.com";
 axios.defaults.headers.common["Content-Type"] = "application/json";
 axios.defaults.withCredentials = true;
 
+// Add token from localStorage if it exists
+const token = localStorage.getItem("token");
+if (token) {
+    axios.defaults.headers.common["Authorization"] = `Token ${token}`;
+}
+
 // Debug interceptor
 axios.interceptors.request.use(
   (config) => {
@@ -39,3 +45,21 @@ axios.interceptors.response.use(
 
 export const axiosReq = axios.create();
 export const axiosRes = axios.create();
+
+// Add interceptors to created instances
+axiosReq.interceptors.request.use(
+  async (config) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers["Authorization"] = `Token ${token}`;
+      }
+      return config;
+    } catch (err) {
+      return config;
+    }
+  },
+  (err) => {
+    return Promise.reject(err);
+  }
+);
