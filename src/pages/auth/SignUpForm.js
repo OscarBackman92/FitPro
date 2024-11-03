@@ -8,15 +8,17 @@ import Container from "react-bootstrap/Container";
 import Alert from "react-bootstrap/Alert";
 import axios from "axios";
 import styles from "../../styles/SignInUpForm.module.css";
+import btnStyles from "../../styles/Button.module.css";
+import appStyles from "../../App.module.css";
 
 const SignUpForm = () => {
   const [signUpData, setSignUpData] = useState({
     username: "",
-    password: "",
-    confirm_password: "",
+    password1: "",  // Changed back to password1
+    password2: "",  // Changed back to password2
     email: "",
   });
-  const { username, password, confirm_password, email } = signUpData;
+  const { username, password1, password2, email } = signUpData;  // Updated destructuring
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
@@ -29,41 +31,34 @@ const SignUpForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
-    // Check if passwords match before sending
-    if (password !== confirm_password) {
-      setErrors({ confirm_password: ['Passwords do not match'] });
-      return;
-    }
-
     try {
-      // Only send username, password and email to the API
-      const registrationData = {
-        username,
-        password,
-        email,
-      };
+      console.log("Sending registration data:", signUpData);
       
-      console.log("Sending registration data:", registrationData);
-      const response = await axios.post("/api/auth/register/", registrationData);
+      const response = await axios.post("/api/auth/register/", signUpData, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
       console.log("Registration successful:", response.data);
       navigate("/signin");
     } catch (err) {
-      console.log("Registration error:", err.response?.data);
-      setErrors(err.response?.data);
+      console.log("Registration error details:", err.response?.data);
+      setErrors(err.response?.data || {});
     }
   };
 
   return (
     <Row className={styles.Row}>
-      <Col className="my-auto py-2 p-md-2" md={6}>
-        <Container className={styles.Container}>
+      <Col className="my-auto p-0 p-md-2" md={6}>
+        <Container className={`${appStyles.Content} p-4`}>
           <h1 className={styles.Header}>sign up</h1>
 
           <Form onSubmit={handleSubmit}>
             <Form.Group controlId="username">
               <Form.Label className="d-none">Username</Form.Label>
               <Form.Control
+                className={styles.Input}
                 type="text"
                 placeholder="Username"
                 name="username"
@@ -80,6 +75,7 @@ const SignUpForm = () => {
             <Form.Group controlId="email">
               <Form.Label className="d-none">Email</Form.Label>
               <Form.Control
+                className={styles.Input}
                 type="email"
                 placeholder="Email"
                 name="email"
@@ -93,53 +89,55 @@ const SignUpForm = () => {
               </Alert>
             ))}
 
-            <Form.Group controlId="password">
+            <Form.Group controlId="password1">
               <Form.Label className="d-none">Password</Form.Label>
               <Form.Control
+                className={styles.Input}
                 type="password"
                 placeholder="Password"
-                name="password"
-                value={password}
+                name="password1"
+                value={password1}
                 onChange={handleChange}
               />
             </Form.Group>
-            {errors?.password?.map((message, idx) => (
+            {errors?.password1?.map((message, idx) => (
               <Alert key={idx} variant="warning">
                 {message}
               </Alert>
             ))}
 
-            <Form.Group controlId="confirm_password">
-              <Form.Label className="d-none">Confirm Password</Form.Label>
+            <Form.Group controlId="password2">
+              <Form.Label className="d-none">Confirm password</Form.Label>
               <Form.Control
+                className={styles.Input}
                 type="password"
-                placeholder="Confirm Password"
-                name="confirm_password"
-                value={confirm_password}
+                placeholder="Confirm password"
+                name="password2"
+                value={password2}
                 onChange={handleChange}
               />
             </Form.Group>
-            {errors?.confirm_password?.map((message, idx) => (
+            {errors?.password2?.map((message, idx) => (
               <Alert key={idx} variant="warning">
                 {message}
               </Alert>
             ))}
 
             <Button 
-              className={styles.Button}
+              className={`${btnStyles.Button} ${btnStyles.Wide} ${btnStyles.Bright}`}
               type="submit"
             >
               Sign Up
             </Button>
             {errors?.non_field_errors?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
+              <Alert key={idx} variant="warning" className="mt-3">
                 {message}
               </Alert>
             ))}
           </Form>
         </Container>
 
-        <Container className={styles.Container}>
+        <Container className={`mt-3 ${appStyles.Content}`}>
           <Link className={styles.Link} to="/signin">
             Already have an account? <span>Sign in</span>
           </Link>

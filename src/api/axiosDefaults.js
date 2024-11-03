@@ -2,20 +2,27 @@ import axios from "axios";
 
 // Set up axios defaults
 axios.defaults.baseURL = "https://fitnessapi-d773a1148384.herokuapp.com";
-axios.defaults.headers.post["Content-Type"] = "multipart/form-data";
 axios.defaults.withCredentials = true;
 
 export const axiosReq = axios.create();
 export const axiosRes = axios.create();
 
-// Add request interceptor for authorization
+// Configure request interceptor for authorization
 axiosReq.interceptors.request.use(
   async (config) => {
-    // Only add auth header if we have a token and it's not a login/register request
+    // Add token for authenticated requests
     const token = localStorage.getItem("token");
     if (token && !config.url.endsWith('login/') && !config.url.endsWith('register/')) {
       config.headers["Authorization"] = `Token ${token}`;
     }
+
+    // Set Content-Type based on the request
+    if (config.method === 'post' && config.data instanceof FormData) {
+      config.headers["Content-Type"] = "multipart/form-data";
+    } else {
+      config.headers["Content-Type"] = "application/json";
+    }
+
     return config;
   },
   (err) => {
@@ -23,7 +30,7 @@ axiosReq.interceptors.request.use(
   }
 );
 
-// For debugging
+// Debug interceptors
 axios.interceptors.request.use(
   (config) => {
     console.log('Request:', {
