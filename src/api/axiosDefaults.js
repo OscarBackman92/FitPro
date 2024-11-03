@@ -1,8 +1,41 @@
 import axios from "axios";
 
+// Set up axios defaults
 axios.defaults.baseURL = "https://fitnessapi-d773a1148384.herokuapp.com";
-axios.defaults.headers.post["Content-Type"] = "multipart/form-data";
+axios.defaults.headers.common["Content-Type"] = "application/json";
 axios.defaults.withCredentials = true;
+
+// Debug interceptor
+axios.interceptors.request.use(
+  (config) => {
+    console.log('Request:', {
+      method: config.method,
+      url: config.url,
+      data: config.data,
+      headers: config.headers
+    });
+    return config;
+  },
+  (error) => {
+    console.log('Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+axios.interceptors.response.use(
+  (response) => {
+    console.log('Response:', response);
+    return response;
+  },
+  (error) => {
+    console.log('Response Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    return Promise.reject(error);
+  }
+);
 
 export const axiosReq = axios.create();
 export const axiosRes = axios.create();

@@ -30,17 +30,31 @@ const SignInForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post("/api/auth/login/", signInData);
-      setCurrentUser(response.data.user);
-      setTokenTimestamp(response.data);
+      // Make sure we're using the exact URL from your backend
+      const { data } = await axios.post("/api/auth/login/", signInData, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      // Log the full response
+      console.log("Login response:", data);
+      
+      // Store the token if it's in the response
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      setCurrentUser(data.user);
+      setTokenTimestamp(data);
       navigate("/");
     } catch (err) {
-      setErrors(err.response?.data);
+      console.log("Login error:", err.response?.data || err.message);
+      setErrors(err.response?.data || {
+        non_field_errors: ["Something went wrong with login. Please try again."]
+      });
     }
   };
-
-  console.log("Current signInData:", signInData);
-  console.log("Current errors:", errors);
 
   return (
     <Row className={styles.Row}>
@@ -81,7 +95,10 @@ const SignInForm = () => {
               </Alert>
             ))}
 
-            <Button className={styles.Button} type="submit">
+            <Button 
+              className={styles.Button} 
+              type="submit"
+            >
               Sign in
             </Button>
             {errors?.non_field_errors?.map((message, idx) => (
