@@ -8,7 +8,6 @@ import {
 import Avatar from './Avatar';
 import axios from 'axios';
 import useClickOutsideToggle from '../hooks/useClickOutsideToggle';
-import styles from '../styles/NavBar.module.css';
 
 const NavBar = () => {
   const currentUser = useCurrentUser();
@@ -19,8 +18,7 @@ const NavBar = () => {
 
   const handleSignOut = async () => {
     try {
-      // Using correct logout endpoint from URLs.txt
-      await axios.post("/api/auth/logout/");
+      await axios.post("dj-rest-auth/logout/");
       setCurrentUser(null);
       navigate("/");
     } catch (err) {
@@ -32,7 +30,7 @@ const NavBar = () => {
     <>
       <NavLink 
         className={({ isActive }) => 
-          `${styles.NavLink} ${isActive ? styles.Active : ""}`
+          `nav-link ${isActive ? "active" : ""}`
         }
         to="/workouts/create"
       >
@@ -41,7 +39,7 @@ const NavBar = () => {
       
       <NavLink
         className={({ isActive }) => 
-          `${styles.NavLink} ${isActive ? styles.Active : ""}`
+          `nav-link ${isActive ? "active" : ""}`
         }
         to="/feed"
       >
@@ -50,7 +48,7 @@ const NavBar = () => {
       
       <NavLink
         className={({ isActive }) => 
-          `${styles.NavLink} ${isActive ? styles.Active : ""}`
+          `nav-link ${isActive ? "active" : ""}`
         }
         to="/workouts"
       >
@@ -59,7 +57,7 @@ const NavBar = () => {
 
       <NavLink 
         className={({ isActive }) => 
-          `${styles.NavLink} ${isActive ? styles.Active : ""}`
+          `nav-link ${isActive ? "active" : ""}`
         }
         to="/goals"
       >
@@ -67,7 +65,7 @@ const NavBar = () => {
       </NavLink>
 
       <span 
-        className={styles.NavLink}
+        className="nav-link"
         onClick={handleSignOut}
         style={{ cursor: 'pointer' }}
       >
@@ -76,7 +74,7 @@ const NavBar = () => {
 
       <NavLink
         className={({ isActive }) => 
-          `${styles.NavLink} ${isActive ? styles.Active : ""}`
+          `nav-link ${isActive ? "active" : ""}`
         }
         to={`/profiles/${currentUser?.profile_id}`}
       >
@@ -93,7 +91,7 @@ const NavBar = () => {
     <>
       <NavLink 
         className={({ isActive }) => 
-          `${styles.NavLink} ${isActive ? styles.Active : ""}`
+          `nav-link ${isActive ? "active" : ""}`
         }
         to="/signin"
       >
@@ -101,7 +99,7 @@ const NavBar = () => {
       </NavLink>
       <NavLink 
         className={({ isActive }) => 
-          `${styles.NavLink} ${isActive ? styles.Active : ""}`
+          `nav-link ${isActive ? "active" : ""}`
         }
         to="/signup"
       >
@@ -111,9 +109,10 @@ const NavBar = () => {
   );
 
   return (
-    <Navbar expanded={expanded} className={styles.NavBar} expand="md" fixed="top">
+    <Navbar expanded={expanded} className="bg-white" expand="md" fixed="top">
       <Container>
-        <NavLink to="/" className={styles.Logo}>
+        <NavLink to="/" className="navbar-brand">
+          <img src="/logo.png" alt="logo" height="45" />
           FitTracker
         </NavLink>
 
@@ -124,10 +123,10 @@ const NavBar = () => {
         />
 
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
+          <Nav className="ms-auto text-start">
             <NavLink 
               className={({ isActive }) => 
-                `${styles.NavLink} ${isActive ? styles.Active : ""}`
+                `nav-link ${isActive ? "active" : ""}`
               }
               to="/"
               end
