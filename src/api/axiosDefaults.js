@@ -7,22 +7,29 @@ axios.defaults.withCredentials = true;
 export const axiosReq = axios.create();
 export const axiosRes = axios.create();
 
-// Configure request interceptor for authorization
+// Create a separate instance for auth requests (login/register)
+export const axiosAuth = axios.create({
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+
+// Configure request interceptor
 axiosReq.interceptors.request.use(
   async (config) => {
-    // Add token for authenticated requests
     const token = localStorage.getItem("token");
-    if (token && !config.url.endsWith('login/') && !config.url.endsWith('register/')) {
+    if (token) {
       config.headers["Authorization"] = `Token ${token}`;
     }
-
-    // Set Content-Type based on the request
-    if (config.method === 'post' && config.data instanceof FormData) {
-      config.headers["Content-Type"] = "multipart/form-data";
-    } else {
-      config.headers["Content-Type"] = "application/json";
+    
+    if (!config.headers["Content-Type"]) {
+      if (config.data instanceof FormData) {
+        config.headers["Content-Type"] = "multipart/form-data";
+      } else {
+        config.headers["Content-Type"] = "application/json";
+      }
     }
-
+    
     return config;
   },
   (err) => {

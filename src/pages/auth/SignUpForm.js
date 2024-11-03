@@ -6,7 +6,7 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import Alert from "react-bootstrap/Alert";
-import axios from "axios";
+import { axiosAuth } from "../../api/axiosDefaults";
 import styles from "../../styles/SignInUpForm.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import appStyles from "../../App.module.css";
@@ -14,11 +14,11 @@ import appStyles from "../../App.module.css";
 const SignUpForm = () => {
   const [signUpData, setSignUpData] = useState({
     username: "",
-    password1: "",  // Changed back to password1
-    password2: "",  // Changed back to password2
+    password1: "",
+    password2: "",
     email: "",
   });
-  const { username, password1, password2, email } = signUpData;  // Updated destructuring
+  const { username, password1, password2, email } = signUpData;
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
@@ -32,13 +32,22 @@ const SignUpForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      console.log("Sending registration data:", signUpData);
+      // Check if passwords match
+      if (password1 !== password2) {
+        setErrors({ password2: ["Passwords must match"] });
+        return;
+      }
+
+      // Create the data object with the format the API expects
+      const requestData = {
+        username,
+        password: password1,  // Send password1 as password
+        email,
+      };
+
+      console.log("Sending registration data:", requestData);
       
-      const response = await axios.post("/api/auth/register/", signUpData, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await axiosAuth.post("/api/auth/register/", requestData);
       
       console.log("Registration successful:", response.data);
       navigate("/signin");
@@ -100,7 +109,7 @@ const SignUpForm = () => {
                 onChange={handleChange}
               />
             </Form.Group>
-            {errors?.password1?.map((message, idx) => (
+            {errors?.password?.map((message, idx) => (
               <Alert key={idx} variant="warning">
                 {message}
               </Alert>
