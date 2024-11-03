@@ -7,7 +7,6 @@ import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import Alert from "react-bootstrap/Alert";
 import axios from "axios";
-
 import styles from "../../styles/SignInUpForm.module.css";
 import { useSetCurrentUser } from "../../context/CurrentUserContext";
 import { setTokenTimestamp } from "../../utils/utils";
@@ -18,7 +17,6 @@ const SignInForm = () => {
     username: "",
     password: "",
   });
-  const { username, password } = signInData;
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
@@ -32,9 +30,9 @@ const SignInForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const { data } = await axios.post("/api/auth/login/", signInData);
-      setCurrentUser(data.user);
-      setTokenTimestamp(data);
+      const response = await axios.post("/api/auth/login/", signInData);
+      setCurrentUser(response.data.user);
+      setTokenTimestamp(response.data);
       navigate("/");
     } catch (err) {
       setErrors(err.response?.data);
@@ -54,11 +52,11 @@ const SignInForm = () => {
                 type="text"
                 placeholder="Username"
                 name="username"
-                value={username}
+                value={signInData.username}
                 onChange={handleChange}
               />
             </Form.Group>
-            {errors.username?.map((message, idx) => (
+            {errors?.username?.map((message, idx) => (
               <Alert key={idx} variant="warning">
                 {message}
               </Alert>
@@ -70,20 +68,20 @@ const SignInForm = () => {
                 type="password"
                 placeholder="Password"
                 name="password"
-                value={password}
+                value={signInData.password}
                 onChange={handleChange}
               />
             </Form.Group>
-            {errors.password?.map((message, idx) => (
+            {errors?.password?.map((message, idx) => (
               <Alert key={idx} variant="warning">
                 {message}
               </Alert>
             ))}
 
-            <Button type="submit" className={styles.Button}>
-              Sign In
+            <Button className={styles.Button} type="submit">
+              Sign in
             </Button>
-            {errors.non_field_errors?.map((message, idx) => (
+            {errors?.non_field_errors?.map((message, idx) => (
               <Alert key={idx} variant="warning">
                 {message}
               </Alert>
@@ -92,7 +90,7 @@ const SignInForm = () => {
         </Container>
 
         <Container className={styles.Container}>
-          <Link to="/signup" className={styles.Link}>
+          <Link className={styles.Link} to="/signup">
             Don't have an account? <span>Sign up now!</span>
           </Link>
         </Container>
