@@ -126,10 +126,6 @@ const SignInForm = () => {
         md={6}
         className={`my-auto d-none d-md-block p-2 ${styles.SignInCol}`}
       >
-        <Image
-          className={`${appStyles.FillerImage}`}
-          src="https://storage.googleapis.com/body-doodle-images/formimage/WallpaperDog-20341998.jpg"
-        />
       </Col>
     </Row>
   );
