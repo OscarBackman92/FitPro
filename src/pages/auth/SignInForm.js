@@ -37,23 +37,27 @@ const SignInForm = () => {
     event.preventDefault();
     try {
       const { data } = await axios.post("/api/auth/login/", signInData);
-      // Log the response to see its structure
       console.log("Login response:", data);
 
-      // Store the token
       if (data.key) {
         axios.defaults.headers.common["Authorization"] = `Token ${data.key}`;
         localStorage.setItem("token", data.key);
-      }
 
-      // Fetch user data with the token
-      try {
-        const { data: userData } = await axios.get("/api/auth/user/");
-        setCurrentUser(userData);
-        navigate("/");
-      } catch (userErr) {
-        console.log("Error fetching user data:", userErr);
-        setErrors({ user: ["Could not fetch user data"] });
+        try {
+          // Use the correct endpoint for getting user profile
+          const { data: profileData } = await axios.get("/api/profiles/me/");
+          console.log("Profile data:", profileData);
+          
+          // Set current user with profile data
+          setCurrentUser({
+            ...profileData,
+            token: data.key,
+          });
+          navigate("/");
+        } catch (profileErr) {
+          console.log("Error fetching profile:", profileErr);
+          setErrors({ profile: ["Could not fetch user profile"] });
+        }
       }
     } catch (err) {
       console.log("Sign in error:", err.response?.data);
