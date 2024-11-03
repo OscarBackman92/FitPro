@@ -55,91 +55,91 @@ const SignUpForm = () => {
   };
 
   return (
-    <Row className={styles.Row}>
-      <Col className="my-auto py-2 p-md-2" md={6}>
-        <Container className={styles.Container}>
-          <h1 className={styles.Header}>sign up</h1>
-
+    <Row className={`justify-content-center ${styles.Row}`}>
+      <Col xs={12} md={8} lg={6} className="my-auto py-2 p-md-4">
+        <Container className={`p-4 ${styles.Container}`}>
+          <h1 className={`${styles.Header} mb-4`}>Sign Up</h1>
           <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="username">
-              <Form.Label className="d-none">Username</Form.Label>
+            <Form.Group controlId="username" className="mb-3">
+              <Form.Label className="visually-hidden">Username</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Username"
                 name="username"
                 value={username}
                 onChange={handleChange}
+                className="shadow-sm"
               />
+              {errors?.username?.map((message, idx) => (
+                <Alert key={idx} variant="warning" className="mt-2">
+                  {message}
+                </Alert>
+              ))}
             </Form.Group>
-            {errors?.username?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
-                {message}
-              </Alert>
-            ))}
 
-            <Form.Group controlId="email">
-              <Form.Label className="d-none">Email</Form.Label>
+            <Form.Group controlId="email" className="mb-3">
+              <Form.Label className="visually-hidden">Email</Form.Label>
               <Form.Control
                 type="email"
                 placeholder="Email"
                 name="email"
                 value={email}
                 onChange={handleChange}
+                className="shadow-sm"
               />
+              {errors?.email?.map((message, idx) => (
+                <Alert key={idx} variant="warning" className="mt-2">
+                  {message}
+                </Alert>
+              ))}
             </Form.Group>
-            {errors?.email?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
-                {message}
-              </Alert>
-            ))}
 
-            <Form.Group controlId="password">
-              <Form.Label className="d-none">Password</Form.Label>
+            <Form.Group controlId="password" className="mb-3">
+              <Form.Label className="visually-hidden">Password</Form.Label>
               <Form.Control
                 type="password"
                 placeholder="Password"
                 name="password"
                 value={password}
                 onChange={handleChange}
+                className="shadow-sm"
               />
+              {errors?.password?.map((message, idx) => (
+                <Alert key={idx} variant="warning" className="mt-2">
+                  {message}
+                </Alert>
+              ))}
             </Form.Group>
-            {errors?.password?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
-                {message}
-              </Alert>
-            ))}
 
-            <Form.Group controlId="confirm_password">
-              <Form.Label className="d-none">Confirm Password</Form.Label>
+            <Form.Group controlId="confirm_password" className="mb-3">
+              <Form.Label className="visually-hidden">Confirm Password</Form.Label>
               <Form.Control
                 type="password"
                 placeholder="Confirm Password"
                 name="confirm_password"
                 value={confirm_password}
                 onChange={handleChange}
+                className="shadow-sm"
               />
+              {errors?.confirm_password?.map((message, idx) => (
+                <Alert key={idx} variant="warning" className="mt-2">
+                  {message}
+                </Alert>
+              ))}
             </Form.Group>
-            {errors?.confirm_password?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
-                {message}
-              </Alert>
-            ))}
 
-            <Button 
-              className={styles.Button}
-              type="submit"
-            >
+            <Button type="submit" className={`${styles.Button} w-100`}>
               Sign Up
             </Button>
             {errors?.non_field_errors?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
+              <Alert key={idx} variant="warning" className="mt-3">
                 {message}
               </Alert>
             ))}
           </Form>
         </Container>
 
-        <Container className={styles.Container}>
+        <Container className="text-center mt-3">
           <Link className={styles.Link} to="/signin">
             Already have an account? <span>Sign in</span>
           </Link>
