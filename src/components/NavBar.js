@@ -26,6 +26,7 @@ const NavBar = () => {
       <NavLink 
         className={styles.NavLink} 
         to="/workouts/create"
+        onClick={() => setExpanded(false)}
       >
         <i className="fas fa-plus-circle"></i>
         <span className={styles.LinkText}>Log Workout</span>
@@ -34,6 +35,7 @@ const NavBar = () => {
       <NavLink 
         className={styles.NavLink} 
         to="/"
+        onClick={() => setExpanded(false)}
       >
         <i className="fas fa-home"></i>
         <span className={styles.LinkText}>Dashboard</span>
@@ -42,6 +44,7 @@ const NavBar = () => {
       <NavLink 
         className={styles.NavLink} 
         to="/feed"
+        onClick={() => setExpanded(false)}
       >
         <i className="fas fa-fire"></i>
         <span className={styles.LinkText}>Activity</span>
@@ -50,15 +53,28 @@ const NavBar = () => {
       <NavLink 
         className={styles.NavLink} 
         to="/workouts"
+        onClick={() => setExpanded(false)}
       >
         <i className="fas fa-dumbbell"></i>
         <span className={styles.LinkText}>Workouts</span>
       </NavLink>
+      
+      <button 
+        className={styles.SignOutButton}
+        onClick={() => {
+          handleSignOut();
+          setExpanded(false);
+        }}
+      >
+        <i className="fas fa-sign-out-alt"></i>
+        <span className={styles.LinkText}>Sign out</span>
+      </button>
 
       {currentUser?.profile_id && (
         <NavLink
           className={styles.ProfileLink}
           to={`/profiles/${currentUser.profile_id}`}
+          onClick={() => setExpanded(false)}
         >
           <Avatar
             src={currentUser.profile_image}
@@ -67,13 +83,6 @@ const NavBar = () => {
           />
         </NavLink>
       )}
-      
-      <button 
-        className={styles.SignOutButton}
-        onClick={handleSignOut}
-      >
-        <i className="fas fa-sign-out-alt"></i>
-      </button>
     </>
   );
 
@@ -82,12 +91,14 @@ const NavBar = () => {
       <NavLink
         className={styles.SignInButton}
         to="/signin"
+        onClick={() => setExpanded(false)}
       >
         Sign in
       </NavLink>
       <NavLink
         className={styles.SignUpButton}
         to="/signup"
+        onClick={() => setExpanded(false)}
       >
         Sign up
       </NavLink>
@@ -101,15 +112,18 @@ const NavBar = () => {
           <i className="fas fa-bolt"></i> FITPRO
         </NavLink>
 
-        <Navbar.Toggle
+        <Navbar.Toggle 
           ref={ref}
           onClick={() => setExpanded(!expanded)}
           aria-controls="basic-navbar-nav"
-          className={styles.ToggleButton}
-        />
+          className={styles.HamburgerMenu}
+          aria-label="Toggle navigation"
+        >
+          <span className={styles.HamburgerIcon}></span>
+        </Navbar.Toggle>
         
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto d-flex align-items-center">
+          <Nav className="ms-auto text-left">
             {currentUser ? loggedInIcons : loggedOutIcons}
           </Nav>
         </Navbar.Collapse>

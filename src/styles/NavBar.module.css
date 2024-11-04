@@ -26,7 +26,7 @@
 }
 
 .NavLink {
-  padding: 8px 16px;
+  padding: 12px 16px;
   color: #ffffff;
   text-decoration: none;
   display: flex;
@@ -35,7 +35,7 @@
   font-weight: 500;
   transition: all 0.2s ease;
   border-radius: 8px;
-  margin: 0 4px;
+  margin: 4px;
 }
 
 .NavLink:hover {
@@ -46,43 +46,91 @@
 
 .NavLink i {
   font-size: 1.2rem;
+  min-width: 24px;
+  text-align: center;
 }
 
 .LinkText {
   font-size: 0.95rem;
 }
 
-.ProfileLink {
-  padding: 4px;
-  margin-left: 8px;
-  border-radius: 50%;
-  border: 2px solid #333;
-  transition: all 0.2s ease;
+/* Hamburger Menu Styles */
+.HamburgerMenu {
+  border: none;
+  background: transparent;
+  padding: 10px;
+  position: relative;
+  width: 40px;
+  height: 40px;
 }
 
-.ProfileLink:hover {
-  border-color: #00ff9d;
+.HamburgerIcon,
+.HamburgerIcon::before,
+.HamburgerIcon::after {
+  content: '';
+  display: block;
+  background: #00ff9d;
+  height: 3px;
+  width: 24px;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  position: absolute;
+}
+
+.HamburgerIcon {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.HamburgerIcon::before {
+  top: -8px;
+}
+
+.HamburgerIcon::after {
+  bottom: -8px;
+}
+
+/* Hamburger animation when expanded */
+[aria-expanded="true"] .HamburgerIcon {
+  background: transparent;
+}
+
+[aria-expanded="true"] .HamburgerIcon::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+
+[aria-expanded="true"] .HamburgerIcon::after {
+  transform: rotate(-45deg);
+  bottom: 0;
 }
 
 .SignOutButton {
   background: none;
   border: none;
   color: #ffffff;
-  padding: 8px;
-  font-size: 1.2rem;
+  padding: 12px 16px;
+  font-size: 1rem;
   cursor: pointer;
-  transition: color 0.2s ease;
-  margin-left: 8px;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 4px;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .SignOutButton:hover {
+  background-color: #333;
   color: #ff4d4d;
 }
 
 .AuthButtons {
   display: flex;
   gap: 12px;
-  align-items: center;
+  padding: 8px;
 }
 
 .SignInButton, .SignUpButton {
@@ -91,6 +139,7 @@
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
+  text-align: center;
 }
 
 .SignInButton {
@@ -101,7 +150,6 @@
 .SignInButton:hover {
   background-color: #00ff9d;
   color: #1a1a1a;
-  text-decoration: none;
 }
 
 .SignUpButton {
@@ -111,37 +159,49 @@
 
 .SignUpButton:hover {
   background-color: #00cc7d;
-  color: #1a1a1a;
-  text-decoration: none;
 }
 
-.ToggleButton {
-  border: none;
+.ProfileLink {
   padding: 8px;
+  margin: 4px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
-.ToggleButton:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.ToggleButton .navbar-toggler-icon {
-  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+.ProfileLink:hover {
+  background-color: #333;
 }
 
 @media screen and (max-width: 767px) {
-  .NavLink {
-    padding: 12px 16px;
+  .NavBar {
+    padding: 0.5rem 1rem;
   }
 
   .AuthButtons {
     flex-direction: column;
     width: 100%;
-    gap: 8px;
   }
 
   .SignInButton, .SignUpButton {
     width: 100%;
-    text-align: center;
+  }
+
+  /* Mobile nav menu styles */
+  .Navbar.Collapse {
+    background-color: #1a1a1a;
+    padding: 1rem;
+    border-radius: 0 0 12px 12px;
+    margin-top: 0.5rem;
+  }
+
+  .NavLink, .SignOutButton {
+    padding: 12px;
+    width: 100%;
+  }
+
+  .ProfileLink {
+    margin: 8px 12px;
   }
 }
