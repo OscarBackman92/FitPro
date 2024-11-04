@@ -6,7 +6,7 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import Alert from "react-bootstrap/Alert";
-import { axiosAuth } from "../../api/axiosDefaults";
+import apiService from "../../services/apiService";
 import styles from "../../styles/SignInUpForm.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import appStyles from "../../App.module.css";
@@ -14,12 +14,14 @@ import appStyles from "../../App.module.css";
 const SignUpForm = () => {
   const [signUpData, setSignUpData] = useState({
     username: "",
+    email: "",
     password1: "",
     password2: "",
-    email: "",
   });
-  const { username, password1, password2, email } = signUpData;
+  
+  const { username, email, password1, password2 } = signUpData;
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (event) => {
@@ -31,29 +33,24 @@ const SignUpForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoading(true);
+    setErrors({});
+
     try {
-      // Check if passwords match
       if (password1 !== password2) {
         setErrors({ password2: ["Passwords must match"] });
         return;
       }
 
-      // Create the data object with the format the API expects
-      const requestData = {
-        username,
-        password: password1,  // Send password1 as password
-        email,
-      };
-
-      console.log("Sending registration data:", requestData);
-      
-      const response = await axiosAuth.post("/api/auth/register/", requestData);
-      
-      console.log("Registration successful:", response.data);
+      await apiService.register(signUpData);
       navigate("/signin");
     } catch (err) {
-      console.log("Registration error details:", err.response?.data);
-      setErrors(err.response?.data || {});
+      console.log("Registration error:", err.response?.data);
+      setErrors(err.response?.data || {
+        non_field_errors: ["An error occurred during registration"]
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,6 +70,7 @@ const SignUpForm = () => {
                 name="username"
                 value={username}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Form.Group>
             {errors?.username?.map((message, idx) => (
@@ -90,6 +88,7 @@ const SignUpForm = () => {
                 name="email"
                 value={email}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Form.Group>
             {errors?.email?.map((message, idx) => (
@@ -107,9 +106,10 @@ const SignUpForm = () => {
                 name="password1"
                 value={password1}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Form.Group>
-            {errors?.password?.map((message, idx) => (
+            {errors?.password1?.map((message, idx) => (
               <Alert key={idx} variant="warning">
                 {message}
               </Alert>
@@ -124,6 +124,7 @@ const SignUpForm = () => {
                 name="password2"
                 value={password2}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Form.Group>
             {errors?.password2?.map((message, idx) => (
@@ -135,8 +136,9 @@ const SignUpForm = () => {
             <Button 
               className={`${btnStyles.Button} ${btnStyles.Wide} ${btnStyles.Bright}`}
               type="submit"
+              disabled={isLoading}
             >
-              Sign Up
+              {isLoading ? "Signing up..." : "Sign Up"}
             </Button>
             {errors?.non_field_errors?.map((message, idx) => (
               <Alert key={idx} variant="warning" className="mt-3">

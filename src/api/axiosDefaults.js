@@ -1,70 +1,49 @@
 import axios from "axios";
 
-// Set up axios defaults
-axios.defaults.baseURL = "https://fitnessapi-d773a1148384.herokuapp.com";
-axios.defaults.withCredentials = true;
+const baseURL = "https://fitnessapi-d773a1148384.herokuapp.com/api";
 
-export const axiosReq = axios.create();
-export const axiosRes = axios.create();
-
-// Create a separate instance for auth requests (login/register)
+// Create auth-specific instance
 export const axiosAuth = axios.create({
+  baseURL,
+  withCredentials: true,
   headers: {
-    "Content-Type": "application/json"
+    'Content-Type': 'application/json',
   }
 });
 
-// Configure request interceptor
-axiosReq.interceptors.request.use(
-  async (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers["Authorization"] = `Token ${token}`;
-    }
-    
-    if (!config.headers["Content-Type"]) {
-      if (config.data instanceof FormData) {
-        config.headers["Content-Type"] = "multipart/form-data";
-      } else {
-        config.headers["Content-Type"] = "application/json";
+// Regular instances
+export const axiosReq = axios.create({
+  baseURL,
+  withCredentials: true
+});
+
+export const axiosRes = axios.create({
+  baseURL,
+  withCredentials: true
+});
+
+// Development logging
+if (process.env.NODE_ENV === 'development') {
+  [axiosReq, axiosAuth].forEach(instance => {
+    instance.interceptors.request.use(request => {
+      console.log('Request:', {
+        url: request.url,
+        method: request.method,
+        data: request.data,
+        headers: request.headers
+      });
+      return request;
+    });
+
+    instance.interceptors.response.use(
+      response => {
+        console.log('Response:', response);
+        return response;
+      },
+      error => {
+        console.log('Error:', error.response || error);
+        return Promise.reject(error);
       }
-    }
-    
-    return config;
-  },
-  (err) => {
-    return Promise.reject(err);
-  }
-);
-
-// Debug interceptors
-axios.interceptors.request.use(
-  (config) => {
-    console.log('Request:', {
-      method: config.method,
-      url: config.url,
-      data: config.data,
-      headers: config.headers
-    });
-    return config;
-  },
-  (error) => {
-    console.log('Request Error:', error);
-    return Promise.reject(error);
-  }
-);
-
-axios.interceptors.response.use(
-  (response) => {
-    console.log('Response:', response);
-    return response;
-  },
-  (error) => {
-    console.log('Response Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
-    });
-    return Promise.reject(error);
-  }
-);
+    );
+  });
+}

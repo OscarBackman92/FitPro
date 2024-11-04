@@ -10,7 +10,7 @@ import PrivateRoute from "./components/common/PrivateRoute";
 // Auth
 import SignUpForm from "./pages/auth/SignUpForm";
 import SignInForm from "./pages/auth/SignInForm";
-import { useCurrentUser } from "../src/context/CurrentUserContext";
+import { useCurrentUser } from "../src/contexts/CurrentUserContext";
 
 // Workouts
 import WorkoutForm from "../src/components/workouts/WorkoutForm";

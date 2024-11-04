@@ -1,10 +1,10 @@
-import { axiosReq, axiosRes } from './axiosDefaults';
+import { axiosReq, axiosAuth } from '../api/axiosDefaults';
 
 export const apiService = {
   // Auth endpoints
   login: async (credentials) => {
     try {
-      const { data } = await axiosRes.post('/api/auth/login/', credentials);
+      const { data } = await axiosAuth.post('/auth/login/', credentials);
       return data;
     } catch (err) {
       throw new Error(err.response?.data?.detail || 'Login failed');
@@ -13,131 +13,146 @@ export const apiService = {
 
   register: async (userData) => {
     try {
-      const { data } = await axiosRes.post('/api/auth/register/', userData);
+      const { data } = await axiosAuth.post('/auth/registration/', userData);
       return data;
     } catch (err) {
-      throw new Error(err.response?.data?.detail || 'Registration failed');
+      console.error('Registration error:', err.response?.data || err.message);
+      throw err;
     }
   },
 
   logout: async () => {
     try {
-      await axiosRes.post('/api/auth/logout/');
+      await axiosAuth.post('/auth/logout/');
     } catch (err) {
       console.error('Logout error:', err);
+      throw err;
     }
   },
 
   // Profile endpoints
   getProfile: async (id) => {
     try {
-      const { data } = await axiosReq.get(id ? `/api/profiles/${id}/` : '/api/profiles/me/');
+      const endpoint = id ? `/profiles/${id}/` : '/profiles/me/';
+      const { data } = await axiosReq.get(endpoint);
       return data;
     } catch (err) {
-      throw new Error('Failed to fetch profile');
+      console.error('Profile fetch error:', err);
+      throw err;
     }
   },
 
   updateProfile: async (id, profileData) => {
     try {
-      const { data } = await axiosReq.put(`/api/profiles/${id}/`, profileData);
+      const { data } = await axiosReq.put(`/profiles/${id}/`, profileData);
       return data;
     } catch (err) {
-      throw new Error('Failed to update profile');
+      console.error('Profile update error:', err);
+      throw err;
     }
   },
 
   // Workout endpoints
   getWorkouts: async (params) => {
     try {
-      const { data } = await axiosReq.get('/api/workouts/', { params });
+      const { data } = await axiosReq.get('/workouts/workouts/', { params });
       return data;
     } catch (err) {
-      throw new Error('Failed to fetch workouts');
+      console.error('Workouts fetch error:', err);
+      throw err;
     }
   },
 
   createWorkout: async (workoutData) => {
     try {
-      const { data } = await axiosReq.post('/api/workouts/', workoutData);
+      const { data } = await axiosReq.post('/workouts/workouts/', workoutData);
       return data;
     } catch (err) {
-      throw new Error('Failed to create workout');
+      console.error('Workout creation error:', err);
+      throw err;
     }
   },
 
   updateWorkout: async (id, workoutData) => {
     try {
-      const { data } = await axiosReq.put(`/api/workouts/${id}/`, workoutData);
+      const { data } = await axiosReq.put(`/workouts/workouts/${id}/`, workoutData);
       return data;
     } catch (err) {
-      throw new Error('Failed to update workout');
+      console.error('Workout update error:', err);
+      throw err;
     }
   },
 
   deleteWorkout: async (id) => {
     try {
-      await axiosReq.delete(`/api/workouts/${id}/`);
+      await axiosReq.delete(`/workouts/workouts/${id}/`);
     } catch (err) {
-      throw new Error('Failed to delete workout');
+      console.error('Workout deletion error:', err);
+      throw err;
     }
   },
 
   // Workout summary
   getWorkoutSummary: async () => {
     try {
-      const { data } = await axiosReq.get('/api/workouts/summary/');
+      const { data } = await axiosReq.get('/workouts/workouts/summary/');
       return data;
     } catch (err) {
-      throw new Error('Failed to fetch workout summary');
+      console.error('Summary fetch error:', err);
+      throw err;
     }
   },
 
   // Social endpoints
   getLikes: async () => {
     try {
-      const { data } = await axiosReq.get('/api/likes/');
+      const { data } = await axiosReq.get('/likes/');
       return data;
     } catch (err) {
-      throw new Error('Failed to fetch likes');
+      console.error('Likes fetch error:', err);
+      throw err;
     }
   },
 
   createLike: async (workoutId) => {
     try {
-      const { data } = await axiosReq.post('/api/likes/', { workout: workoutId });
+      const { data } = await axiosReq.post('/likes/', { workout: workoutId });
       return data;
     } catch (err) {
-      throw new Error('Failed to like workout');
+      console.error('Like creation error:', err);
+      throw err;
     }
   },
 
   deleteLike: async (likeId) => {
     try {
-      await axiosReq.delete(`/api/likes/${likeId}/`);
+      await axiosReq.delete(`/likes/${likeId}/`);
     } catch (err) {
-      throw new Error('Failed to unlike workout');
+      console.error('Like deletion error:', err);
+      throw err;
     }
   },
 
   getComments: async (workoutId) => {
     try {
-      const { data } = await axiosReq.get(`/api/comments/?workout=${workoutId}`);
+      const { data } = await axiosReq.get(`/comments/?workout=${workoutId}`);
       return data;
     } catch (err) {
-      throw new Error('Failed to fetch comments');
+      console.error('Comments fetch error:', err);
+      throw err;
     }
   },
 
   createComment: async (workoutId, content) => {
     try {
-      const { data } = await axiosReq.post('/api/comments/', {
+      const { data } = await axiosReq.post('/comments/', {
         workout: workoutId,
         content,
       });
       return data;
     } catch (err) {
-      throw new Error('Failed to create comment');
+      console.error('Comment creation error:', err);
+      throw err;
     }
   }
 };
