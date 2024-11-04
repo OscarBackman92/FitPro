@@ -1,0 +1,70 @@
+.DropdownItem {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0px;
+    background-color: transparent;
+    border: none;
+}
+
+.DropdownItem:hover {
+    background-color: #f8f8f8;
+}
+
+.DropdownItem i {
+    color: #555555;
+    padding: 0px 8px;
+    font-size: 1rem;
+}
+
+.DropdownItem:hover i {
+    color: #2142b2;
+}
+
+.Absolute {
+    position: absolute;
+    right: 0;
+    z-index: 99;
+}
+
+/* Styles for the three dots icon */
+.ThreeDots {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #555555;
+    padding: 0px 8px;
+}
+
+.ThreeDots:hover {
+    color: #2142b2;
+}
+
+/* Menu positioning and appearance */
+.Dropdown {
+    margin-left: auto;
+}
+
+/* Style the dropdown menu itself */
+:global(.dropdown-menu) {
+    border-radius: 4px;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Style menu items */
+:global(.dropdown-item) {
+    color: #555555;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+:global(.dropdown-item:hover) {
+    background-color: #f8f8f8;
+    color: #2142b2;
+}
+
+/* Add dividers between items */
+:global(.dropdown-divider) {
+    margin: 0.25rem 0;
+    border-top: 1px solid #eeeeee;
+}
