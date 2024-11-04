@@ -1,23 +1,21 @@
-import React from 'react';
-import { Navbar, Container, Nav } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  useCurrentUser,
-  useSetCurrentUser,
-} from '../context/CurrentUserContext';
-import axios from 'axios';
-import styles from '../styles/NavBar.module.css';
+import React from "react";
+import { Navbar, Container, Nav } from "react-bootstrap";
+import { NavLink } from "react-router-dom";
+import { useCurrentUser, useSetCurrentUser } from "../context/CurrentUserContext";
+import useClickOutsideToggle from "../hooks/useClickOutsideToggle";
+import { axiosRes } from "../api/axiosDefaults";
+import Avatar from "./Avatar";
+import styles from "../styles/NavBar.module.css";
 
 const NavBar = () => {
   const currentUser = useCurrentUser();
   const setCurrentUser = useSetCurrentUser();
-  const navigate = useNavigate();
+  const { expanded, setExpanded, ref } = useClickOutsideToggle();
 
   const handleSignOut = async () => {
     try {
-      await axios.post("/api/auth/logout/");
+      await axiosRes.post("/api/auth/logout/");
       setCurrentUser(null);
-      navigate("/");
     } catch (err) {
       console.log(err);
     }
@@ -25,85 +23,93 @@ const NavBar = () => {
 
   const loggedInIcons = (
     <>
-      <Link 
-        className={styles.NavLink}
+      <NavLink 
+        className={styles.NavLink} 
         to="/workouts/create"
       >
-        <i className="fas fa-plus-square"></i> Log Workout
-      </Link>
+        <i className="fas fa-plus-circle"></i>
+        <span className={styles.LinkText}>Log Workout</span>
+      </NavLink>
       
-      <Link
-        className={styles.NavLink}
+      <NavLink 
+        className={styles.NavLink} 
+        to="/"
+      >
+        <i className="fas fa-home"></i>
+        <span className={styles.LinkText}>Dashboard</span>
+      </NavLink>
+      
+      <NavLink 
+        className={styles.NavLink} 
         to="/feed"
       >
-        <i className="fas fa-stream"></i> Feed
-      </Link>
+        <i className="fas fa-fire"></i>
+        <span className={styles.LinkText}>Activity</span>
+      </NavLink>
       
-      <Link
-        className={styles.NavLink}
+      <NavLink 
+        className={styles.NavLink} 
         to="/workouts"
       >
-        <i className="fas fa-dumbbell"></i> My Workouts
-      </Link>
+        <i className="fas fa-dumbbell"></i>
+        <span className={styles.LinkText}>Workouts</span>
+      </NavLink>
 
-      <span 
-        className={styles.NavLink}
-        onClick={handleSignOut}
-        style={{ cursor: 'pointer' }}
-      >
-        <i className="fas fa-sign-out-alt"></i> Sign Out
-      </span>
-
-      {currentUser && (
-        <Link
-          className={styles.NavLink}
+      {currentUser?.profile_id && (
+        <NavLink
+          className={styles.ProfileLink}
           to={`/profiles/${currentUser.profile_id}`}
         >
-          <img
+          <Avatar
             src={currentUser.profile_image}
-            alt={currentUser.username}
-            className={styles.Avatar}
+            text={currentUser.username}
+            height={40}
           />
-          {currentUser.username}
-        </Link>
+        </NavLink>
       )}
+      
+      <button 
+        className={styles.SignOutButton}
+        onClick={handleSignOut}
+      >
+        <i className="fas fa-sign-out-alt"></i>
+      </button>
     </>
   );
 
   const loggedOutIcons = (
-    <>
-      <Link 
-        className={styles.NavLink}
+    <div className={styles.AuthButtons}>
+      <NavLink
+        className={styles.SignInButton}
         to="/signin"
       >
-        <i className="fas fa-sign-in-alt"></i> Sign In
-      </Link>
-      <Link 
-        className={styles.NavLink}
+        Sign in
+      </NavLink>
+      <NavLink
+        className={styles.SignUpButton}
         to="/signup"
       >
-        <i className="fas fa-user-plus"></i> Sign Up
-      </Link>
-    </>
+        Sign up
+      </NavLink>
+    </div>
   );
 
   return (
-    <Navbar className={styles.NavBar} expand="md" fixed="top" bg="white">
+    <Navbar expanded={expanded} className={styles.NavBar} expand="md" fixed="top">
       <Container>
-        <Link to="/" className={styles.NavBrand}>
-          FitTracker
-        </Link>
+        <NavLink to="/" className={styles.Logo}>
+          <i className="fas fa-bolt"></i> FITPRO
+        </NavLink>
 
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Toggle
+          ref={ref}
+          onClick={() => setExpanded(!expanded)}
+          aria-controls="basic-navbar-nav"
+          className={styles.ToggleButton}
+        />
+        
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ml-auto">
-            <Link 
-              className={styles.NavLink}
-              to="/"
-            >
-              <i className="fas fa-home"></i> Home
-            </Link>
-
+          <Nav className="ms-auto d-flex align-items-center">
             {currentUser ? loggedInIcons : loggedOutIcons}
           </Nav>
         </Navbar.Collapse>
