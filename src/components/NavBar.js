@@ -58,6 +58,21 @@ const NavBar = () => {
         <i className="fas fa-dumbbell"></i>
         <span className={styles.LinkText}>Workouts</span>
       </NavLink>
+
+      {/* Profile Link - Updated to use id from API response */}
+      {currentUser && currentUser.username && (
+        <NavLink
+          className={styles.ProfileLink}
+          to={`/profiles/${currentUser.id}`}
+          onClick={() => setExpanded(false)}
+        >
+          <Avatar
+            src={currentUser.profile_image || "/default-avatar.png"}
+            text={currentUser.username}
+            height={40}
+          />
+        </NavLink>
+      )}
       
       <button 
         className={styles.SignOutButton}
@@ -69,20 +84,6 @@ const NavBar = () => {
         <i className="fas fa-sign-out-alt"></i>
         <span className={styles.LinkText}>Sign out</span>
       </button>
-
-      {currentUser?.profile_id && (
-        <NavLink
-          className={styles.ProfileLink}
-          to={`/profiles/${currentUser.profile_id}`}
-          onClick={() => setExpanded(false)}
-        >
-          <Avatar
-            src={currentUser.profile_image}
-            text={currentUser.username}
-            height={40}
-          />
-        </NavLink>
-      )}
     </>
   );
 

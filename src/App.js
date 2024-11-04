@@ -17,7 +17,7 @@ import WorkoutForm from "../src/components/workouts/WorkoutForm";
 import WorkoutList from "../src/components/workouts/WorkoutList";
 import WorkoutDetail from "../src/components/workouts/WorkoutDetail";
 
- // Profile
+// Profile
 import ProfilePage from "./components/profiles/ProfilePage";
 // import UsernameForm from "./pages/profiles/UsernameForm";
 // import UserPasswordForm from "./pages/profiles/UserPasswordForm";
@@ -85,14 +85,16 @@ function App() {
           />
 
           {/* Profile Routes */}
-          {<Route
-            path="/api/profiles/me/"
+          <Route
+            path="/profiles/:id"
             element={
               <PrivateRoute>
                 <ProfilePage />
               </PrivateRoute>
             }
-          /> }
+          />
+          
+          {/* Profile Edit Routes - Commented out until components are ready */}
           {/* <Route
             path="/profiles/:id/edit/username"
             element={
@@ -100,16 +102,16 @@ function App() {
                 <UsernameForm />
               </PrivateRoute>
             }
-          /> */}
-          {/* <Route
+          />
+          <Route
             path="/profiles/:id/edit/password"
             element={
               <PrivateRoute>
                 <UserPasswordForm />
               </PrivateRoute>
             }
-          /> */}
-          {/* <Route
+          />
+          <Route
             path="/profiles/:id/edit"
             element={
               <PrivateRoute>

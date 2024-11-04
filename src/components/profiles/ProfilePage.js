@@ -15,21 +15,27 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [workouts, setWorkouts] = useState({ results: [] });
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [error, setError] = useState("");
 
-  const is_owner = currentUser?.profile_id === parseInt(id);
+  // Check if current user is profile owner
+  const is_owner = currentUser?.id === parseInt(id);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("Fetching profile data for ID:", id);
         const [{ data: profileData }, { data: workoutsData }] = await Promise.all([
           axiosReq.get(`/api/profiles/${id}/`),
-          axiosReq.get(`/api/workouts/?owner__profile=${id}`)
+          axiosReq.get(`/api/workouts/?user=${id}`)
         ]);
+        console.log("Profile data received:", profileData);
+        console.log("Workouts data received:", workoutsData);
         setProfile(profileData);
         setWorkouts(workoutsData);
         setHasLoaded(true);
       } catch (err) {
         console.log("Error fetching profile data:", err);
+        setError("Failed to load profile data. Please try again later.");
       }
     };
     fetchData();
@@ -41,22 +47,28 @@ const ProfilePage = () => {
       <Row className="px-3 text-center">
         <Col lg={3} className="text-lg-left">
           <Avatar 
-            src={profile?.image} 
+            src={profile?.profile_image || "/default-avatar.png"}
             height={40}
-            text={profile?.owner}
+            text={profile?.username}
           />
         </Col>
         <Col lg={6}>
-          <h3 className="m-2">{profile?.owner}</h3>
+          <h3 className="m-2">{profile?.username}</h3>
           <Row className="justify-content-center">
             <Col xs={3} className="my-2">
               <div>{workouts.results.length}</div>
               <div>workouts</div>
             </Col>
-            {profile?.content && (
+            {profile?.name && (
               <Col xs={3} className="my-2">
-                <div>Bio</div>
-                <div>{profile.content}</div>
+                <div>Name</div>
+                <div>{profile.name}</div>
+              </Col>
+            )}
+            {profile?.email && (
+              <Col xs={3} className="my-2">
+                <div>Email</div>
+                <div>{profile.email}</div>
               </Col>
             )}
           </Row>
@@ -73,6 +85,14 @@ const ProfilePage = () => {
       calories: workout.calories
     }))
     .reverse();
+
+  if (error) {
+    return (
+      <Container>
+        <Asset message={error} />
+      </Container>
+    );
+  }
 
   return (
     <Row className="h-100">
@@ -91,8 +111,18 @@ const ProfilePage = () => {
                       <LineChart width={600} height={300} data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="date" />
-                        <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-                        <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                        <YAxis 
+                          yAxisId="left" 
+                          orientation="left" 
+                          stroke="#8884d8"
+                          label={{ value: 'Duration (min)', angle: -90, position: 'insideLeft' }}
+                        />
+                        <YAxis 
+                          yAxisId="right" 
+                          orientation="right" 
+                          stroke="#82ca9d"
+                          label={{ value: 'Calories', angle: 90, position: 'insideRight' }}
+                        />
                         <Tooltip />
                         <Line 
                           yAxisId="left"
