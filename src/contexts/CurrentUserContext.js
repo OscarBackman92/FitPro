@@ -15,6 +15,9 @@ export const SetCurrentUserContext = createContext();
 export const useCurrentUser = () => useContext(CurrentUserContext);
 export const useSetCurrentUser = () => useContext(SetCurrentUserContext);
 
+// Function to get the access token from local storage
+const getAccessToken = () => localStorage.getItem('access_token');
+
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [authError, setAuthError] = useState(null);
@@ -24,13 +27,11 @@ export const CurrentUserProvider = ({ children }) => {
     const fetchCurrentUser = async () => {
       try {
         logDebug('Fetching current user...');
+        const token = getAccessToken();
+        logDebug('Current token:', token);
         const { data } = await axiosReq.get('/auth/user/');
-        if (data) {
-          setCurrentUser(data);
-          logDebug('Current user fetched:', data);
-        } else {
-          logDebug('No user data received');
-        }
+        setCurrentUser(data);
+        logDebug('Current user fetched:', data);
       } catch (err) {
         logDebug('Error fetching current user:', err);
         setAuthError(err.response?.data?.detail || 'Failed to fetch user data');
@@ -39,7 +40,7 @@ export const CurrentUserProvider = ({ children }) => {
       }
     };
 
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
     if (token) {
       fetchCurrentUser();
     } else {
@@ -47,28 +48,6 @@ export const CurrentUserProvider = ({ children }) => {
       setIsLoading(false);
     }
   }, []);
-
-  if (DEBUG) {
-    window.userContextDebug = {
-      getState: () => ({
-        currentUser,
-        authError,
-        isLoading,
-      }),
-      setTestUser: (testUser) => {
-        logDebug('Setting test user:', testUser);
-        setCurrentUser(testUser);
-      },
-      clearUser: () => {
-        logDebug('Clearing current user');
-        setCurrentUser(null);
-      },
-      simulateError: (error) => {
-        logDebug('Simulating error:', error);
-        setAuthError(error);
-      },
-    };
-  }
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
