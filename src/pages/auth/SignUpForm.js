@@ -67,7 +67,7 @@ const SignUpForm = () => {
       navigate("/signin");
     } catch (err) {
       console.log("Registration error:", err);
-      setErrors(err);
+      setErrors(err.errors || { non_field_errors: [err.message] });
     } finally {
       setIsLoading(false);
     }

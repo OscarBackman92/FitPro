@@ -5,10 +5,6 @@ const baseURL = "https://fitnessapi-d773a1148384.herokuapp.com/api";
 const axiosAuth = axios.create({
   baseURL,
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  },
   timeout: 15000
 });
 
@@ -18,7 +14,17 @@ const axiosReq = axios.create({
   timeout: 15000
 });
 
-// Request interceptor for adding auth token
+// Request interceptor
+axiosAuth.interceptors.request.use((config) => {
+  // Don't set content type for FormData
+  if (!(config.data instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+  config.headers['Accept'] = 'application/json';
+  return config;
+});
+
+// Add token to authenticated requests
 axiosReq.interceptors.request.use(
   async (config) => {
     const token = localStorage.getItem('token');
@@ -32,43 +38,23 @@ axiosReq.interceptors.request.use(
   }
 );
 
-// Response interceptor for token refresh
-axiosReq.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      try {
-        const { data } = await axiosAuth.post('/auth/token/refresh/');
-        if (data.key) {
-          localStorage.setItem('token', data.key);
-          axios.defaults.headers.common['Authorization'] = `Token ${data.key}`;
-          return axiosReq(originalRequest);
-        }
-      } catch (refreshError) {
-        localStorage.removeItem('token');
-        window.location.href = '/signin';
-        return Promise.reject(refreshError);
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-
 // Development logging
 if (process.env.NODE_ENV === 'development') {
   [axiosReq, axiosAuth].forEach(instance => {
     instance.interceptors.request.use(
       request => {
+        const logData = request.data instanceof FormData
+          ? Object.fromEntries(request.data)
+          : request.data;
+
         console.group(`🌐 API Request: ${request.method.toUpperCase()} ${request.url}`);
         console.log('Headers:', request.headers);
-        if (request.data) {
-          const logData = { ...request.data };
-          if (logData.password1) logData.password1 = '[FILTERED]';
-          if (logData.password2) logData.password2 = '[FILTERED]';
-          if (logData.password) logData.password = '[FILTERED]';
-          console.log('Data:', logData);
+        if (logData) {
+          const safeLogData = { ...logData };
+          if (safeLogData.password1) safeLogData.password1 = '[FILTERED]';
+          if (safeLogData.password2) safeLogData.password2 = '[FILTERED]';
+          if (safeLogData.password) safeLogData.password = '[FILTERED]';
+          console.log('Data:', safeLogData);
         }
         console.groupEnd();
         return request;
@@ -84,6 +70,7 @@ if (process.env.NODE_ENV === 'development') {
         console.group(`✅ API Response: ${response.config.method.toUpperCase()} ${response.config.url}`);
         console.log('Status:', response.status);
         console.log('Data:', response.data);
+        console.log('Headers:', response.headers);
         console.groupEnd();
         return response;
       },
@@ -92,6 +79,11 @@ if (process.env.NODE_ENV === 'development') {
         console.log('Status:', error.response?.status);
         console.log('Data:', error.response?.data);
         console.log('Error:', error.message);
+        console.log('Full error:', {
+          config: error.config,
+          response: error.response,
+          message: error.message
+        });
         console.groupEnd();
         return Promise.reject(error);
       }
