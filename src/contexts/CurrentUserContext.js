@@ -27,7 +27,7 @@ export const CurrentUserProvider = ({ children }) => {
     const fetchCurrentUser = async () => {
       try {
         logDebug('Fetching current user...');
-        const { data } = await axiosReq.get('/api/auth/user/');
+        const { data } = await axiosReq.get('/auth/user/');
         setCurrentUser(data);
         logDebug('Current user fetched:', data);
       } catch (err) {
