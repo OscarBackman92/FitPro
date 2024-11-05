@@ -1,30 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useCurrentUser, useSetCurrentUser } from '../contexts/CurrentUserContext';
-import { authService } from '../services/apiService';
 import { Menu, X, Dumbbell, Activity, UserCircle, LogOut, Home, PlusCircle, TrendingUp } from 'lucide-react';
 import Avatar from './Avatar';
+import { authService } from '../services/apiService';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const currentUser = useCurrentUser();
   const setCurrentUser = useSetCurrentUser();
   const navigate = useNavigate();
-  const [hasLoaded, setHasLoaded] = useState(false);
-
-  useEffect(() => {
-    const handleCurrentUser = async () => {
-      try {
-        const userData = await authService.getCurrentUser();
-        setCurrentUser(userData);
-      } catch (err) {
-        console.log('Not logged in');
-      } finally {
-        setHasLoaded(true);
-      }
-    };
-    handleCurrentUser();
-  }, [setCurrentUser]);
 
   const handleSignOut = async () => {
     try {
@@ -32,11 +17,11 @@ const NavBar = () => {
       setCurrentUser(null);
       navigate('/signin');
     } catch (err) {
-      console.log('Error signing out:', err);
+      console.error('Error signing out:', err);
     }
   };
 
-  const navLinkClasses = (isActive) => `
+  const navLinkClasses = ({ isActive }) => `
     flex items-center gap-2 px-4 py-2 rounded-lg transition-all
     ${isActive ? 
       'bg-green-500 text-gray-900 font-semibold' : 
@@ -75,21 +60,21 @@ const NavBar = () => {
                   <NavLink
                     key={link.to}
                     to={link.to}
-                    className={({ isActive }) => navLinkClasses(isActive)}
+                    className={navLinkClasses}
                   >
                     {link.icon}
                     <span>{link.text}</span>
                   </NavLink>
                 ))}
 
-                {/* Profile dropdown */}
+                {/* Profile and sign out */}
                 <div className="relative ml-3 flex items-center gap-4">
                   <NavLink
-                    to={`/profiles/${currentUser?.profile_id}`}
+                    to={`/profiles/${currentUser?.profile?.id}`}
                     className="flex items-center gap-2 px-3 py-2 text-gray-100 hover:text-green-400 transition-colors"
                   >
                     <Avatar
-                      src={currentUser?.profile_image}
+                      src={currentUser?.profile?.image}
                       text={currentUser?.username}
                       height={32}
                     />
@@ -105,22 +90,20 @@ const NavBar = () => {
                 </div>
               </>
             ) : (
-              hasLoaded && (
-                <div className="flex items-center gap-4">
-                  <NavLink
-                    to="/signin"
-                    className="px-4 py-2 text-green-400 border-2 border-green-400 rounded-lg hover:bg-green-400 hover:text-gray-900 transition-all font-semibold"
-                  >
-                    Sign In
-                  </NavLink>
-                  <NavLink
-                    to="/signup"
-                    className="px-4 py-2 bg-green-400 text-gray-900 rounded-lg hover:bg-green-500 transition-all font-semibold"
-                  >
-                    Sign Up
-                  </NavLink>
-                </div>
-              )
+              <div className="flex items-center gap-4">
+                <NavLink
+                  to="/signin"
+                  className="px-4 py-2 text-green-400 border-2 border-green-400 rounded-lg hover:bg-green-400 hover:text-gray-900 transition-all font-semibold"
+                >
+                  Sign In
+                </NavLink>
+                <NavLink
+                  to="/signup"
+                  className="px-4 py-2 bg-green-400 text-gray-900 rounded-lg hover:bg-green-500 transition-all font-semibold"
+                >
+                  Sign Up
+                </NavLink>
+              </div>
             )}
           </div>
 
@@ -129,6 +112,8 @@ const NavBar = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-md text-gray-100 hover:bg-gray-800 focus:outline-none"
+              aria-expanded={isOpen}
+              aria-label="Toggle menu"
             >
               {isOpen ? (
                 <X className="h-6 w-6" />
@@ -155,7 +140,7 @@ const NavBar = () => {
                   to={link.to}
                   onClick={() => setIsOpen(false)}
                   className={({ isActive }) => 
-                    `block ${navLinkClasses(isActive)}`
+                    `block ${navLinkClasses({ isActive })}`
                   }
                 >
                   {link.icon}
@@ -164,10 +149,10 @@ const NavBar = () => {
               ))}
 
               <NavLink
-                to={`/profiles/${currentUser?.profile_id}`}
+                to={`/profiles/${currentUser?.profile?.id}`}
                 onClick={() => setIsOpen(false)}
                 className={({ isActive }) => 
-                  `block ${navLinkClasses(isActive)}`
+                  `block ${navLinkClasses({ isActive })}`
                 }
               >
                 <UserCircle size={20} />
@@ -186,24 +171,22 @@ const NavBar = () => {
               </button>
             </>
           ) : (
-            hasLoaded && (
-              <div className="space-y-2 p-2">
-                <NavLink
-                  to="/signin"
-                  onClick={() => setIsOpen(false)}
-                  className="block w-full text-center px-4 py-2 text-green-400 border-2 border-green-400 rounded-lg hover:bg-green-400 hover:text-gray-900 transition-all font-semibold"
-                >
-                  Sign In
-                </NavLink>
-                <NavLink
-                  to="/signup"
-                  onClick={() => setIsOpen(false)}
-                  className="block w-full text-center px-4 py-2 bg-green-400 text-gray-900 rounded-lg hover:bg-green-500 transition-all font-semibold"
-                >
-                  Sign Up
-                </NavLink>
-              </div>
-            )
+            <div className="space-y-2 p-2">
+              <NavLink
+                to="/signin"
+                onClick={() => setIsOpen(false)}
+                className="block w-full text-center px-4 py-2 text-green-400 border-2 border-green-400 rounded-lg hover:bg-green-400 hover:text-gray-900 transition-all font-semibold"
+              >
+                Sign In
+              </NavLink>
+              <NavLink
+                to="/signup"
+                onClick={() => setIsOpen(false)}
+                className="block w-full text-center px-4 py-2 bg-green-400 text-gray-900 rounded-lg hover:bg-green-500 transition-all font-semibold"
+              >
+                Sign Up
+              </NavLink>
+            </div>
           )}
         </div>
       </div>

@@ -5,7 +5,6 @@ const baseURL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a114838
 
 // Functions to manage tokens
 const getAccessToken = () => localStorage.getItem('token');
-const setAccessToken = (token) => localStorage.setItem('token', token);
 const removeTokens = () => {
     localStorage.removeItem('token');
 };

@@ -10,7 +10,6 @@ import PrivateRoute from "./components/common/PrivateRoute";
 // Auth
 import SignUpForm from "./pages/auth/SignUpForm";
 import SignInForm from "./pages/auth/SignInForm";
-import { useCurrentUser } from "./contexts/CurrentUserContext";
 
 // Workouts
 import WorkoutForm from "./components/workouts/WorkoutForm";
@@ -24,11 +23,9 @@ import ProfilePage from "./components/profiles/ProfilePage";
 import styles from "./App.module.css";
 
 function App() {
-  const currentUser = useCurrentUser();
-
   return (
     <div className={styles.App}>
-      <NavBar currentUser={currentUser} />
+      <NavBar />
       <Container className={styles.Main}>
         <Routes>
           {/* Public Home Route */}
@@ -80,9 +77,7 @@ function App() {
             path="/feed"
             element={
               <PrivateRoute>
-                <WorkoutList
-                  filter={`owner__followed__owner__profile=${currentUser?.profile_id}&`}
-                />
+                <WorkoutList filter="owner__followed__owner__profile" />
               </PrivateRoute>
             }
           />
@@ -90,9 +85,7 @@ function App() {
             path="/liked"
             element={
               <PrivateRoute>
-                <WorkoutList
-                  filter={`likes__owner__profile=${currentUser?.profile_id}&ordering=-likes__created_at&`}
-                />
+                <WorkoutList filter="likes__owner__profile" />
               </PrivateRoute>
             }
           />
