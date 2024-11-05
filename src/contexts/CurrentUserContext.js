@@ -1,11 +1,8 @@
-// contexts/CurrentUserContext.js
 import { createContext, useContext, useEffect, useState } from "react";
 import { axiosReq } from "../api/axiosDefaults";
 
-// Debug configuration
 const DEBUG = process.env.NODE_ENV === 'development';
 
-// Debug logging utility
 const logDebug = (message, data = null) => {
   if (DEBUG) {
     console.log(`[CurrentUserContext] ${message}`, data || '');
@@ -28,8 +25,12 @@ export const CurrentUserProvider = ({ children }) => {
       try {
         logDebug('Fetching current user...');
         const { data } = await axiosReq.get('/auth/user/');
-        setCurrentUser(data);
-        logDebug('Current user fetched:', data);
+        if (data) {
+          setCurrentUser(data);
+          logDebug('Current user fetched:', data);
+        } else {
+          logDebug('No user data received');
+        }
       } catch (err) {
         logDebug('Error fetching current user:', err);
         setAuthError(err.response?.data?.detail || 'Failed to fetch user data');
@@ -47,13 +48,12 @@ export const CurrentUserProvider = ({ children }) => {
     }
   }, []);
 
-  // Add development debugging tools
   if (DEBUG) {
     window.userContextDebug = {
       getState: () => ({
         currentUser,
         authError,
-        isLoading
+        isLoading,
       }),
       setTestUser: (testUser) => {
         logDebug('Setting test user:', testUser);
@@ -66,7 +66,7 @@ export const CurrentUserProvider = ({ children }) => {
       simulateError: (error) => {
         logDebug('Simulating error:', error);
         setAuthError(error);
-      }
+      },
     };
   }
 

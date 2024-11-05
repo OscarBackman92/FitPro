@@ -1,4 +1,3 @@
-// App.js
 import React from "react";
 import Container from "react-bootstrap/Container";
 import { Route, Routes } from "react-router-dom";
@@ -25,16 +24,15 @@ import ProfilePage from "./components/profiles/ProfilePage";
 import styles from "./App.module.css";
 
 function App() {
-  const currentUser = useCurrentUser(); // Get the current user from context
+  const currentUser = useCurrentUser();
 
   return (
     <div className={styles.App}>
-      {/* Pass currentUser to NavBar */}
       <NavBar currentUser={currentUser} />
       <Container className={styles.Main}>
         <Routes>
           {/* Public Home Route */}
-          <Route exact path="/" element={<WorkoutList />} />
+          <Route path="/" element={<WorkoutList />} />
 
           {/* Auth Routes */}
           <Route path="/signin" element={<SignInForm />} />
@@ -74,15 +72,8 @@ function App() {
             }
           />
 
-          {/* Profile Routes */}
-          <Route
-            path="/profiles/:id"
-            element={
-              <PrivateRoute>
-                <ProfilePage />
-              </PrivateRoute>
-            }
-          />
+          {/* Profile Route */}
+          <Route path="/profiles/:id" element={<ProfilePage />} />
 
           {/* Feed Routes */}
           <Route

@@ -35,26 +35,28 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-// Error handling utility
 const handleApiError = (err) => {
-  console.log('API Error Details');
-  console.log('Environment:', process.env.NODE_ENV);
-  console.log('API URL:', API_URL);
-  console.log('Message:', err.message);
-  console.log('Status:', err.response?.status);
-  console.log('Response:', err.response?.data);
-  console.log('Stack:', err.stack);
+  console.error('API Error Details', {
+    environment: process.env.NODE_ENV,
+    apiUrl: API_URL,
+    message: err.message,
+    status: err.response?.status,
+    response: err.response?.data,
+    stack: err.stack,
+  });
 };
 
 export const apiService = {
-  // Authentication endpoints
-  register: async (userData) => {
+  getProfile: async (userId) => {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
     try {
-      const response = await axiosInstance.post('/auth/registration/', userData);
+      const response = await axiosInstance.get(`/profiles/${userId}/`);
       return response.data;
     } catch (err) {
       handleApiError(err);
-      throw new Error(err.response?.data?.detail || 'Registration failed');
+      throw new Error('Failed to fetch profile');
     }
   },
 
@@ -90,16 +92,6 @@ export const apiService = {
     }
   },
 
-  // Profile endpoints
-  getProfile: async (userId) => {
-    try {
-      const response = await axiosInstance.get(`/profiles/${userId}/`);
-      return response.data;
-    } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to fetch profile');
-    }
-  },
 
   updateProfile: async (userId, profileData) => {
     try {

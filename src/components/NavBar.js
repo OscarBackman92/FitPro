@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useCurrentUser, useSetCurrentUser } from '../contexts/CurrentUserContext';
 import { apiService } from '../services/apiService';
-import { Menu, X, Dumbbell, Activity, Users, UserCircle, LogOut, Home, PlusCircle, TrendingUp } from 'lucide-react';
+import { Menu, X, Dumbbell, Activity, UserCircle, LogOut, Home, PlusCircle, TrendingUp } from 'lucide-react';
 import Avatar from './Avatar';
 
 const NavBar = () => {

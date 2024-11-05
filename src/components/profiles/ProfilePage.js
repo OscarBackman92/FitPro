@@ -12,6 +12,7 @@ import styles from '../../styles/ProfilePage.module.css';
 
 const ProfilePage = () => {
   const { id } = useParams();
+  console.log("Profile ID from URL:", id); // Debugging: Log the profile ID
   const currentUser = useCurrentUser();
   const [profile, setProfile] = useState(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -19,14 +20,21 @@ const ProfilePage = () => {
   const [stats, setStats] = useState(null);
   const [workouts, setWorkouts] = useState({ results: [] });
 
-  const is_owner = currentUser?.profile_id === parseInt(id);
+  // Determine if the current user is the profile owner
+  const is_owner = currentUser?.profile_id === parseInt(id, 10);
 
   useEffect(() => {
+    if (!id || isNaN(parseInt(id, 10))) {
+      setError('Invalid profile ID');
+      setHasLoaded(true);
+      return;
+    }
+
     const fetchProfileData = async () => {
       try {
         const [{ data: profileData }, { data: statsData }, { data: workoutsData }] = await Promise.all([
           axiosReq.get(`/api/profiles/${id}/`),
-          axiosReq.get(`/api/profiles/stats/`),
+          axiosReq.get(`/api/profiles/${id}/stats/`),
           axiosReq.get(`/api/workouts/workouts/?user=${id}`)
         ]);
         setProfile(profileData);
@@ -35,7 +43,7 @@ const ProfilePage = () => {
         setError(null);
       } catch (err) {
         setError('Failed to load profile data');
-        console.error(err);
+        console.error('[ProfilePage] Error fetching profile data:', err);
       } finally {
         setHasLoaded(true);
       }
@@ -45,7 +53,7 @@ const ProfilePage = () => {
     fetchProfileData();
   }, [id]);
 
-  // Prepare chart data
+  // Prepare chart data for recent workouts (limit to last 7 entries)
   const chartData = workouts.results
     .slice(0, 7)
     .map(workout => ({
