@@ -1,166 +1,272 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Card from 'react-bootstrap/Card';
-import Alert from 'react-bootstrap/Alert';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import { LineChart, XAxis, YAxis, CartesianGrid, Line, Tooltip } from 'recharts';
-import { format } from 'date-fns';
-import axios from 'axios';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { axiosReq } from '../../api/axiosDefaults';
+import Asset from '../../components/Asset';
+import styles from '../../styles/WorkoutList.module.css';
+import appStyles from '../../App.module.css';
+import Container from 'react-bootstrap/Container';
+import { Alert } from 'react-bootstrap';
 
-const WorkoutList = () => {
-  const navigate = useNavigate();
-  const [workouts, setWorkouts] = useState([]);
-  const [loading, setLoading] = useState(true);
+const WorkoutList = ({ filter = "" }) => {
+  const [workouts, setWorkouts] = useState({ results: [] });
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [chartData, setChartData] = useState([]);
+  const [workoutType, setWorkoutType] = useState('all');
+  const [sortOrder, setSortOrder] = useState('-date_logged');
+  const [isTableExpanded, setIsTableExpanded] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
-        const response = await axios.get('/api/workouts/');
-        setWorkouts(response.data.results);
-        
-        // Process data for chart
-        const chartData = response.data.results
-          .slice(0, 7)
-          .reverse()
-          .map(workout => ({
-            date: format(new Date(workout.date_logged), 'MMM d'),
-            duration: workout.duration,
-            calories: workout.calories
-          }));
-        setChartData(chartData);
-        
+        const { data } = await axiosReq.get(
+          `/api/workouts/workouts/?${filter}ordering=${sortOrder}`
+        );
+        setWorkouts(data);
+        setError(null);
       } catch (err) {
         setError('Failed to load workouts');
         console.error(err);
       } finally {
-        setLoading(false);
+        setHasLoaded(true);
       }
     };
 
-    fetchWorkouts();
-  }, []);
+    setHasLoaded(false);
+    const timer = setTimeout(() => {
+      fetchWorkouts();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [filter, sortOrder]);
 
   const handleDelete = async (workoutId) => {
     if (window.confirm('Are you sure you want to delete this workout?')) {
       try {
-        await axios.delete(`/api/workouts/${workoutId}/`);
-        setWorkouts(workouts.filter(w => w.id !== workoutId));
+        await axiosReq.delete(`/api/workouts/workouts/${workoutId}/`);
+        setWorkouts(prevWorkouts => ({
+          ...prevWorkouts,
+          results: prevWorkouts.results.filter(workout => workout.id !== workoutId)
+        }));
       } catch (err) {
         setError('Failed to delete workout');
       }
     }
   };
 
-  const filteredWorkouts = workouts.filter(workout => {
-    if (filter === 'all') return true;
-    return workout.workout_type === filter;
-  });
-
-  if (loading) {
-    return <div className="text-center p-4">Loading...</div>;
-  }
-
   if (error) {
-    return <Alert variant="danger">{error}</Alert>;
+    return (
+      <Container className={appStyles.Content}>
+        <Alert variant="warning">{error}</Alert>
+      </Container>
+    );
   }
+
+  if (!hasLoaded) {
+    return (
+      <Container className={appStyles.Content}>
+        <Asset spinner />
+      </Container>
+    );
+  }
+
+  // Calculate summary stats
+  const totalWorkouts = workouts.results.length;
+  const totalDuration = workouts.results.reduce((sum, w) => sum + w.duration, 0);
+  const totalCalories = workouts.results.reduce((sum, w) => sum + w.calories, 0);
+  const avgDuration = Math.round(totalDuration / totalWorkouts) || 0;
+
+  // Prepare chart data
+  const chartData = workouts.results
+    .slice(0, 7)
+    .map(workout => ({
+      date: new Date(workout.date_logged).toLocaleDateString(),
+      duration: workout.duration,
+      calories: workout.calories
+    }))
+    .reverse();
 
   return (
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3 mb-0">My Workouts</h1>
-        <Button
-          variant="primary"
+    <Container className={`${appStyles.Content} ${styles.WorkoutList}`}>
+      {/* Header */}
+      <div className={styles.HeaderContainer}>
+        <h2 className={styles.Title}>{filter ? 'Activity Feed' : 'Workouts'}</h2>
+        <button
           onClick={() => navigate('/workouts/create')}
+          className={styles.CreateButton}
         >
-          Log New Workout
-        </Button>
+          <i className="fas fa-plus"></i> Log Workout
+        </button>
       </div>
 
-      <Card className="mb-4">
-        <Card.Body>
-          <h4 className="mb-4">Recent Activity</h4>
-          <div className="d-flex justify-content-center">
-            <LineChart width={600} height={300} data={chartData}>
+      {/* Stats Summary */}
+      <div className={styles.StatsGrid}>
+        <div className={styles.StatCard}>
+          <div className={styles.StatContent}>
+            <div>
+              <h3>Total Workouts</h3>
+              <p>{totalWorkouts}</p>
+            </div>
+            <i className="fas fa-dumbbell"></i>
+          </div>
+        </div>
+
+        <div className={styles.StatCard}>
+          <div className={styles.StatContent}>
+            <div>
+              <h3>Total Duration</h3>
+              <p>{totalDuration} mins</p>
+            </div>
+            <i className="fas fa-clock"></i>
+          </div>
+        </div>
+
+        <div className={styles.StatCard}>
+          <div className={styles.StatContent}>
+            <div>
+              <h3>Average Duration</h3>
+              <p>{avgDuration} mins</p>
+            </div>
+            <i className="fas fa-chart-line"></i>
+          </div>
+        </div>
+
+        <div className={styles.StatCard}>
+          <div className={styles.StatContent}>
+            <div>
+              <h3>Total Calories</h3>
+              <p>{totalCalories}</p>
+            </div>
+            <i className="fas fa-fire"></i>
+          </div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className={styles.ChartContainer}>
+        <h3>Activity Overview</h3>
+        <div className={styles.Chart}>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
               <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-              <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
               <Tooltip />
-              <Line yAxisId="left" type="monotone" dataKey="duration" stroke="#8884d8" name="Duration (min)" />
-              <Line yAxisId="right" type="monotone" dataKey="calories" stroke="#82ca9d" name="Calories" />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="duration"
+                stroke="#8884d8"
+                name="Duration (min)"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="calories"
+                stroke="#82ca9d"
+                name="Calories"
+              />
             </LineChart>
-          </div>
-        </Card.Body>
-      </Card>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
-      <Form.Group className="mb-4">
-        <Form.Select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        >
-          <option value="all">All Types</option>
-          <option value="cardio">Cardio</option>
-          <option value="strength">Strength</option>
-          <option value="flexibility">Flexibility</option>
-          <option value="sports">Sports</option>
-          <option value="other">Other</option>
-        </Form.Select>
-      </Form.Group>
+      {/* Filters */}
+      <div className={styles.FiltersContainer}>
+        <div className={styles.FilterGroup}>
+          <label>Workout Type</label>
+          <select
+            value={workoutType}
+            onChange={(e) => setWorkoutType(e.target.value)}
+            className={styles.Select}
+          >
+            <option value="all">All Types</option>
+            <option value="cardio">Cardio</option>
+            <option value="strength">Strength</option>
+            <option value="flexibility">Flexibility</option>
+            <option value="sports">Sports</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
 
-      {filteredWorkouts.length === 0 ? (
-        <Alert variant="info">No workouts found</Alert>
-      ) : (
-        <Row className="g-4">
-          {filteredWorkouts.map(workout => (
-            <Col key={workout.id} xs={12}>
-              <Card>
-                <Card.Body>
-                  <div className="d-flex justify-content-between align-items-start">
-                    <div>
-                      <h5 className="text-capitalize mb-1">
-                        {workout.workout_type} - {workout.intensity} Intensity
-                      </h5>
-                      <p className="text-muted mb-2">
-                        {format(new Date(workout.date_logged), 'PPP')}
-                      </p>
-                      <p className="mb-2">
-                        Duration: {workout.duration} minutes | Calories: {workout.calories}
-                      </p>
-                      {workout.notes && (
-                        <p className="mb-0 text-muted">{workout.notes}</p>
-                      )}
-                    </div>
-                    <div>
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        className="me-2"
-                        onClick={() => navigate(`/workouts/${workout.id}`)}
+        <div className={styles.FilterGroup}>
+          <label>Sort By</label>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className={styles.Select}
+          >
+            <option value="-date_logged">Newest First</option>
+            <option value="date_logged">Oldest First</option>
+            <option value="-duration">Duration (High to Low)</option>
+            <option value="duration">Duration (Low to High)</option>
+            <option value="-calories">Calories (High to Low)</option>
+            <option value="calories">Calories (Low to High)</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Workout Table */}
+      <div className={styles.TableContainer}>
+        <div className={styles.TableHeader}>
+          <h3>Workout History</h3>
+          <button
+            onClick={() => setIsTableExpanded(!isTableExpanded)}
+            className={styles.ExpandButton}
+          >
+            <i className={`fas fa-chevron-${isTableExpanded ? 'up' : 'down'}`}></i>
+          </button>
+        </div>
+
+        <div className={`${styles.TableWrapper} ${isTableExpanded ? styles.Expanded : ''}`}>
+          <table className={styles.Table}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Duration</th>
+                <th>Calories</th>
+                <th>Intensity</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workouts.results
+                .filter(workout => workoutType === 'all' || workout.workout_type === workoutType)
+                .map((workout) => (
+                  <tr key={workout.id}>
+                    <td>{new Date(workout.date_logged).toLocaleDateString()}</td>
+                    <td className="text-capitalize">{workout.workout_type}</td>
+                    <td>{workout.duration} mins</td>
+                    <td>{workout.calories}</td>
+                    <td>
+                      <span className={`${styles.Badge} ${styles[workout.intensity]}`}>
+                        {workout.intensity}
+                      </span>
+                    </td>
+                    <td className={styles.Actions}>
+                      <button
+                        onClick={() => navigate(`/workouts/${workout.id}/edit`)}
+                        className={styles.EditButton}
                       >
-                        View
-                      </Button>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
+                        <i className="fas fa-edit"></i>
+                      </button>
+                      <button
                         onClick={() => handleDelete(workout.id)}
+                        className={styles.DeleteButton}
                       >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      )}
-    </div>
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Container>
   );
 };
 

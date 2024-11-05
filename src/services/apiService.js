@@ -1,106 +1,73 @@
-import { axiosAuth, axiosReq } from '../api/axiosDefaults';
-
-class ApiError extends Error {
-  constructor(message, errors = null) {
-    super(message);
-    this.name = 'ApiError';
-    this.errors = errors;
-  }
-}
+import { axiosReq } from '../api/axiosDefaults';
 
 export const apiService = {
-  register: async (userData) => {
+  // Auth endpoints
+  login: async (credentials) => {
     try {
-      const formData = new FormData();
-      formData.append('username', userData.username.trim());
-      formData.append('email', userData.email.trim());
-      formData.append('password1', userData.password1);
-      formData.append('password2', userData.password2);
-
-      console.log('Attempting registration with:', {
-        url: '/auth/registration/',
-        data: {
-          username: userData.username.trim(),
-          email: userData.email.trim(),
-          password1: '[FILTERED]',
-          password2: '[FILTERED]'
-        }
-      });
-
-      const { data } = await axiosAuth.post('/auth/registration/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
+      const { data } = await axiosReq.post('dj-rest-auth/login/', credentials);
+      if (data.key) {
+        localStorage.setItem('token', data.key);
+      }
       return data;
     } catch (err) {
-      console.error('Registration error response:', {
-        status: err.response?.status,
-        data: err.response?.data,
-        headers: err.response?.headers
-      });
-
-      switch (err.response?.status) {
-        case 400:
-          throw new ApiError('Validation Error', err.response.data);
-        case 500:
-          throw new ApiError('Server Error', {
-            non_field_errors: ['The registration service is temporarily unavailable. Please try again later.']
-          });
-        default:
-          throw new ApiError(
-            'Registration Failed',
-            { non_field_errors: ['An unexpected error occurred. Please try again.'] }
-          );
-      }
+      throw new Error(err.response?.data?.detail || 'Login failed');
     }
   },
 
-  login: async (credentials) => {
+  register: async (userData) => {
     try {
-      const { data } = await axiosAuth.post('/auth/login/', credentials);
-      if (data.key) {
-        localStorage.setItem('token', data.key);
-        axiosReq.defaults.headers.common['Authorization'] = `Token ${data.key}`;
-      }
+      const { data } = await axiosReq.post('dj-rest-auth/registration/', userData);
       return data;
     } catch (err) {
-      throw new ApiError('Login failed', err.response?.data);
+      throw new Error(err.response?.data?.detail || 'Registration failed');
     }
   },
 
   logout: async () => {
     try {
-      await axiosAuth.post('/auth/logout/');
+      await axiosReq.post('dj-rest-auth/logout/');
       localStorage.removeItem('token');
-      delete axiosReq.defaults.headers.common['Authorization'];
     } catch (err) {
-      throw new ApiError('Logout failed', err.response?.data);
+      console.error('Logout error:', err);
     }
   },
 
-  getCurrentUser: async () => {
+  // Workouts
+  getWorkouts: async (params) => {
     try {
-      const { data } = await axiosReq.get('/profiles/me/');
+      const { data } = await axiosReq.get('/api/workouts/workouts/', { params });
       return data;
     } catch (err) {
-      throw new ApiError('Failed to fetch current user', err.response?.data);
+      throw new Error('Failed to fetch workouts');
     }
   },
 
-  refreshToken: async () => {
+  createWorkout: async (workoutData) => {
     try {
-      const { data } = await axiosAuth.post('/auth/token/refresh/');
-      if (data.key) {
-        localStorage.setItem('token', data.key);
-        axiosReq.defaults.headers.common['Authorization'] = `Token ${data.key}`;
-      }
+      const { data } = await axiosReq.post('/api/workouts/workouts/', workoutData);
       return data;
     } catch (err) {
-      throw new ApiError('Failed to refresh token', err.response?.data);
+      throw new Error('Failed to create workout');
+    }
+  },
+
+  updateWorkout: async (id, workoutData) => {
+    try {
+      const { data } = await axiosReq.put(`/api/workouts/workouts/${id}/`, workoutData);
+      return data;
+    } catch (err) {
+      throw new Error('Failed to update workout');
+    }
+  },
+
+  deleteWorkout: async (id) => {
+    try {
+      await axiosReq.delete(`/api/workouts/workouts/${id}/`);
+    } catch (err) {
+      throw new Error('Failed to delete workout');
     }
   }
 };
 
+// Export both default and named export
 export default apiService;

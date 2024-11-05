@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiService } from "../services/apiService";
+import { axiosReq } from "../api/axiosDefaults";
+import { removeTokenTimestamp, shouldRefreshToken } from "../utils/utils";
 
 export const CurrentUserContext = createContext();
 export const SetCurrentUserContext = createContext();
@@ -14,10 +15,10 @@ export const CurrentUserProvider = ({ children }) => {
 
   const handleMount = async () => {
     try {
-      const user = await apiService.getCurrentUser();
-      setCurrentUser(user);
+      const { data } = await axiosReq.get("dj-rest-auth/user/");
+      setCurrentUser(data);
     } catch (err) {
-      console.error("Error fetching current user:", err);
+      console.log("Error fetching current user:", err);
     }
   };
 
@@ -25,19 +26,49 @@ export const CurrentUserProvider = ({ children }) => {
     handleMount();
   }, []);
 
-  useEffect(() => {
-    // Token refresh interval
-    const interval = setInterval(() => {
-      if (currentUser) {
-        apiService.refreshToken().catch(() => {
-          setCurrentUser(null);
-          navigate('/signin');
-        });
-      }
-    }, 1000 * 60 * 4); // Refresh every 4 minutes
+  useMemo(() => {
+    axiosReq.interceptors.request.use(
+      async (config) => {
+        if (shouldRefreshToken()) {
+          try {
+            await axiosReq.post("/dj-rest-auth/token/refresh/");
+          } catch (err) {
+            setCurrentUser((prevCurrentUser) => {
+              if (prevCurrentUser) {
+                navigate("/signin");
+              }
+              return null;
+            });
+            removeTokenTimestamp();
+            return config;
+          }
+        }
+        return config;
+      },
+      (err) => Promise.reject(err)
+    );
 
-    return () => clearInterval(interval);
-  }, [currentUser, navigate]);
+    axiosReq.interceptors.response.use(
+      (response) => response,
+      async (err) => {
+        if (err.response?.status === 401) {
+          try {
+            await axiosReq.post("/dj-rest-auth/token/refresh/");
+          } catch (err) {
+            setCurrentUser((prevCurrentUser) => {
+              if (prevCurrentUser) {
+                navigate("/signin");
+              }
+              return null;
+            });
+            removeTokenTimestamp();
+          }
+          return axiosReq(err.config);
+        }
+        return Promise.reject(err);
+      }
+    );
+  }, [navigate]);
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
@@ -47,5 +78,3 @@ export const CurrentUserProvider = ({ children }) => {
     </CurrentUserContext.Provider>
   );
 };
-
-export default CurrentUserProvider;
