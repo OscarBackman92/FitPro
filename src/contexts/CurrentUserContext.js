@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { axiosReq } from "../api/axiosDefaults";
 import { useNavigate } from "react-router-dom";
+import { apiService } from "../services/apiService";
 
 export const CurrentUserContext = createContext();
 export const SetCurrentUserContext = createContext();
@@ -12,35 +12,31 @@ export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleMount = async () => {
-      try {
-        const { data } = await axiosReq.get("/api/profiles/me/");
-        setCurrentUser(data);
-      } catch (err) {
-        console.error("Error fetching current user:", err);
-      }
-    };
+  const handleMount = async () => {
+    try {
+      const user = await apiService.getCurrentUser();
+      setCurrentUser(user);
+    } catch (err) {
+      console.error("Error fetching current user:", err);
+    }
+  };
 
+  useEffect(() => {
     handleMount();
   }, []);
 
-  // Refresh token and session handling
   useEffect(() => {
-    const checkToken = async () => {
-      try {
-        await axiosReq.post("/api/auth/token/refresh/");
-      } catch (err) {
-        setCurrentUser(null);
-        navigate("/signin");
+    // Token refresh interval
+    const interval = setInterval(() => {
+      if (currentUser) {
+        apiService.refreshToken().catch(() => {
+          setCurrentUser(null);
+          navigate('/signin');
+        });
       }
-    };
+    }, 1000 * 60 * 4); // Refresh every 4 minutes
 
-    if (currentUser) {
-      // Check token every 5 minutes
-      const interval = setInterval(checkToken, 5 * 60 * 1000);
-      return () => clearInterval(interval);
-    }
+    return () => clearInterval(interval);
   }, [currentUser, navigate]);
 
   return (
@@ -51,3 +47,5 @@ export const CurrentUserProvider = ({ children }) => {
     </CurrentUserContext.Provider>
   );
 };
+
+export default CurrentUserProvider;

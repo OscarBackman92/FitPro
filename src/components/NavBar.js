@@ -1,11 +1,11 @@
-import React from 'react';
-import { Navbar, Container, Nav } from 'react-bootstrap';
-import { NavLink } from 'react-router-dom';
-import { useCurrentUser, useSetCurrentUser } from '../contexts/CurrentUserContext';
-import useClickOutsideToggle from '../hooks/useClickOutsideToggle';
-import { axiosRes } from '../api/axiosDefaults';
-import Avatar from './Avatar';
-import styles from '../styles/NavBar.module.css';
+import React from "react";
+import { Navbar, Container, Nav } from "react-bootstrap";
+import { NavLink } from "react-router-dom";
+import { useCurrentUser, useSetCurrentUser } from "../contexts/CurrentUserContext";
+import useClickOutsideToggle from "../hooks/useClickOutsideToggle";
+import { apiService } from "../services/apiService";
+import Avatar from "./Avatar";
+import styles from "../styles/NavBar.module.css";
 
 const NavBar = () => {
   const currentUser = useCurrentUser();
@@ -14,7 +14,7 @@ const NavBar = () => {
 
   const handleSignOut = async () => {
     try {
-      await axiosRes.post('/api/auth/logout/');
+      await apiService.logout();
       setCurrentUser(null);
     } catch (err) {
       console.log('Error signing out:', err);
@@ -116,6 +116,7 @@ const NavBar = () => {
           ref={ref}
           onClick={() => setExpanded(!expanded)}
           aria-controls="basic-navbar-nav"
+          className={styles.NavbarToggle}
         />
         
         <Navbar.Collapse id="basic-navbar-nav">

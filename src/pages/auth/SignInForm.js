@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Form from 'react-bootstrap/Form';
-import Alert from 'react-bootstrap/Alert';
-import Button from 'react-bootstrap/Button';
-import Col from 'react-bootstrap/Col';
-import Row from 'react-bootstrap/Row';
-import Container from 'react-bootstrap/Container';
-import { axiosRes } from '../../api/axiosDefaults';
-import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
-import styles from '../../styles/SignInUpForm.module.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Form from "react-bootstrap/Form";
+import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Container from "react-bootstrap/Container";
+import { useSetCurrentUser } from "../../contexts/CurrentUserContext";
+import { apiService } from "../../services/apiService";
+import styles from "../../styles/SignInUpForm.module.css";
+import btnStyles from "../../styles/Button.module.css";
+import appStyles from "../../App.module.css";
 
 const SignInForm = () => {
   const setCurrentUser = useSetCurrentUser();
   const [signInData, setSignInData] = useState({
-    username: '',
-    password: '',
+    username: "",
+    password: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -31,11 +33,11 @@ const SignInForm = () => {
     event.preventDefault();
     setIsLoading(true);
     try {
-      const { data } = await axiosRes.post('/api/auth/login/', signInData);
+      const data = await apiService.login(signInData);
       setCurrentUser(data.user);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setErrors(err.response?.data || {});
+      setErrors(err);
     } finally {
       setIsLoading(false);
     }
@@ -44,7 +46,7 @@ const SignInForm = () => {
   return (
     <Row className={styles.Row}>
       <Col className="my-auto p-0 p-md-2" md={6}>
-        <Container className={styles.Container}>
+        <Container className={`${appStyles.Content} p-4`}>
           <h1 className={styles.Header}>sign in</h1>
           <Form onSubmit={handleSubmit}>
             <Form.Group controlId="username">
@@ -56,14 +58,14 @@ const SignInForm = () => {
                 name="username"
                 value={signInData.username}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Form.Group>
-            {errors.username?.map((message, idx) => (
-              <Alert variant="warning" key={idx}>
+            {errors?.username?.map((message, idx) => (
+              <Alert key={idx} variant="warning">
                 {message}
               </Alert>
             ))}
-
             <Form.Group controlId="password">
               <Form.Label className="d-none">Password</Form.Label>
               <Form.Control
@@ -73,30 +75,29 @@ const SignInForm = () => {
                 name="password"
                 value={signInData.password}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Form.Group>
-            {errors.password?.map((message, idx) => (
-              <Alert variant="warning" key={idx}>
+            {errors?.password?.map((message, idx) => (
+              <Alert key={idx} variant="warning">
                 {message}
               </Alert>
             ))}
-
             <Button
-              className={styles.Button}
+              className={`${btnStyles.Button} ${btnStyles.Wide} ${btnStyles.Bright}`}
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? "Signing in..." : "Sign in"}
             </Button>
-            {errors.non_field_errors?.map((message, idx) => (
-              <Alert variant="warning" key={idx}>
+            {errors?.non_field_errors?.map((message, idx) => (
+              <Alert key={idx} variant="warning" className="mt-3">
                 {message}
               </Alert>
             ))}
           </Form>
         </Container>
-
-        <Container className={styles.Container}>
+        <Container className={`mt-3 ${appStyles.Content}`}>
           <Link className={styles.Link} to="/signup">
             Don't have an account? <span>Sign up now!</span>
           </Link>

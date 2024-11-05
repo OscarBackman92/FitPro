@@ -5,27 +5,66 @@ export const apiService = {
   login: async (credentials) => {
     try {
       const { data } = await axiosAuth.post('/auth/login/', credentials);
+      // Store the token
+      if (data.key) {
+        localStorage.setItem('token', data.key);
+        axiosReq.defaults.headers.common['Authorization'] = `Token ${data.key}`;
+      }
       return data;
     } catch (err) {
-      throw new Error(err.response?.data?.detail || 'Login failed');
+      console.error('Login error:', err.response?.data);
+      throw err.response?.data || { detail: 'Login failed' };
     }
   },
 
   register: async (userData) => {
     try {
-      const { data } = await axiosAuth.post('/auth/registration/', userData);
+      const registrationData = {
+        username: userData.username,
+        email: userData.email,
+        password1: userData.password1,
+        password2: userData.password2
+      };
+
+      const { data } = await axiosAuth.post('/auth/registration/', registrationData);
       return data;
     } catch (err) {
-      console.error('Registration error:', err.response?.data || err.message);
-      throw err;
+      console.error('Registration error:', err.response?.data);
+      throw err.response?.data || { detail: 'Registration failed' };
     }
   },
 
   logout: async () => {
     try {
       await axiosAuth.post('/auth/logout/');
+      localStorage.removeItem('token');
+      delete axiosReq.defaults.headers.common['Authorization'];
     } catch (err) {
       console.error('Logout error:', err);
+      throw err;
+    }
+  },
+
+  getCurrentUser: async () => {
+    try {
+      const { data } = await axiosReq.get('/profiles/me/');
+      return data;
+    } catch (err) {
+      console.error('Get current user error:', err);
+      throw err;
+    }
+  },
+
+  refreshToken: async () => {
+    try {
+      const { data } = await axiosAuth.post('/auth/token/refresh/');
+      if (data.key) {
+        localStorage.setItem('token', data.key);
+        axiosReq.defaults.headers.common['Authorization'] = `Token ${data.key}`;
+      }
+      return data;
+    } catch (err) {
+      console.error('Token refresh error:', err);
       throw err;
     }
   },
@@ -33,11 +72,10 @@ export const apiService = {
   // Profile endpoints
   getProfile: async (id) => {
     try {
-      const endpoint = id ? `/profiles/${id}/` : '/profiles/me/';
-      const { data } = await axiosReq.get(endpoint);
+      const { data } = await axiosReq.get(`/profiles/${id}/`);
       return data;
     } catch (err) {
-      console.error('Profile fetch error:', err);
+      console.error('Get profile error:', err);
       throw err;
     }
   },
@@ -47,7 +85,7 @@ export const apiService = {
       const { data } = await axiosReq.put(`/profiles/${id}/`, profileData);
       return data;
     } catch (err) {
-      console.error('Profile update error:', err);
+      console.error('Update profile error:', err);
       throw err;
     }
   },
@@ -58,7 +96,7 @@ export const apiService = {
       const { data } = await axiosReq.get('/workouts/workouts/', { params });
       return data;
     } catch (err) {
-      console.error('Workouts fetch error:', err);
+      console.error('Get workouts error:', err);
       throw err;
     }
   },
@@ -68,7 +106,7 @@ export const apiService = {
       const { data } = await axiosReq.post('/workouts/workouts/', workoutData);
       return data;
     } catch (err) {
-      console.error('Workout creation error:', err);
+      console.error('Create workout error:', err);
       throw err;
     }
   },
@@ -78,7 +116,7 @@ export const apiService = {
       const { data } = await axiosReq.put(`/workouts/workouts/${id}/`, workoutData);
       return data;
     } catch (err) {
-      console.error('Workout update error:', err);
+      console.error('Update workout error:', err);
       throw err;
     }
   },
@@ -87,29 +125,18 @@ export const apiService = {
     try {
       await axiosReq.delete(`/workouts/workouts/${id}/`);
     } catch (err) {
-      console.error('Workout deletion error:', err);
+      console.error('Delete workout error:', err);
       throw err;
     }
   },
 
-  // Workout summary
-  getWorkoutSummary: async () => {
-    try {
-      const { data } = await axiosReq.get('/workouts/workouts/summary/');
-      return data;
-    } catch (err) {
-      console.error('Summary fetch error:', err);
-      throw err;
-    }
-  },
-
-  // Social endpoints
+  // Social features
   getLikes: async () => {
     try {
       const { data } = await axiosReq.get('/likes/');
       return data;
     } catch (err) {
-      console.error('Likes fetch error:', err);
+      console.error('Get likes error:', err);
       throw err;
     }
   },
@@ -119,7 +146,7 @@ export const apiService = {
       const { data } = await axiosReq.post('/likes/', { workout: workoutId });
       return data;
     } catch (err) {
-      console.error('Like creation error:', err);
+      console.error('Create like error:', err);
       throw err;
     }
   },
@@ -128,7 +155,7 @@ export const apiService = {
     try {
       await axiosReq.delete(`/likes/${likeId}/`);
     } catch (err) {
-      console.error('Like deletion error:', err);
+      console.error('Delete like error:', err);
       throw err;
     }
   },
@@ -138,7 +165,7 @@ export const apiService = {
       const { data } = await axiosReq.get(`/comments/?workout=${workoutId}`);
       return data;
     } catch (err) {
-      console.error('Comments fetch error:', err);
+      console.error('Get comments error:', err);
       throw err;
     }
   },
@@ -151,9 +178,28 @@ export const apiService = {
       });
       return data;
     } catch (err) {
-      console.error('Comment creation error:', err);
+      console.error('Create comment error:', err);
       throw err;
     }
+  },
+
+  deleteComment: async (commentId) => {
+    try {
+      await axiosReq.delete(`/comments/${commentId}/`);
+    } catch (err) {
+      console.error('Delete comment error:', err);
+      throw err;
+    }
+  },
+
+  // Utils
+  handleError: (error) => {
+    console.error('API Error:', error);
+    const errorMessage = error.response?.data?.detail || 
+                        error.response?.data || 
+                        error.message || 
+                        'An error occurred';
+    return { error: errorMessage };
   }
 };
 
