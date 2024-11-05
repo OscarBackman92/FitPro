@@ -27,7 +27,7 @@ const WorkoutForm = () => {
     if (isEditing) {
       const fetchWorkout = async () => {
         try {
-          const { data } = await axiosReq.get(`/api/workouts/workouts/${id}/`);
+          const { data } = await axiosReq.get(`/workouts/workouts/${id}/`);
           const { workout_type, duration, calories, intensity, notes, date_logged } = data;
           setWorkoutData({ workout_type, duration, calories, intensity, notes, date_logged });
         } catch (err) {
@@ -57,9 +57,9 @@ const WorkoutForm = () => {
 
     try {
       if (isEditing) {
-        await axiosReq.put(`/api/workouts/workouts/${id}/`, formData);
+        await axiosReq.put(`/workouts/workouts/${id}/`, formData);
       } else {
-        await axiosReq.post('/api/workouts/workouts/', formData);
+        await axiosReq.post('/workouts/workouts/', formData);
       }
       navigate('/workouts');
     } catch (err) {
