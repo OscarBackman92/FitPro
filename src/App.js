@@ -18,6 +18,7 @@ import WorkoutDetail from "./components/workouts/WorkoutDetail";
 
 // Profile
 import ProfilePage from "./components/profiles/ProfilePage";
+import ProfileEditForm from "./components/profiles/ProfileEditForm";
 
 // Styles
 import styles from "./App.module.css";
@@ -71,6 +72,14 @@ function App() {
 
           {/* Profile Route */}
           <Route path="/profiles/:id" element={<ProfilePage />} />
+          <Route
+            path="/profiles/:id/edit"
+            element={
+              <PrivateRoute>
+                <ProfileEditForm />
+              </PrivateRoute>
+            }
+          />
 
           {/* Feed Routes */}
           <Route

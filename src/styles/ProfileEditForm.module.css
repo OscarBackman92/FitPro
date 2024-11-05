@@ -1,0 +1,67 @@
+.Content {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dadadf;
+    margin-bottom: 20px;
+  }
+  
+  .ProfileImage {
+    max-width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 20px;
+  }
+  
+  .UploadButton {
+    color: #2142b2;
+    cursor: pointer;
+    padding: 8px 16px;
+    border: 1px solid #2142b2;
+    border-radius: 4px;
+    margin: 10px 0;
+    transition: all 0.2s ease;
+  }
+  
+  .UploadButton:hover {
+    background-color: #2142b2;
+    color: white;
+  }
+  
+  Form.Group {
+    margin-bottom: 20px;
+  }
+  
+  Form.Label {
+    font-weight: 600;
+    color: #2d3748;
+  }
+  
+  Form.Control {
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 8px 12px;
+  }
+  
+  Form.Control:focus {
+    border-color: #2142b2;
+    box-shadow: 0 0 0 1px #2142b2;
+  }
+  
+  .btn {
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-top: 20px;
+  }
+  
+  .btn-primary {
+    background-color: #2142b2;
+    border-color: #2142b2;
+  }
+  
+  .btn-primary:hover {
+    background-color: #1a337f;
+    border-color: #1a337f;
+  }
