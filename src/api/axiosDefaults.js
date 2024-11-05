@@ -1,53 +1,68 @@
-import axios from "axios";
+import axios from 'axios';
 
-const BASE_URL = "https://fitnessapi-d773a1148384.herokuapp.com";
-
-// Set up axios defaults
-axios.defaults.baseURL = BASE_URL;
-axios.defaults.headers.post["Content-Type"] = "application/json";
-axios.defaults.withCredentials = true;
-
-// Create axios instances
 export const axiosReq = axios.create();
-export const axiosAuth = axios.create();
+export const axiosRes = axios.create();
 
-// Configure request interceptor
+// Debug flag based on environment
+const DEBUG = process.env.NODE_ENV === 'development';
+
+// Debug logging function
+const logDebug = (message, data = null) => {
+  if (DEBUG) {
+    console.log(`[DEBUG] ${message}`, data || '');
+  }
+};
+
+// Add request interceptor with debugging
 axiosReq.interceptors.request.use(
   async (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers["Authorization"] = `Token ${token}`;
+    logDebug('Request Config:', config);
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        logDebug('Token added to request');
+      }
+    } catch (err) {
+      logDebug('Error in request interceptor:', err);
     }
     return config;
   },
   (err) => {
+    logDebug('Request interceptor error:', err);
     return Promise.reject(err);
   }
 );
 
-// Debug interceptors for development
-if (process.env.NODE_ENV === 'development') {
-  axios.interceptors.request.use(
-    (config) => {
-      console.log('Request:', config.method, config.url);
-      return config;
-    },
-    (error) => {
-      console.log('Request Error:', error);
-      return Promise.reject(error);
+// Add response interceptor with debugging
+axiosRes.interceptors.response.use(
+  (response) => {
+    logDebug('Response received:', response);
+    return response;
+  },
+  async (err) => {
+    logDebug('Response error:', err);
+    const originalRequest = err.config;
+    
+    if (err.response?.status === 401 && !originalRequest._retry) {
+      logDebug('Attempting token refresh...');
+      originalRequest._retry = true;
+      
+      try {
+        const refreshResponse = await axios.post('/api/auth/token/refresh/');
+        const { token } = refreshResponse.data;
+        localStorage.setItem('token', token);
+        logDebug('Token refreshed successfully');
+        
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        return axios(originalRequest);
+      } catch (refreshError) {
+        logDebug('Token refresh failed:', refreshError);
+        localStorage.removeItem('token');
+        window.location.href = '/signin';
+      }
     }
-  );
-
-  axios.interceptors.response.use(
-    (response) => {
-      console.log('Response:', response.status);
-      return response;
-    },
-    (error) => {
-      console.log('Response Error:', error.response?.status);
-      return Promise.reject(error);
-    }
-  );
-}
-
-export default axios;
+    
+    return Promise.reject(err);
+  }
+);
