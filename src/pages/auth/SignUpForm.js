@@ -1,34 +1,53 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
-import Container from "react-bootstrap/Container";
-import Alert from "react-bootstrap/Alert";
 import apiService from "../../services/apiService";
-import styles from "../../styles/SignInUpForm.module.css";
-import btnStyles from "../../styles/Button.module.css";
-import appStyles from "../../App.module.css";
 
 const SignUpForm = () => {
-  const [signUpData, setSignUpData] = useState({
+  const [formData, setFormData] = useState({
     username: "",
     email: "",
     password1: "",
     password2: "",
   });
   
-  const { username, email, password1, password2 } = signUpData;
+  const { username, email, password1, password2 } = formData;
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (event) => {
-    setSignUpData({
-      ...signUpData,
+    setFormData({
+      ...formData,
       [event.target.name]: event.target.value,
     });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!username.trim()) {
+      newErrors.username = ["Username is required"];
+    } else if (username.length < 3) {
+      newErrors.username = ["Username must be at least 3 characters"];
+    }
+
+    if (!email.trim()) {
+      newErrors.email = ["Email is required"];
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = ["Please enter a valid email address"];
+    }
+
+    if (!password1) {
+      newErrors.password1 = ["Password is required"];
+    } else if (password1.length < 8) {
+      newErrors.password1 = ["Password must be at least 8 characters"];
+    }
+
+    if (password1 !== password2) {
+      newErrors.password2 = ["Passwords must match"];
+    }
+
+    return newErrors;
   };
 
   const handleSubmit = async (event) => {
@@ -36,125 +55,158 @@ const SignUpForm = () => {
     setIsLoading(true);
     setErrors({});
 
-    try {
-      if (password1 !== password2) {
-        setErrors({ password2: ["Passwords must match"] });
-        return;
-      }
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setIsLoading(false);
+      return;
+    }
 
-      await apiService.register(signUpData);
+    try {
+      await apiService.register(formData);
       navigate("/signin");
     } catch (err) {
-      console.log("Registration error:", err.response?.data);
-      setErrors(err.response?.data || {
-        non_field_errors: ["An error occurred during registration"]
-      });
+      console.log("Registration error:", err);
+      setErrors(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <Row className={styles.Row}>
-      <Col className="my-auto p-0 p-md-2" md={6}>
-        <Container className={`${appStyles.Content} p-4`}>
-          <h1 className={styles.Header}>sign up</h1>
+  const renderError = (fieldErrors) => {
+    if (!fieldErrors) return null;
+    return fieldErrors.map((message, idx) => (
+      <p key={idx} className="mt-1 text-sm text-red-600">
+        {message}
+      </p>
+    ));
+  };
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="username">
-              <Form.Label className="d-none">Username</Form.Label>
-              <Form.Control
-                className={styles.Input}
-                type="text"
-                placeholder="Username"
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            Create your account
+          </h2>
+        </div>
+
+        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <input
+                id="username"
                 name="username"
+                type="text"
+                required
                 value={username}
                 onChange={handleChange}
                 disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100"
+                placeholder="Enter your username"
               />
-            </Form.Group>
-            {errors?.username?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
-                {message}
-              </Alert>
-            ))}
+              {renderError(errors?.username)}
+            </div>
 
-            <Form.Group controlId="email">
-              <Form.Label className="d-none">Email</Form.Label>
-              <Form.Control
-                className={styles.Input}
-                type="email"
-                placeholder="Email"
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                id="email"
                 name="email"
+                type="email"
+                required
                 value={email}
                 onChange={handleChange}
                 disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100"
+                placeholder="Enter your email"
               />
-            </Form.Group>
-            {errors?.email?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
-                {message}
-              </Alert>
-            ))}
+              {renderError(errors?.email)}
+            </div>
 
-            <Form.Group controlId="password1">
-              <Form.Label className="d-none">Password</Form.Label>
-              <Form.Control
-                className={styles.Input}
-                type="password"
-                placeholder="Password"
+            <div>
+              <label htmlFor="password1" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                id="password1"
                 name="password1"
+                type="password"
+                required
                 value={password1}
                 onChange={handleChange}
                 disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100"
+                placeholder="Create a password"
               />
-            </Form.Group>
-            {errors?.password1?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
-                {message}
-              </Alert>
-            ))}
+              {renderError(errors?.password1)}
+            </div>
 
-            <Form.Group controlId="password2">
-              <Form.Label className="d-none">Confirm password</Form.Label>
-              <Form.Control
-                className={styles.Input}
-                type="password"
-                placeholder="Confirm password"
+            <div>
+              <label htmlFor="password2" className="block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <input
+                id="password2"
                 name="password2"
+                type="password"
+                required
                 value={password2}
                 onChange={handleChange}
                 disabled={isLoading}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100"
+                placeholder="Confirm your password"
               />
-            </Form.Group>
-            {errors?.password2?.map((message, idx) => (
-              <Alert key={idx} variant="warning">
-                {message}
-              </Alert>
-            ))}
+              {renderError(errors?.password2)}
+            </div>
 
-            <Button 
-              className={`${btnStyles.Button} ${btnStyles.Wide} ${btnStyles.Bright}`}
+            {errors?.non_field_errors && (
+              <div className="rounded-md bg-red-50 p-4">
+                {renderError(errors.non_field_errors)}
+              </div>
+            )}
+
+            <button
               type="submit"
               disabled={isLoading}
+              className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
             >
-              {isLoading ? "Signing up..." : "Sign Up"}
-            </Button>
-            {errors?.non_field_errors?.map((message, idx) => (
-              <Alert key={idx} variant="warning" className="mt-3">
-                {message}
-              </Alert>
-            ))}
-          </Form>
-        </Container>
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg 
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    fill="none" 
+                    viewBox="0 0 24 24"
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creating account...
+                </span>
+              ) : (
+                "Sign up"
+              )}
+            </button>
 
-        <Container className={`mt-3 ${appStyles.Content}`}>
-          <Link className={styles.Link} to="/signin">
-            Already have an account? <span>Sign in</span>
-          </Link>
-        </Container>
-      </Col>
-    </Row>
+            <div className="text-center text-sm text-gray-600">
+              Already have an account?{" "}
+              <Link
+                to="/signin"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Sign in
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 

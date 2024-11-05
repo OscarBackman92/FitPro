@@ -2,7 +2,6 @@ import axios from "axios";
 
 const baseURL = "https://fitnessapi-d773a1148384.herokuapp.com/api";
 
-// Create instances with default config
 const axiosAuth = axios.create({
   baseURL,
   withCredentials: true,
@@ -10,16 +9,16 @@ const axiosAuth = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  timeout: 10000
+  timeout: 15000
 });
 
 const axiosReq = axios.create({
   baseURL,
   withCredentials: true,
-  timeout: 10000
+  timeout: 15000
 });
 
-// Request interceptor for API calls
+// Request interceptor for adding auth token
 axiosReq.interceptors.request.use(
   async (config) => {
     const token = localStorage.getItem('token');
@@ -29,11 +28,11 @@ axiosReq.interceptors.request.use(
     return config;
   },
   (error) => {
-    Promise.reject(error);
+    return Promise.reject(error);
   }
 );
 
-// Response interceptor for API calls
+// Response interceptor for token refresh
 axiosReq.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -41,10 +40,10 @@ axiosReq.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const response = await axiosAuth.post('/auth/token/refresh/');
-        if (response.data.key) {
-          localStorage.setItem('token', response.data.key);
-          axios.defaults.headers.common['Authorization'] = `Token ${response.data.key}`;
+        const { data } = await axiosAuth.post('/auth/token/refresh/');
+        if (data.key) {
+          localStorage.setItem('token', data.key);
+          axios.defaults.headers.common['Authorization'] = `Token ${data.key}`;
           return axiosReq(originalRequest);
         }
       } catch (refreshError) {
@@ -60,15 +59,25 @@ axiosReq.interceptors.response.use(
 // Development logging
 if (process.env.NODE_ENV === 'development') {
   [axiosReq, axiosAuth].forEach(instance => {
-    instance.interceptors.request.use(request => {
-      console.group(`🌐 API Request: ${request.method.toUpperCase()} ${request.url}`);
-      console.log('Headers:', request.headers);
-      if (request.data) {
-        console.log('Data:', request.data);
+    instance.interceptors.request.use(
+      request => {
+        console.group(`🌐 API Request: ${request.method.toUpperCase()} ${request.url}`);
+        console.log('Headers:', request.headers);
+        if (request.data) {
+          const logData = { ...request.data };
+          if (logData.password1) logData.password1 = '[FILTERED]';
+          if (logData.password2) logData.password2 = '[FILTERED]';
+          if (logData.password) logData.password = '[FILTERED]';
+          console.log('Data:', logData);
+        }
+        console.groupEnd();
+        return request;
+      },
+      error => {
+        console.error('Request Error:', error);
+        return Promise.reject(error);
       }
-      console.groupEnd();
-      return request;
-    });
+    );
 
     instance.interceptors.response.use(
       response => {
