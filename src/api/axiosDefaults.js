@@ -1,39 +1,43 @@
+// api/axiosDefaults.js
 import axios from 'axios';
 
 const baseURL = process.env.REACT_APP_API_URL;
 
-// Create axios instances
-export const axiosReq = axios.create({
-  baseURL: baseURL, // Uses the environment variable for the base URL
-});
-export const axiosRes = axios.create({
-  baseURL: baseURL,
-});
+// Token utility functions
+const getAccessToken = () => localStorage.getItem('access_token');
+const setAccessToken = (token) => localStorage.setItem('access_token', token);
+const clearTokens = () => {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+};
 
-const DEBUG = process.env.NODE_ENV === 'development';
-
+// Logging function based on environment
 const logDebug = (message, data = null) => {
-  if (DEBUG) {
+  if (process.env.NODE_ENV === 'development') {
     console.log(`[DEBUG] ${message}`, data || '');
   }
 };
 
-// Add request interceptor with debugging
+// Axios instances
+export const axiosReq = axios.create({ baseURL });
+export const axiosRes = axios.create({ baseURL });
+
+// Request interceptor for adding access token
 axiosReq.interceptors.request.use(
-  async (config) => {
-    const token = localStorage.getItem('access_token'); // Use the correct token key
+  (config) => {
+    const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('[DEBUG] Token added to request');
+      logDebug('Token added to request');
     } else {
-      console.log('[DEBUG] No token found, request may fail');
+      logDebug('No token found, request may fail');
     }
     return config;
   },
-  (err) => Promise.reject(err)
+  (error) => Promise.reject(error)
 );
 
-// Add response interceptor with debugging and token refresh
+// Response interceptor with token refresh logic
 axiosRes.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -45,18 +49,19 @@ axiosRes.interceptors.response.use(
 
       try {
         const refreshResponse = await axios.post(
-          `${baseURL}/auth/token/refresh/`, // Use baseURL for refresh
+          `${baseURL}/auth/token/refresh/`,
           {},
           { headers: { 'Content-Type': 'application/json' } }
         );
-        const { token } = refreshResponse.data;
-        localStorage.setItem('token', token);
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+
+        const { access_token } = refreshResponse.data;
+        setAccessToken(access_token);
+        originalRequest.headers.Authorization = `Bearer ${access_token}`;
+        
         return axiosReq(originalRequest);
       } catch (refreshError) {
-        logDebug('Token refresh failed:', refreshError);
-        // Clear token and redirect to signin if refresh fails
-        localStorage.removeItem('token');
+        logDebug('Token refresh failed', refreshError);
+        clearTokens();
         window.location.href = '/signin';
       }
     }
@@ -65,9 +70,9 @@ axiosRes.interceptors.response.use(
   }
 );
 
-// Export a function to clear the token when signing out
+// Export a function to clear tokens upon sign-out
 export const clearAuthToken = () => {
-  localStorage.removeItem('token');
+  clearTokens();
   window.location.href = '/signin';
-  logDebug('Token cleared, redirected to signin');
+  logDebug('Tokens cleared, redirected to sign-in');
 };
