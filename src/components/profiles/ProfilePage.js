@@ -5,8 +5,8 @@ import { LineChart, XAxis, YAxis, CartesianGrid, Line, Tooltip } from 'recharts'
 import { format } from 'date-fns';
 import { axiosReq } from '../../api/axiosDefaults';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
-import Avatar from '../../components/Avatar';
 import Asset from '../../components/Asset';
+import Avatar from '../../components/Avatar';
 import { ProfileEditDropdown } from '../../components/MoreDropdown';
 import styles from '../../styles/ProfilePage.module.css';
 
@@ -32,17 +32,17 @@ const ProfilePage = () => {
     const fetchProfileData = async () => {
       try {
         const [{ data: profileData }, { data: statsData }, { data: workoutsData }] = await Promise.all([
-          axiosReq.get(`/api/profiles/${id}/`),
-          axiosReq.get(`/api/profiles/${id}/stats/`),
-          axiosReq.get(`/api/workouts/workouts/?user=${id}`)
+          axiosReq.get(`/profiles/${id}/`),
+          axiosReq.get(`/profiles/${id}/stats/`),
+          axiosReq.get(`/workouts/workouts/?user=${id}`)
         ]);
         setProfile(profileData);
         setStats(statsData);
         setWorkouts(workoutsData);
         setError(null);
       } catch (err) {
-        setError('Failed to load profile data');
         console.error('[ProfilePage] Error fetching profile data:', err);
+        setError('Failed to load profile data');
       } finally {
         setHasLoaded(true);
       }
