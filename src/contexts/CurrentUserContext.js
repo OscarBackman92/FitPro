@@ -15,7 +15,7 @@ export const CurrentUserProvider = ({ children }) => {
 
   const handleMount = async () => {
     try {
-      const { data } = await axiosReq.get("dj-rest-auth/user/");
+      const { data } = await axiosReq.get("api/auth/user/");
       setCurrentUser(data);
     } catch (err) {
       console.log("Error fetching current user:", err);
