@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useCurrentUser, useSetCurrentUser } from '../contexts/CurrentUserContext';
-import { authService } from '../services/apiService'; // Updated import
+import { authService } from '../services/apiService';
 import { Menu, X, Dumbbell, Activity, UserCircle, LogOut, Home, PlusCircle, TrendingUp } from 'lucide-react';
 import Avatar from './Avatar';
 
@@ -15,7 +15,7 @@ const NavBar = () => {
   useEffect(() => {
     const handleCurrentUser = async () => {
       try {
-        const userData = await authService.getCurrentUser(); // Use authService here
+        const userData = await authService.getCurrentUser();
         setCurrentUser(userData);
       } catch (err) {
         console.log('Not logged in');
@@ -28,7 +28,7 @@ const NavBar = () => {
 
   const handleSignOut = async () => {
     try {
-      await authService.logout(); // Use authService here
+      await authService.logout();
       setCurrentUser(null);
       navigate('/signin');
     } catch (err) {

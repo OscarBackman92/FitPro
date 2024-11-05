@@ -1,9 +1,8 @@
-// api/axiosDefaults.js
 import axios from 'axios';
 
 const baseURL = process.env.REACT_APP_API_URL;
 
-// Token utility functions
+
 const getAccessToken = () => localStorage.getItem('access_token');
 const setAccessToken = (token) => localStorage.setItem('access_token', token);
 const clearTokens = () => {
@@ -11,18 +10,15 @@ const clearTokens = () => {
   localStorage.removeItem('refresh_token');
 };
 
-// Logging function based on environment
 const logDebug = (message, data = null) => {
   if (process.env.NODE_ENV === 'development') {
     console.log(`[DEBUG] ${message}`, data || '');
   }
 };
 
-// Axios instances
 export const axiosReq = axios.create({ baseURL });
 export const axiosRes = axios.create({ baseURL });
 
-// Request interceptor for adding access token
 axiosReq.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
@@ -37,7 +33,6 @@ axiosReq.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor with token refresh logic
 axiosRes.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -70,7 +65,6 @@ axiosRes.interceptors.response.use(
   }
 );
 
-// Export a function to clear tokens upon sign-out
 export const clearAuthToken = () => {
   clearTokens();
   window.location.href = '/signin';

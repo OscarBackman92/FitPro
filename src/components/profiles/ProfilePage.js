@@ -12,7 +12,7 @@ import styles from '../../styles/ProfilePage.module.css';
 
 const ProfilePage = () => {
   const { id } = useParams();
-  console.log("Profile ID from URL:", id); // Debugging: Log the profile ID
+  console.log("Profile ID from URL:", id);
   const currentUser = useCurrentUser();
   const [profile, setProfile] = useState(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -20,7 +20,6 @@ const ProfilePage = () => {
   const [stats, setStats] = useState(null);
   const [workouts, setWorkouts] = useState({ results: [] });
 
-  // Determine if the current user is the profile owner
   const is_owner = currentUser?.profile_id === parseInt(id, 10);
 
   useEffect(() => {
@@ -53,7 +52,6 @@ const ProfilePage = () => {
     fetchProfileData();
   }, [id]);
 
-  // Prepare chart data for recent workouts (limit to last 7 entries)
   const chartData = workouts.results
     .slice(0, 7)
     .map(workout => ({

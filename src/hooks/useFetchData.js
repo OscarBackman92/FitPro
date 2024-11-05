@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import apiService from '../services/apiService';
 
 const useFetchData = (fetchFunction, dependencies = []) => {
   const [data, setData] = useState(null);

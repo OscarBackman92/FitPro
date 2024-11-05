@@ -1,4 +1,3 @@
-// axiosInstance.js
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com/api';
@@ -11,7 +10,6 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor for handling auth tokens
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -23,7 +21,6 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for handling errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {

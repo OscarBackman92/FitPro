@@ -1,4 +1,3 @@
-// workoutService.js
 import axiosInstance from './axiosInstance';
 import handleApiError from '../utils/errorHandler';
 

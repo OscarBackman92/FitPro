@@ -42,7 +42,7 @@ const WorkoutList = ({ filter = "" }) => {
   const handleDelete = async (workoutId) => {
     if (window.confirm('Are you sure you want to delete this workout?')) {
       try {
-        await workoutService.deleteWorkout(workoutId);  // Correct usage of workoutService
+        await workoutService.deleteWorkout(workoutId);
         setWorkouts(prevWorkouts => ({
           ...prevWorkouts,
           results: prevWorkouts.results.filter(workout => workout.id !== workoutId)
@@ -69,13 +69,11 @@ const WorkoutList = ({ filter = "" }) => {
     );
   }
 
-  // Calculate summary stats
   const totalWorkouts = workouts.results.length;
   const totalDuration = workouts.results.reduce((sum, w) => sum + w.duration, 0);
   const totalCalories = workouts.results.reduce((sum, w) => sum + w.calories, 0);
   const avgDuration = Math.round(totalDuration / totalWorkouts) || 0;
 
-  // Prepare chart data
   const chartData = workouts.results
     .slice(0, 7)
     .map(workout => ({
