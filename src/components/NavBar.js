@@ -5,13 +5,13 @@ import {
   Menu, 
   X, 
   Dumbbell, 
+  Activity, 
   UserCircle, 
   LogOut, 
-  Home, 
   PlusCircle, 
-  TrendingUp,
   Target,
-  Users
+  Users,
+  LayoutDashboard
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../services/apiService';
@@ -41,11 +41,11 @@ const NavBar = () => {
   `;
 
   const loggedInLinks = [
-    { to: '/', icon: <Home size={20} />, text: 'Dashboard' },
+    { to: '/', icon: <LayoutDashboard size={20} />, text: 'Dashboard' },
+    { to: '/workouts', icon: <Activity size={20} />, text: 'My Workouts' },
     { to: '/workouts/create', icon: <PlusCircle size={20} />, text: 'Log Workout' },
     { to: '/goals', icon: <Target size={20} />, text: 'Goals' },
     { to: '/feed', icon: <Users size={20} />, text: 'Social Feed' },
-    { to: '/stats', icon: <TrendingUp size={20} />, text: 'Stats' },
   ];
 
   return (

@@ -7,6 +7,7 @@ import "./api/axiosDefaults";
 import NavBar from "./components/NavBar";
 import PrivateRoute from "./components/common/PrivateRoute";
 import ProfileEditForm from "./components/profiles/ProfileEditForm";
+import Dashboard from './components/dashboard/Dashboard';
 
 // Auth
 import SignUpForm from "./pages/auth/SignUpForm";
@@ -33,7 +34,11 @@ function App() {
       <Container className={styles.Main}>
         <Routes>
           {/* Public Home Route */}
-          <Route path="/" element={<WorkoutList />} />
+          <Route path="/" element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } />
 
           {/* Auth Routes */}
           <Route path="/signin" element={<SignInForm />} />
