@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PlusCircle, CheckCircle2, Circle, Trophy, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Goals = () => {
   const [goals, setGoals] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     type: '',
     description: '',
     target: '',
     deadline: ''
   });
-
-  const [setError] = useState(null);
 
   const goalTypes = [
     { value: 'weight', label: 'Weight Goal', icon: '⚖️' },
@@ -23,50 +20,18 @@ const Goals = () => {
     { value: 'custom', label: 'Custom Goal', icon: '🎯' }
   ];
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setGoals([
-        {
-          id: 1,
-          type: 'weight',
-          description: 'Lose 5kg',
-          target: '75kg',
-          deadline: '2024-12-31',
-          progress: 60,
-          completed: false
-        },
-        {
-          id: 2,
-          type: 'workout',
-          description: 'Work out 3 times per week',
-          target: '12 workouts per month',
-          deadline: '2024-12-31',
-          progress: 75,
-          completed: false
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      // API call would go here
-      const newGoal = {
-        id: goals.length + 1,
-        ...formData,
-        progress: 0,
-        completed: false
-      };
-      setGoals([...goals, newGoal]);
-      setShowForm(false);
-      setFormData({ type: '', description: '', target: '', deadline: '' });
-      setError(null); // Clear any previous errors
-    } catch (err) {
-      setError('Failed to create goal. Please try again.');
-    }
+    const newGoal = {
+      id: Date.now(), // temporary ID until backend integration
+      ...formData,
+      progress: 0,
+      completed: false,
+      createdAt: new Date().toISOString()
+    };
+    setGoals(prevGoals => [...prevGoals, newGoal]);
+    setShowForm(false);
+    setFormData({ type: '', description: '', target: '', deadline: '' });
   };
 
   const toggleGoalCompletion = (goalId) => {
@@ -77,13 +42,11 @@ const Goals = () => {
     ));
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
+  const handleDeleteGoal = (goalId) => {
+    if (window.confirm('Are you sure you want to delete this goal?')) {
+      setGoals(goals.filter(goal => goal.id !== goalId));
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -132,6 +95,7 @@ const Goals = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full p-2 border rounded-md"
+                placeholder="e.g., Run 5km in under 30 minutes"
                 required
               />
             </div>
@@ -145,6 +109,7 @@ const Goals = () => {
                 value={formData.target}
                 onChange={(e) => setFormData({ ...formData, target: e.target.value })}
                 className="w-full p-2 border rounded-md"
+                placeholder="e.g., 30 minutes"
                 required
               />
             </div>
@@ -158,6 +123,7 @@ const Goals = () => {
                 value={formData.deadline}
                 onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                 className="w-full p-2 border rounded-md"
+                min={new Date().toISOString().split('T')[0]}
                 required
               />
             </div>
@@ -181,56 +147,63 @@ const Goals = () => {
         </form>
       )}
 
-      <div className="grid gap-4">
-        {goals.map(goal => (
-          <div key={goal.id} className="bg-white p-6 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => toggleGoalCompletion(goal.id)}
-                  className="text-green-500 hover:text-green-600"
-                >
-                  {goal.completed ? (
-                    <CheckCircle2 className="h-6 w-6" />
-                  ) : (
-                    <Circle className="h-6 w-6" />
-                  )}
-                </button>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {goalTypes.find(t => t.value === goal.type)?.icon} {goal.description}
-                  </h3>
-                  <p className="text-sm text-gray-500">Target: {goal.target}</p>
+      {goals.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-lg shadow-lg">
+          <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Goals Set Yet</h3>
+          <p className="text-gray-500 mb-4">Start setting your fitness goals and track your progress!</p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            <PlusCircle className="h-5 w-5" />
+            Create Your First Goal
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {goals.map(goal => (
+            <div key={goal.id} className="bg-white p-6 rounded-lg shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => toggleGoalCompletion(goal.id)}
+                    className="text-green-500 hover:text-green-600"
+                  >
+                    {goal.completed ? (
+                      <CheckCircle2 className="h-6 w-6" />
+                    ) : (
+                      <Circle className="h-6 w-6" />
+                    )}
+                  </button>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {goalTypes.find(t => t.value === goal.type)?.icon} {goal.description}
+                    </h3>
+                    <p className="text-sm text-gray-500">Target: {goal.target}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-gray-500">
-                  <Calendar className="h-5 w-5" />
-                  <span className="text-sm">
-                    {format(new Date(goal.deadline), 'MMM d, yyyy')}
-                  </span>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <Calendar className="h-5 w-5" />
+                    <span className="text-sm">
+                      {format(new Date(goal.deadline), 'MMM d, yyyy')}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteGoal(goal.id)}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div className="relative pt-1">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <span className="text-xs font-semibold inline-block text-green-600">
-                    {goal.progress}% Complete
-                  </span>
-                </div>
-              </div>
-              <div className="overflow-hidden h-2 text-xs flex rounded bg-green-100">
-                <div
-                  style={{ width: `${goal.progress}%` }}
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500 transition-all duration-500"
-                ></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
