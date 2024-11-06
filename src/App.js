@@ -20,6 +20,9 @@ import WorkoutDetail from "./components/workouts/WorkoutDetail";
 // Profile
 import ProfilePage from "./components/profiles/ProfilePage";
 
+// Goals
+import Goals from "./components/goals/Goals";
+
 // Styles
 import styles from "./App.module.css";
 
@@ -77,6 +80,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ProfileEditForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/goals"
+            element={
+              <PrivateRoute>
+                <Goals />
               </PrivateRoute>
             }
           />

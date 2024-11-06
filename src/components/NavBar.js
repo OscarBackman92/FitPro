@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useCurrentUser, useSetCurrentUser } from '../contexts/CurrentUserContext';
-import { Menu, X, Dumbbell, Activity, UserCircle, LogOut, Home, PlusCircle, TrendingUp } from 'lucide-react';
+import { 
+  Menu, 
+  X, 
+  Dumbbell, 
+  UserCircle, 
+  LogOut, 
+  Home, 
+  PlusCircle, 
+  TrendingUp,
+  Target,
+  Users
+} from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../services/apiService';
 
@@ -32,7 +43,8 @@ const NavBar = () => {
   const loggedInLinks = [
     { to: '/', icon: <Home size={20} />, text: 'Dashboard' },
     { to: '/workouts/create', icon: <PlusCircle size={20} />, text: 'Log Workout' },
-    { to: '/feed', icon: <Activity size={20} />, text: 'Activity Feed' },
+    { to: '/goals', icon: <Target size={20} />, text: 'Goals' },
+    { to: '/feed', icon: <Users size={20} />, text: 'Social Feed' },
     { to: '/stats', icon: <TrendingUp size={20} />, text: 'Stats' },
   ];
 
