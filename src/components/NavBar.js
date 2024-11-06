@@ -5,11 +5,8 @@ import {
   Menu, 
   X, 
   Dumbbell, 
-  Activity, 
   UserCircle, 
   LogOut, 
-  PlusCircle, 
-  Target,
   Users,
   LayoutDashboard
 } from 'lucide-react';
@@ -42,9 +39,6 @@ const NavBar = () => {
 
   const loggedInLinks = [
     { to: '/', icon: <LayoutDashboard size={20} />, text: 'Dashboard' },
-    { to: '/workouts', icon: <Activity size={20} />, text: 'My Workouts' },
-    { to: '/workouts/create', icon: <PlusCircle size={20} />, text: 'Log Workout' },
-    { to: '/goals', icon: <Target size={20} />, text: 'Goals' },
     { to: '/feed', icon: <Users size={20} />, text: 'Social Feed' },
   ];
 

@@ -21,8 +21,6 @@ import WorkoutDetail from "./components/workouts/WorkoutDetail";
 // Profile
 import ProfilePage from "./components/profiles/ProfilePage";
 
-// Goals
-import Goals from "./components/goals/Goals";
 
 // Styles
 import styles from "./App.module.css";
@@ -88,15 +86,6 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/goals"
-            element={
-              <PrivateRoute>
-                <Goals />
-              </PrivateRoute>
-            }
-          />
-
           {/* Feed Routes */}
           <Route
             path="/feed"
