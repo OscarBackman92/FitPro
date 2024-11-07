@@ -1,122 +1,120 @@
+// src/App.js
 import React from "react";
-import Container from "react-bootstrap/Container";
 import { Route, Routes } from "react-router-dom";
+import Container from "react-bootstrap/Container";
 import "./services/axiosDefaults";
 
-// Components
-import NavBar from "./components/common/NavBar";
-import PrivateRoute from "./components/common/PrivateRoute";
-import ProfileEditForm from "./components/profiles/ProfileEditForm";
-import Dashboard from './components/dashboard/Dashboard';
 
-// Auth
+// Common Components
+import { NavBar, PrivateRoute, NotFound } from "../src/components/common/CommonIndex";
+
+// Auth Components
 import SignUpForm from "./pages/auth/SignUpForm";
 import SignInForm from "./pages/auth/SignInForm";
 
-// Workouts
+// Profile Components
+import ProfilePage from "./components/profiles/ProfilePage";
+import ProfileEditForm from "./components/profiles/ProfileEditForm";
+
+// Workout Components
 import WorkoutForm from "./components/workouts/WorkoutForm";
 import WorkoutList from "./components/workouts/WorkoutList";
 import WorkoutDetail from "./components/workouts/WorkoutDetail";
 
-// Profile
-import ProfilePage from "./components/profiles/ProfilePage";
-
+// Dashboard
+import Dashboard from './components/dashboard/Dashboard';
 
 // Styles
 import styles from "./App.module.css";
 
 function App() {
   return (
-    <div className={styles.App}>
-      <NavBar />
-      <Container className={styles.Main}>
-        <Routes>
-          {/* Public Home Route */}
-          <Route path="/" element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          } />
+      <div className={styles.App}>
+        <NavBar />
+        <Container className={styles.Main}>
+          <Routes>
+            {/* Public Home Route */}
+            <Route 
+              path="/" 
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              } 
+            />
 
-          {/* Auth Routes */}
-          <Route path="/signin" element={<SignInForm />} />
-          <Route path="/signup" element={<SignUpForm />} />
+            {/* Auth Routes */}
+            <Route path="/signin" element={<SignInForm />} />
+            <Route path="/signup" element={<SignUpForm />} />
 
-          {/* Workout Routes */}
-          <Route
-            path="/workouts"
-            element={
-              <PrivateRoute>
-                <WorkoutList />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/workouts/create"
-            element={
-              <PrivateRoute>
-                <WorkoutForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/workouts/:id"
-            element={
-              <PrivateRoute>
-                <WorkoutDetail />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/workouts/:id/edit"
-            element={
-              <PrivateRoute>
-                <WorkoutForm />
-              </PrivateRoute>
-            }
-          />
+            {/* Workout Routes */}
+            <Route
+              path="/workouts"
+              element={
+                <PrivateRoute>
+                  <WorkoutList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/workouts/create"
+              element={
+                <PrivateRoute>
+                  <WorkoutForm />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/workouts/:id"
+              element={
+                <PrivateRoute>
+                  <WorkoutDetail />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/workouts/:id/edit"
+              element={
+                <PrivateRoute>
+                  <WorkoutForm />
+                </PrivateRoute>
+              }
+            />
 
-          {/* Profile Routes */}
-          <Route path="/profiles/:id" element={<ProfilePage />} />
-          <Route
-            path="/profiles/:id/edit"
-            element={
-              <PrivateRoute>
-                <ProfileEditForm />
-              </PrivateRoute>
-            }
-          />
-          {/* Feed Routes */}
-          <Route
-            path="/feed"
-            element={
-              <PrivateRoute>
-                <WorkoutList filter="owner__followed__owner__profile" />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/liked"
-            element={
-              <PrivateRoute>
-                <WorkoutList filter="likes__owner__profile" />
-              </PrivateRoute>
-            }
-          />
+            {/* Profile Routes */}
+            <Route path="/profiles/:id" element={<ProfilePage />} />
+            <Route
+              path="/profiles/:id/edit"
+              element={
+                <PrivateRoute>
+                  <ProfileEditForm />
+                </PrivateRoute>
+              }
+            />
 
-          {/* 404 Route */}
-          <Route
-            path="*"
-            element={
-              <div className="text-center mt-4">
-                <h1>404 - Page Not Found</h1>
-                <p>Sorry, the page you are looking for does not exist.</p>
-              </div>
-            }
-          />
-        </Routes>
-      </Container>
-    </div>
+            {/* Feed Routes */}
+            <Route
+              path="/feed"
+              element={
+                <PrivateRoute>
+                  <WorkoutList filter="owner__followed__owner__profile" />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/liked"
+              element={
+                <PrivateRoute>
+                  <WorkoutList filter="likes__owner__profile" />
+                </PrivateRoute>
+              }
+            />
+
+            {/* 404 Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Container>
+      </div>
   );
 }
 

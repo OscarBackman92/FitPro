@@ -1,10 +1,10 @@
 // src/contexts/CurrentUserContext.js
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { authService } from "../services/authService";
 import logger from "../services/loggerService";
 
-export const CurrentUserContext = createContext();
-export const SetCurrentUserContext = createContext();
+const CurrentUserContext = createContext(null);
+const SetCurrentUserContext = createContext(() => null);
 
 export const useCurrentUser = () => {
   const context = useContext(CurrentUserContext);
@@ -52,11 +52,15 @@ export const CurrentUserProvider = ({ children }) => {
     fetchCurrentUser();
   }, []);
 
+  const contextValue = {
+    currentUser,
+    setCurrentUser,
+    isLoading
+  };
+
   return (
-    <CurrentUserContext.Provider value={currentUser}>
-      <SetCurrentUserContext.Provider value={setCurrentUser}>
-        {!isLoading && children}
-      </SetCurrentUserContext.Provider>
+    <CurrentUserContext.Provider value={contextValue}>
+      {!isLoading && children}
     </CurrentUserContext.Provider>
   );
 };

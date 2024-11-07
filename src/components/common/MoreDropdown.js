@@ -1,7 +1,7 @@
 import React from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { useNavigate } from 'react-router-dom';
-import styles from '../styles/MoreDropdown.module.css';
+import styles from '../../styles/MoreDropdown.module.css';
 
 const ThreeDots = React.forwardRef(({ onClick }, ref) => (
   <i
