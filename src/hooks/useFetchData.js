@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import logger from '../services/loggerService';
+import errorHandler from '../services/errorHandlerService';
 
-const useFetchData = (fetchFunction, dependencies = []) => {
+export const useFetchData = (fetchFunction, dependencies = []) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,29 +11,35 @@ const useFetchData = (fetchFunction, dependencies = []) => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        logger.debug('Fetching data');
         const result = await fetchFunction();
         setData(result);
         setError(null);
+        logger.debug('Data fetched successfully', { dataSize: result?.length });
       } catch (err) {
-        setError(err.message || 'An error occurred while fetching data');
-        setData(null);
+        const handledError = errorHandler.handleApiError(err);
+        setError(handledError.message);
+        logger.error('Data fetch error', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, );
+  }, dependencies); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refetch = async () => {
     try {
       setLoading(true);
+      logger.debug('Refetching data');
       const result = await fetchFunction();
       setData(result);
       setError(null);
+      logger.debug('Data refetched successfully');
     } catch (err) {
-      setError(err.message || 'An error occurred while fetching data');
-      setData(null);
+      const handledError = errorHandler.handleApiError(err);
+      setError(handledError.message);
+      logger.error('Data refetch error', err);
     } finally {
       setLoading(false);
     }
@@ -39,5 +47,3 @@ const useFetchData = (fetchFunction, dependencies = []) => {
 
   return { data, loading, error, refetch };
 };
-
-export default useFetchData;

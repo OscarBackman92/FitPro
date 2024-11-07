@@ -1,62 +1,62 @@
+// src/contexts/CurrentUserContext.js
 import { createContext, useContext, useEffect, useState } from "react";
-import { axiosReq } from "../api/axiosDefaults";
-
-const DEBUG = process.env.NODE_ENV === 'development';
-
-const logDebug = (message, data = null) => {
-    if (DEBUG) {
-        console.log(`[CurrentUserContext] ${message}`, data || '');
-    }
-};
+import { authService } from "../services/authService";
+import logger from "../services/loggerService";
 
 export const CurrentUserContext = createContext();
 export const SetCurrentUserContext = createContext();
 
-export const useCurrentUser = () => useContext(CurrentUserContext);
-export const useSetCurrentUser = () => useContext(SetCurrentUserContext);
+export const useCurrentUser = () => {
+  const context = useContext(CurrentUserContext);
+  if (context === undefined) {
+    throw new Error('useCurrentUser must be used within a CurrentUserProvider');
+  }
+  return context;
+};
+
+export const useSetCurrentUser = () => {
+  const context = useContext(SetCurrentUserContext);
+  if (context === undefined) {
+    throw new Error('useSetCurrentUser must be used within a CurrentUserProvider');
+  }
+  return context;
+};
 
 export const CurrentUserProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchCurrentUser = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    logDebug('No token found, skipping user fetch');
-                    setIsLoading(false);
-                    return;
-                }
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          logger.debug('No auth token found, skipping user fetch');
+          setIsLoading(false);
+          return;
+        }
 
-                logDebug('Fetching current user...');
-                const { data } = await axiosReq.get('/auth/user/');
-                setCurrentUser(data);
-                logDebug('Current user fetched:', data);
-            } catch (err) {
-                logDebug('Error fetching current user:', err);
-                // Clear token if unauthorized
-                if (err.response?.status === 401) {
-                    localStorage.removeItem('token');
-                }
-                setCurrentUser(null);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+        logger.debug('Fetching current user');
+        const userData = await authService.getCurrentUser();
+        setCurrentUser(userData);
+        logger.debug('Current user fetched successfully');
+      } catch (err) {
+        logger.error('Error fetching current user:', err);
+        setCurrentUser(null);
+        localStorage.removeItem('token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-        fetchCurrentUser();
-    }, []);
+    fetchCurrentUser();
+  }, []);
 
-    return (
-        <CurrentUserContext.Provider value={currentUser}>
-            <SetCurrentUserContext.Provider value={setCurrentUser}>
-                {isLoading ? (
-                    <div>Loading...</div>
-                ) : (
-                    children
-                )}
-            </SetCurrentUserContext.Provider>
-        </CurrentUserContext.Provider>
-    );
+  return (
+    <CurrentUserContext.Provider value={currentUser}>
+      <SetCurrentUserContext.Provider value={setCurrentUser}>
+        {!isLoading && children}
+      </SetCurrentUserContext.Provider>
+    </CurrentUserContext.Provider>
+  );
 };

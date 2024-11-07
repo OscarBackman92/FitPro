@@ -1,128 +1,118 @@
 // src/services/socialService.js
 import axiosInstance from './axiosInstance';
-import handleApiError from '../utils/errorHandler';
+import logger from './loggerService';
+import errorHandler from './errorHandlerService';
 
-const socialService = {
-  // Feed
-  getFeed: async (page = 1) => {
+class SocialService {
+  // Feed Methods
+  async getFeed(page = 1) {
     try {
+      logger.debug('Fetching social feed', { page });
       const response = await axiosInstance.get(`/feed/?page=${page}`);
+      logger.info('Feed fetched successfully', { count: response.data.results.length });
       return response.data;
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to fetch feed');
+      throw errorHandler.handleApiError(err, 'Failed to fetch feed');
     }
-  },
+  }
 
-  // Following
-  followUser: async (userId) => {
+  // Follow Methods
+  async followUser(userId) {
     try {
-      const response = await axiosInstance.post('/social/follows/follow/', {
+      logger.debug('Following user', { userId });
+      const response = await axiosInstance.post('/social/follows/toggle_follow/', {
         user_id: userId
       });
+      logger.info('User follow action completed', { userId });
       return response.data;
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to follow user');
+      throw errorHandler.handleApiError(err, 'Failed to follow user');
     }
-  },
+  }
 
-  unfollowUser: async (userId) => {
+  async getFollowers(userId) {
     try {
-      await axiosInstance.post('/social/follows/unfollow/', {
-        user_id: userId
-      });
-    } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to unfollow user');
-    }
-  },
-
-  getFollowers: async (userId) => {
-    try {
-      const response = await axiosInstance.get(`/social/follows/?following=${userId}`);
+      logger.debug('Fetching followers', { userId });
+      const response = await axiosInstance.get(`/social/follows/?type=followers&user=${userId}`);
+      logger.info('Followers fetched successfully', { count: response.data.results.length });
       return response.data;
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to get followers');
+      throw errorHandler.handleApiError(err, 'Failed to fetch followers');
     }
-  },
+  }
 
-  getFollowing: async (userId) => {
+  async getFollowersCount(userId) {
     try {
-      const response = await axiosInstance.get(`/social/follows/?follower=${userId}`);
+      logger.debug('Fetching followers count', { userId });
+      const response = await axiosInstance.get(`/social/follows/followers_count/`);
+      logger.info('Followers count fetched', { count: response.data.followers_count });
       return response.data;
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to get following');
+      throw errorHandler.handleApiError(err, 'Failed to fetch followers count');
     }
-  },
+  }
 
-  // Likes
-  likeWorkout: async (workoutId) => {
+  // Like Methods
+  async toggleLike(workoutId) {
     try {
+      logger.debug('Toggling workout like', { workoutId });
       const response = await axiosInstance.post('/social/likes/', {
         workout: workoutId
       });
+      logger.info('Like toggled successfully', { workoutId });
       return response.data;
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to like workout');
+      throw errorHandler.handleApiError(err, 'Failed to toggle like');
     }
-  },
+  }
 
-  unlikeWorkout: async (workoutId) => {
+  // Comment Methods
+  async getComments(workoutId) {
     try {
-      await axiosInstance.delete(`/social/likes/${workoutId}/`);
-    } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to unlike workout');
-    }
-  },
-
-  // Comments
-  getComments: async (workoutId) => {
-    try {
-      const response = await axiosInstance.get(`/social/comments/?workout=${workoutId}`);
+      logger.debug('Fetching comments', { workoutId });
+      const response = await axiosInstance.get(`/social/comments/?workout_id=${workoutId}`);
+      logger.info('Comments fetched successfully', { count: response.data.results.length });
       return response.data;
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to fetch comments');
+      throw errorHandler.handleApiError(err, 'Failed to fetch comments');
     }
-  },
+  }
 
-  addComment: async (workoutId, content) => {
+  async addComment(workoutId, content) {
     try {
+      logger.debug('Adding comment', { workoutId, content });
       const response = await axiosInstance.post('/social/comments/', {
         workout: workoutId,
         content
       });
+      logger.info('Comment added successfully', { workoutId });
       return response.data;
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to add comment');
+      throw errorHandler.handleApiError(err, 'Failed to add comment');
     }
-  },
+  }
 
-  deleteComment: async (commentId) => {
+  async deleteComment(commentId) {
     try {
+      logger.debug('Deleting comment', { commentId });
       await axiosInstance.delete(`/social/comments/${commentId}/`);
+      logger.info('Comment deleted successfully', { commentId });
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to delete comment');
+      throw errorHandler.handleApiError(err, 'Failed to delete comment');
     }
-  },
+  }
 
-  // Suggested Users
-  getSuggestedUsers: async () => {
+  async getCommentsCount(workoutId) {
     try {
-      const response = await axiosInstance.get('/profiles/?suggested=true');
+      logger.debug('Fetching comments count', { workoutId });
+      const response = await axiosInstance.get(`/social/comments/comments_count/?workout_id=${workoutId}`);
+      logger.info('Comments count fetched', { count: response.data.comments_count });
       return response.data;
     } catch (err) {
-      handleApiError(err);
-      throw new Error('Failed to fetch suggested users');
+      throw errorHandler.handleApiError(err, 'Failed to fetch comments count');
     }
-  },
-};
+  }
+}
 
+export const socialService = new SocialService();
 export default socialService;
