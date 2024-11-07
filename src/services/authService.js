@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import handleApiError from '../utils/errorHandler';
+import handleApiError from './errorHandlerService';
 
 export const register = async (data) => {
   try {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { useCurrentUser, useSetCurrentUser } from '../contexts/CurrentUserContext';
+import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
   Menu, 
   X, 
@@ -11,7 +11,7 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import Avatar from './Avatar';
-import { authService } from '../services/apiService';
+import { authService } from '../../services/authService';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);

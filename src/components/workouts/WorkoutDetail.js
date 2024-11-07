@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { axiosReq } from '../../services/axiosDefaults';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
-import Avatar from '../Avatar';
+import Avatar from '../common/Avatar';
 
 const WorkoutDetail = () => {
   const { id } = useParams();

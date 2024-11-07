@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import workoutService from '../../services/workoutService';
-import Asset from '../../components/Asset';
+import Asset from '../common/Asset';
 import { Alert } from 'react-bootstrap';
 
 const WorkoutList = ({ filter = "" }) => {

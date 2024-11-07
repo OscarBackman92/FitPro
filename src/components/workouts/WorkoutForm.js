@@ -1,7 +1,7 @@
 // src/components/workouts/WorkoutForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useFetchData } from '../../hooks';
+import { useFetchData } from '../../hooks/useFetchData';
 import { workoutService } from '../../services/workoutService';
 import logger from '../../services/loggerService';
 import errorHandler from '../../services/errorHandlerService';

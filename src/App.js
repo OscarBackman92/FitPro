@@ -1,10 +1,10 @@
 import React from "react";
 import Container from "react-bootstrap/Container";
 import { Route, Routes } from "react-router-dom";
-import "./api/axiosDefaults";
+import "./services/axiosDefaults";
 
 // Components
-import NavBar from "./components/NavBar";
+import NavBar from "./components/common/NavBar";
 import PrivateRoute from "./components/common/PrivateRoute";
 import ProfileEditForm from "./components/profiles/ProfileEditForm";
 import Dashboard from './components/dashboard/Dashboard';

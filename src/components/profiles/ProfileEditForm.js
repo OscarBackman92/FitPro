@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Alert, Button, Col, Container, Form, Image, Row } from 'react-bootstrap';
-import { axiosReq } from '../../api/axiosDefaults';
+import { axiosReq } from '../../services/axiosDefaults';
 import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserContext';
 import styles from '../../styles/ProfileEditForm.module.css';
 

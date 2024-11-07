@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { axiosReq } from '../../api/axiosDefaults';
+import { axiosReq } from '../../services/axiosDefaults';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { ProfileHeader, StatsGrid, ActivityChart, WorkoutsList } from './ProfileComponents';
 import Goals from '../goals/Goals';
