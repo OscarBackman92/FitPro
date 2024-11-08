@@ -3,10 +3,8 @@ import React, { createContext, useContext, useReducer, useCallback } from 'react
 import { socialService } from '../services/socialService';
 import logger from '../services/loggerService';
 
-const SocialContext = createContext(null);
-const SocialDispatchContext = createContext(null);
+const SocialContext = createContext(undefined);
 
-// Action Types
 const ACTIONS = {
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
@@ -48,9 +46,6 @@ function socialReducer(state, action) {
 
     case ACTIONS.SET_ERROR:
       return { ...state, error: action.payload, loading: false };
-
-    case ACTIONS.CLEAR_ERROR:
-      return { ...state, error: null };
 
     case ACTIONS.SET_FEED:
       return { 
@@ -163,7 +158,7 @@ export function SocialProvider({ children }) {
     dispatch,
     fetchFeed,
     
-    // Convenience methods
+    // Helper methods
     async toggleLike(workoutId) {
       try {
         await socialService.toggleLike(workoutId);
@@ -209,14 +204,11 @@ export function SocialProvider({ children }) {
 
   return (
     <SocialContext.Provider value={contextValue}>
-      <SocialDispatchContext.Provider value={dispatch}>
-        {children}
-      </SocialDispatchContext.Provider>
+      {children}
     </SocialContext.Provider>
   );
 }
 
-// Custom hooks
 export function useSocial() {
   const context = useContext(SocialContext);
   if (context === undefined) {
@@ -224,50 +216,5 @@ export function useSocial() {
   }
   return context;
 }
-
-export function useSocialDispatch() {
-  const context = useContext(SocialDispatchContext);
-  if (context === undefined) {
-    throw new Error('useSocialDispatch must be used within a SocialProvider');
-  }
-  return context;
-}
-
-// Action creators
-export const socialActions = {
-  setLoading: (loading) => ({
-    type: ACTIONS.SET_LOADING,
-    payload: loading
-  }),
-
-  setError: (error) => ({
-    type: ACTIONS.SET_ERROR,
-    payload: error
-  }),
-
-  clearError: () => ({
-    type: ACTIONS.CLEAR_ERROR
-  }),
-
-  setFeed: (feed) => ({
-    type: ACTIONS.SET_FEED,
-    payload: feed
-  }),
-
-  updateFeed: (feed) => ({
-    type: ACTIONS.UPDATE_FEED,
-    payload: feed
-  }),
-
-  toggleLike: (workoutId) => ({
-    type: ACTIONS.TOGGLE_LIKE,
-    payload: workoutId
-  }),
-
-  toggleFollow: (userId) => ({
-    type: ACTIONS.TOGGLE_FOLLOW,
-    payload: userId
-  })
-};
 
 export default SocialProvider;

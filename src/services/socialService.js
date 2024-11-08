@@ -3,127 +3,197 @@ import axiosInstance from './axiosInstance';
 import logger from './loggerService';
 import errorHandler from './errorHandlerService';
 
-class SocialService {
+export const socialService = {
   // Feed Methods
-  async getFeed(page = 1) {
+  async getFeed(params = {}) {
     try {
-      logger.debug('Fetching social feed', { page });
-      const response = await axiosInstance.get(`/social/feed/?page=${page}`);
+      logger.debug('Fetching social feed', { params });
+      const response = await axiosInstance.get('/api/social/feed/', { params });
       logger.info('Feed fetched successfully', { count: response.data.results.length });
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch feed');
     }
-  }
+  },
+
+  async getFeedByUser(userId, params = {}) {
+    try {
+      logger.debug('Fetching user feed', { userId, params });
+      const response = await axiosInstance.get(`/api/social/feed/${userId}/`, { params });
+      logger.info('User feed fetched successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch user feed');
+    }
+  },
 
   // Follow Methods
   async followUser(userId) {
     try {
       logger.debug('Following user', { userId });
-      const response = await axiosInstance.post('/social/follow/toggle_follow/', {
+      const response = await axiosInstance.post('/api/social/follow/toggle/', {
         user_id: userId
       });
-      logger.info('User follow action completed', { userId });
+      logger.info('Follow toggled successfully');
       return response.data;
     } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to follow user');
+      throw errorHandler.handleApiError(err, 'Failed to toggle follow');
     }
-  }
+  },
 
-  async getFollowers(userId) {
+  async getFollowers(userId, params = {}) {
     try {
-      logger.debug('Fetching followers', { userId });
-      const response = await axiosInstance.get(`/social/follow/?type=followers&user=${userId}`);
-      logger.info('Followers fetched successfully', { count: response.data.results.length });
+      logger.debug('Fetching followers', { userId, params });
+      const response = await axiosInstance.get(`/api/social/followers/${userId}/`, { params });
+      logger.info('Followers fetched successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch followers');
     }
-  }
+  },
 
-  async getFollowing(userId) {
+  async getFollowing(userId, params = {}) {
     try {
-      logger.debug('Fetching following', { userId });
-      const response = await axiosInstance.get(`/social/follow/?type=following&user=${userId}`);
-      logger.info('Following fetched successfully', { count: response.data.results.length });
+      logger.debug('Fetching following', { userId, params });
+      const response = await axiosInstance.get(`/api/social/following/${userId}/`, { params });
+      logger.info('Following fetched successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch following');
     }
-  }
-
-  async getFollowersCount(userId) {
-    try {
-      logger.debug('Fetching followers count', { userId });
-      const response = await axiosInstance.get(`/social/follow/followers_count/`);
-      logger.info('Followers count fetched', { count: response.data.followers_count });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch followers count');
-    }
-  }
+  },
 
   // Like Methods
   async toggleLike(workoutId) {
     try {
       logger.debug('Toggling workout like', { workoutId });
-      const response = await axiosInstance.post('/social/likes/', {
-        workout: workoutId
+      const response = await axiosInstance.post('/api/social/likes/toggle/', {
+        workout_id: workoutId
       });
-      logger.info('Like toggled successfully', { workoutId });
+      logger.info('Like toggled successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to toggle like');
     }
-  }
+  },
+
+  async getLikes(workoutId) {
+    try {
+      logger.debug('Fetching likes', { workoutId });
+      const response = await axiosInstance.get(`/api/social/likes/${workoutId}/`);
+      logger.info('Likes fetched successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch likes');
+    }
+  },
 
   // Comment Methods
-  async getComments(workoutId) {
+  async getComments(workoutId, params = {}) {
     try {
-      logger.debug('Fetching comments', { workoutId });
-      const response = await axiosInstance.get(`/social/comments/?workout_id=${workoutId}`);
-      logger.info('Comments fetched successfully', { count: response.data.results.length });
+      logger.debug('Fetching comments', { workoutId, params });
+      const response = await axiosInstance.get(`/api/social/comments/${workoutId}/`, { params });
+      logger.info('Comments fetched successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch comments');
     }
-  }
+  },
 
   async addComment(workoutId, content) {
     try {
       logger.debug('Adding comment', { workoutId, content });
-      const response = await axiosInstance.post('/social/comments/', {
-        workout: workoutId,
+      const response = await axiosInstance.post('/api/social/comments/', {
+        workout_id: workoutId,
         content
       });
-      logger.info('Comment added successfully', { workoutId });
+      logger.info('Comment added successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to add comment');
     }
-  }
+  },
+
+  async updateComment(commentId, content) {
+    try {
+      logger.debug('Updating comment', { commentId, content });
+      const response = await axiosInstance.put(`/api/social/comments/${commentId}/`, {
+        content
+      });
+      logger.info('Comment updated successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to update comment');
+    }
+  },
 
   async deleteComment(commentId) {
     try {
       logger.debug('Deleting comment', { commentId });
-      await axiosInstance.delete(`/social/comments/${commentId}/`);
-      logger.info('Comment deleted successfully', { commentId });
+      await axiosInstance.delete(`/api/social/comments/${commentId}/`);
+      logger.info('Comment deleted successfully');
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to delete comment');
     }
-  }
+  },
 
-  async getCommentsCount(workoutId) {
+  // Notifications
+  async getNotifications(params = {}) {
     try {
-      logger.debug('Fetching comments count', { workoutId });
-      const response = await axiosInstance.get(`/social/comments/comments_count/?workout_id=${workoutId}`);
-      logger.info('Comments count fetched', { count: response.data.comments_count });
+      logger.debug('Fetching notifications', { params });
+      const response = await axiosInstance.get('/api/social/notifications/', { params });
+      logger.info('Notifications fetched successfully');
       return response.data;
     } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch comments count');
+      throw errorHandler.handleApiError(err, 'Failed to fetch notifications');
+    }
+  },
+
+  async markNotificationRead(notificationId) {
+    try {
+      logger.debug('Marking notification as read', { notificationId });
+      const response = await axiosInstance.post(`/api/social/notifications/${notificationId}/read/`);
+      logger.info('Notification marked as read');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to mark notification as read');
+    }
+  },
+
+  async markAllNotificationsRead() {
+    try {
+      logger.debug('Marking all notifications as read');
+      const response = await axiosInstance.post('/api/social/notifications/read-all/');
+      logger.info('All notifications marked as read');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to mark all notifications as read');
+    }
+  },
+
+  // Activity Feed
+  async getActivityFeed(params = {}) {
+    try {
+      logger.debug('Fetching activity feed', { params });
+      const response = await axiosInstance.get('/api/social/activity/', { params });
+      logger.info('Activity feed fetched successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch activity feed');
+    }
+  },
+
+  // Stats
+  async getSocialStats(userId) {
+    try {
+      logger.debug('Fetching social stats', { userId });
+      const response = await axiosInstance.get(`/api/social/stats/${userId}/`);
+      logger.info('Social stats fetched successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch social stats');
     }
   }
-}
+};
 
-export const socialService = new SocialService();
 export default socialService;

@@ -1,44 +1,75 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import logger from '../services/loggerService';
-import errorHandler from '../services/errorHandlerService';
 
-export const usePagination = (fetchFunction, deps = []) => {
+export const usePagination = (fetchFunction, options = {}) => {
+  const {
+    pageSize = 10,
+    initialPage = 1,
+    dependencies = []
+  } = options;
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const fetchPage = useCallback(async (pageNumber) => {
+    setLoading(true);
+    try {
+      const response = await fetchFunction({
+        page: pageNumber,
+        page_size: pageSize
+      });
+
+      logger.debug('Pagination data fetched', {
+        page: pageNumber,
+        total: response.count,
+        results: response.results.length
+      });
+
+      if (pageNumber === 1) {
+        setData(response.results);
+      } else {
+        setData(prev => [...prev, ...response.results]);
+      }
+
+      setTotal(response.count);
+      setHasMore(!!response.next);
+    } catch (err) {
+      setError(err);
+      logger.error('Error fetching paginated data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchFunction, pageSize]);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetchFunction(page);
-        setData(prev => (page === 1 ? response.results : [...prev, ...response.results]));
-        setHasMore(!!response.next);
-        setError(null);
-        logger.debug('Pagination data loaded', { 
-          page, 
-          count: response.results.length,
-          hasMore: !!response.next 
-        });
-      } catch (err) {
-        const handledError = errorHandler.handleApiError(err);
-        setError(handledError.message);
-        logger.error('Pagination error', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchPage(page);
+  }, [page, fetchPage, ...dependencies]);
 
-    loadData();
-  }, [page, fetchFunction, ...deps]);
-
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (!loading && hasMore) {
       setPage(p => p + 1);
     }
-  };
+  }, [loading, hasMore]);
 
-  return { data, loading, error, hasMore, loadMore };
+  const reset = useCallback(() => {
+    setData([]);
+    setPage(1);
+    setHasMore(true);
+  }, []);
+
+  return {
+    data,
+    loading,
+    error,
+    hasMore,
+    total,
+    page,
+    loadMore,
+    reset,
+    setPage
+  };
 };

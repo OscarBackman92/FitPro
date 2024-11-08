@@ -3,96 +3,161 @@ import axiosInstance from './axiosInstance';
 import logger from './loggerService';
 import errorHandler from './errorHandlerService';
 
-class WorkoutService {
+export const workoutService = {
+  // Workouts
   async getWorkouts(params = {}) {
     try {
       logger.debug('Fetching workouts', { params });
-      const response = await axiosInstance.get('/workouts/workouts/', { params });
+      const response = await axiosInstance.get('/api/workouts/workouts/', { params });
       logger.info('Workouts fetched successfully', { count: response.data.results.length });
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch workouts');
     }
-  }
+  },
 
-  async getWorkout(workoutId) {
+  async getWorkout(id) {
     try {
-      logger.debug('Fetching workout details', { workoutId });
-      const response = await axiosInstance.get(`/workouts/workouts/${workoutId}/`);
-      logger.info('Workout fetched successfully', { workoutId });
+      logger.debug('Fetching workout', { id });
+      const response = await axiosInstance.get(`/api/workouts/workouts/${id}/`);
+      logger.info('Workout fetched successfully');
       return response.data;
     } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout details');
+      throw errorHandler.handleApiError(err, 'Failed to fetch workout');
     }
-  }
+  },
 
   async createWorkout(workoutData) {
     try {
       logger.debug('Creating workout', { workoutData });
-      const response = await axiosInstance.post('/workouts/workouts/', workoutData);
-      logger.info('Workout created successfully', { workoutId: response.data.id });
+      const response = await axiosInstance.post('/api/workouts/workouts/', workoutData);
+      logger.info('Workout created successfully', { id: response.data.id });
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to create workout');
     }
-  }
+  },
 
-  async updateWorkout(workoutId, workoutData) {
+  async updateWorkout(id, workoutData) {
     try {
-      logger.debug('Updating workout', { workoutId, workoutData });
-      const response = await axiosInstance.put(`/workouts/workouts/${workoutId}/`, workoutData);
-      logger.info('Workout updated successfully', { workoutId });
+      logger.debug('Updating workout', { id, workoutData });
+      const response = await axiosInstance.put(`/api/workouts/workouts/${id}/`, workoutData);
+      logger.info('Workout updated successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to update workout');
     }
-  }
+  },
 
-  async deleteWorkout(workoutId) {
+  async deleteWorkout(id) {
     try {
-      logger.debug('Deleting workout', { workoutId });
-      await axiosInstance.delete(`/workouts/workouts/${workoutId}/`);
-      logger.info('Workout deleted successfully', { workoutId });
+      logger.debug('Deleting workout', { id });
+      await axiosInstance.delete(`/api/workouts/workouts/${id}/`);
+      logger.info('Workout deleted successfully');
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to delete workout');
     }
-  }
+  },
 
+  // Statistics
   async getWorkoutStatistics() {
     try {
       logger.debug('Fetching workout statistics');
-      const response = await axiosInstance.get('/workouts/workouts/statistics/');
+      const response = await axiosInstance.get('/api/workouts/workouts/statistics/');
       logger.info('Statistics fetched successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch workout statistics');
     }
-  }
+  },
 
   async getWorkoutSummary() {
     try {
       logger.debug('Fetching workout summary');
-      const response = await axiosInstance.get('/workouts/workouts/summary/');
+      const response = await axiosInstance.get('/api/workouts/workouts/summary/');
       logger.info('Summary fetched successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch workout summary');
     }
-  }
+  },
 
-  async filterWorkouts(filters) {
+  // Streaks & Progress
+  async getWorkoutStreaks() {
     try {
-      logger.debug('Filtering workouts', { filters });
-      const response = await axiosInstance.get('/workouts/workouts/', {
-        params: filters
-      });
-      logger.info('Filtered workouts fetched successfully', { count: response.data.results.length });
+      logger.debug('Fetching workout streaks');
+      const response = await axiosInstance.get('/api/workouts/workouts/streaks/');
+      logger.info('Streaks fetched successfully');
       return response.data;
     } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to filter workouts');
+      throw errorHandler.handleApiError(err, 'Failed to fetch workout streaks');
+    }
+  },
+
+  async getWorkoutProgress() {
+    try {
+      logger.debug('Fetching workout progress');
+      const response = await axiosInstance.get('/api/workouts/workouts/progress/');
+      logger.info('Progress fetched successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch workout progress');
+    }
+  },
+
+  // Types & Categories
+  async getWorkoutTypes() {
+    try {
+      logger.debug('Fetching workout types');
+      const response = await axiosInstance.get('/api/workouts/types/');
+      logger.info('Workout types fetched successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch workout types');
+    }
+  },
+
+  // Filtering & Search
+  async searchWorkouts(query) {
+    try {
+      logger.debug('Searching workouts', { query });
+      const response = await axiosInstance.get('/api/workouts/workouts/search/', {
+        params: { q: query }
+      });
+      logger.info('Search completed successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to search workouts');
+    }
+  },
+
+  // Export & Reports
+  async exportWorkouts(format = 'csv') {
+    try {
+      logger.debug('Exporting workouts', { format });
+      const response = await axiosInstance.get(`/api/workouts/workouts/export/`, {
+        params: { format },
+        responseType: 'blob'
+      });
+      logger.info('Export completed successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to export workouts');
+    }
+  },
+
+  async generateReport(params = {}) {
+    try {
+      logger.debug('Generating workout report', { params });
+      const response = await axiosInstance.get('/api/workouts/workouts/report/', {
+        params
+      });
+      logger.info('Report generated successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to generate report');
     }
   }
-}
+};
 
-export const workoutService = new WorkoutService();
 export default workoutService;

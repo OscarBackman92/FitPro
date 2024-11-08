@@ -1,8 +1,9 @@
 // src/contexts/CurrentUserContext.js
-import { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { authService } from "../services/authService";
-import logger from "../services/loggerService";
+import { createContext, useContext, useState, useEffect } from "react";
+import { authService } from '../services/authService';
 import { axiosReq } from "../services/axiosDefaults";
+import logger from "../services/loggerService";
+import toast from 'react-hot-toast';
 
 const CurrentUserContext = createContext(undefined);
 const SetCurrentUserContext = createContext(undefined);
@@ -44,19 +45,35 @@ export const CurrentUserProvider = ({ children }) => {
         logger.debug('Fetching current user');
         const userData = await authService.getCurrentUser();
         
-        // Transform user data to include necessary fields
+        // Transform user data to match Django structure
         const transformedUser = {
           ...userData,
-          // Ensure profile data is properly structured
+          // Ensure profile data matches Django structure
           profile: {
             ...userData.profile,
             id: userData.profile?.id || userData.id,
-            // Add any other necessary profile fields
-          }
+            // Added fields from Django profile model
+            name: userData.profile?.name || '',
+            bio: userData.profile?.bio || '',
+            weight: userData.profile?.weight || null,
+            height: userData.profile?.height || null,
+            date_of_birth: userData.profile?.date_of_birth || null,
+            gender: userData.profile?.gender || '',
+            profile_image: userData.profile?.profile_image || null,
+          },
+          // Added fields from Django user model
+          is_email_verified: userData.is_email_verified || false,
+          last_login: userData.last_login || null,
+          date_joined: userData.date_joined || null,
         };
 
         setCurrentUser(transformedUser);
         logger.debug('Current user fetched successfully');
+
+        // Handle email verification reminder
+        if (!transformedUser.is_email_verified) {
+          toast.warning('Please verify your email address');
+        }
       } catch (err) {
         logger.error('Error fetching current user:', err);
         setError(err.message);
@@ -96,54 +113,45 @@ export const CurrentUserProvider = ({ children }) => {
     };
   }, []);
 
-  const contextValue = useMemo(() => ({
+  const setContextUser = async (user, token = null) => {
+    try {
+      if (token) {
+        localStorage.setItem('token', token);
+        authService.setAuthHeader(token);
+      }
+      
+      if (user) {
+        // Transform user data if necessary
+        const transformedUser = {
+          ...user,
+          profile: {
+            ...user.profile,
+            id: user.profile?.id || user.id,
+          }
+        };
+        setCurrentUser(transformedUser);
+      } else {
+        setCurrentUser(null);
+        authService.clearAuth();
+      }
+    } catch (err) {
+      logger.error('Error setting current user:', err);
+      setError(err.message);
+    }
+  };
+
+  const contextValue = {
     currentUser,
     isLoading,
     error,
     isAuthenticated: !!currentUser,
     profile: currentUser?.profile || null,
-  }), [currentUser, isLoading, error]);
-
-  const setContextValue = useMemo(() => (
-    async (user, token = null) => {
-      try {
-        if (token) {
-          localStorage.setItem('token', token);
-          authService.setAuthHeader(token);
-        }
-        
-        if (user) {
-          // Transform user data if necessary
-          const transformedUser = {
-            ...user,
-            profile: {
-              ...user.profile,
-              id: user.profile?.id || user.id,
-            }
-          };
-          setCurrentUser(transformedUser);
-        } else {
-          setCurrentUser(null);
-          authService.clearAuth();
-        }
-      } catch (err) {
-        logger.error('Error setting current user:', err);
-        setError(err.message);
-      }
-    }
-  ), []);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
+    isEmailVerified: currentUser?.is_email_verified || false,
+  };
 
   return (
     <CurrentUserContext.Provider value={contextValue}>
-      <SetCurrentUserContext.Provider value={setContextValue}>
+      <SetCurrentUserContext.Provider value={setContextUser}>
         {children}
       </SetCurrentUserContext.Provider>
     </CurrentUserContext.Provider>

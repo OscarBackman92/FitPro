@@ -4,9 +4,7 @@ import { workoutService } from '../services/workoutService';
 import logger from '../services/loggerService';
 
 const WorkoutContext = createContext(null);
-const WorkoutDispatchContext = createContext(null);
 
-// Action Types
 const ACTIONS = {
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
@@ -17,10 +15,10 @@ const ACTIONS = {
   SET_STATS: 'SET_STATS',
   SET_FILTERS: 'SET_FILTERS',
   CLEAR_ERROR: 'CLEAR_ERROR',
-  SET_PAGINATION: 'SET_PAGINATION'
+  SET_PAGINATION: 'SET_PAGINATION',
+  SET_WORKOUT_TYPES: 'SET_WORKOUT_TYPES'
 };
 
-// Initial state
 const initialState = {
   workouts: [],
   loading: false,
@@ -29,18 +27,18 @@ const initialState = {
   filters: {
     workout_type: '',
     intensity: '',
-    date_from: '',
-    date_to: '',
+    date_logged_after: '',
+    date_logged_before: '',
     ordering: '-date_logged'
   },
   pagination: {
     page: 1,
     hasMore: true,
     total: 0
-  }
+  },
+  workoutTypes: []
 };
 
-// Reducer
 function workoutReducer(state, action) {
   logger.debug('Workout reducer:', { type: action.type, payload: action.payload });
 
@@ -95,13 +93,19 @@ function workoutReducer(state, action) {
       return { 
         ...state, 
         filters: { ...state.filters, ...action.payload },
-        pagination: { ...state.pagination, page: 1 } // Reset pagination when filters change
+        pagination: { ...state.pagination, page: 1 }
       };
     
     case ACTIONS.SET_PAGINATION:
       return {
         ...state,
         pagination: { ...state.pagination, ...action.payload }
+      };
+
+    case ACTIONS.SET_WORKOUT_TYPES:
+      return {
+        ...state,
+        workoutTypes: action.payload
       };
     
     default:
@@ -112,13 +116,14 @@ function workoutReducer(state, action) {
 export function WorkoutProvider({ children }) {
   const [state, dispatch] = useReducer(workoutReducer, initialState);
 
-  const fetchWorkouts = useCallback(async () => {
+  const fetchWorkouts = useCallback(async (options = {}) => {
+    const { page = state.pagination.page, filters = state.filters } = options;
+    
     dispatch({ type: ACTIONS.SET_LOADING, payload: true });
     try {
-      const { filters, pagination } = state;
       const response = await workoutService.getWorkouts({
         ...filters,
-        page: pagination.page
+        page
       });
       
       dispatch({ type: ACTIONS.SET_WORKOUTS, payload: response.results });
@@ -126,30 +131,60 @@ export function WorkoutProvider({ children }) {
         type: ACTIONS.SET_PAGINATION,
         payload: {
           hasMore: !!response.next,
-          total: response.count
+          total: response.count,
+          page
         }
       });
     } catch (error) {
       dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
     }
-  }, [state]);
+  }, [state.filters, state.pagination.page]);
+
+  const fetchWorkoutStats = useCallback(async () => {
+    try {
+      const stats = await workoutService.getWorkoutStatistics();
+      dispatch({ type: ACTIONS.SET_STATS, payload: stats });
+    } catch (error) {
+      logger.error('Error fetching workout stats:', error);
+    }
+  }, []);
+
+  const fetchWorkoutTypes = useCallback(async () => {
+    try {
+      const types = await workoutService.getWorkoutTypes();
+      dispatch({ type: ACTIONS.SET_WORKOUT_TYPES, payload: types });
+    } catch (error) {
+      logger.error('Error fetching workout types:', error);
+    }
+  }, []);
 
   const contextValue = {
     ...state,
+    dispatch,
     fetchWorkouts,
-    dispatch
+    fetchWorkoutStats,
+    fetchWorkoutTypes,
+
+    setFilters: (filters) => {
+      dispatch({ type: ACTIONS.SET_FILTERS, payload: filters });
+    },
+
+    resetFilters: () => {
+      dispatch({ type: ACTIONS.SET_FILTERS, payload: initialState.filters });
+    },
+
+    clearError: () => {
+      dispatch({ type: ACTIONS.CLEAR_ERROR });
+    }
   };
 
   return (
     <WorkoutContext.Provider value={contextValue}>
-      <WorkoutDispatchContext.Provider value={dispatch}>
-        {children}
-      </WorkoutDispatchContext.Provider>
+      {children}
     </WorkoutContext.Provider>
   );
 }
 
-// Custom hooks for accessing context
 export function useWorkout() {
   const context = useContext(WorkoutContext);
   if (context === undefined) {
@@ -157,65 +192,5 @@ export function useWorkout() {
   }
   return context;
 }
-
-export function useWorkoutDispatch() {
-  const context = useContext(WorkoutDispatchContext);
-  if (context === undefined) {
-    throw new Error('useWorkoutDispatch must be used within a WorkoutProvider');
-  }
-  return context;
-}
-
-// Action creators
-export const workoutActions = {
-  setLoading: (loading) => ({
-    type: ACTIONS.SET_LOADING,
-    payload: loading
-  }),
-
-  setError: (error) => ({
-    type: ACTIONS.SET_ERROR,
-    payload: error
-  }),
-
-  clearError: () => ({
-    type: ACTIONS.CLEAR_ERROR
-  }),
-
-  setWorkouts: (workouts) => ({
-    type: ACTIONS.SET_WORKOUTS,
-    payload: workouts
-  }),
-
-  addWorkout: (workout) => ({
-    type: ACTIONS.ADD_WORKOUT,
-    payload: workout
-  }),
-
-  updateWorkout: (workout) => ({
-    type: ACTIONS.UPDATE_WORKOUT,
-    payload: workout
-  }),
-
-  deleteWorkout: (workoutId) => ({
-    type: ACTIONS.DELETE_WORKOUT,
-    payload: workoutId
-  }),
-
-  setStats: (stats) => ({
-    type: ACTIONS.SET_STATS,
-    payload: stats
-  }),
-
-  setFilters: (filters) => ({
-    type: ACTIONS.SET_FILTERS,
-    payload: filters
-  }),
-
-  setPagination: (pagination) => ({
-    type: ACTIONS.SET_PAGINATION,
-    payload: pagination
-  })
-};
 
 export default WorkoutProvider;

@@ -20,7 +20,6 @@ class ProfileService {
       logger.debug('Updating profile', { userId, profileData });
       const formData = new FormData();
       
-      // Handle file and text data appropriately
       Object.keys(profileData).forEach(key => {
         if (profileData[key] !== null && profileData[key] !== undefined) {
           if (key === 'profile_image' && profileData[key] instanceof File) {
@@ -44,25 +43,6 @@ class ProfileService {
     }
   }
 
-  async uploadProfileImage(userId, imageFile) {
-    try {
-      logger.debug('Uploading profile image', { userId });
-      const formData = new FormData();
-      formData.append('profile_image', imageFile);
-
-      const response = await axiosInstance.post(`/api/profiles/${userId}/upload_image/`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      logger.info('Profile image uploaded successfully', { userId });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to upload profile image');
-    }
-  }
-
   async getProfileStats(userId) {
     try {
       logger.debug('Fetching profile stats', { userId });
@@ -74,57 +54,43 @@ class ProfileService {
     }
   }
 
-  async searchProfiles(query) {
+  async getProfileWorkouts(userId, params = {}) {
     try {
-      logger.debug('Searching profiles', { query });
-      const response = await axiosInstance.get('/api/profiles/search/', {
-        params: { q: query }
+      logger.debug('Fetching profile workouts', { userId, params });
+      const response = await axiosInstance.get(`/api/profiles/${userId}/workouts/`, { params });
+      logger.info('Profile workouts fetched successfully', { userId });
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch profile workouts');
+    }
+  }
+
+  async getProfileGoals(userId) {
+    try {
+      logger.debug('Fetching profile goals', { userId });
+      const response = await axiosInstance.get(`/api/profiles/${userId}/goals/`);
+      logger.info('Profile goals fetched successfully', { userId });
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch profile goals');
+    }
+  }
+
+  async updateProfileImage(userId, imageFile) {
+    try {
+      logger.debug('Updating profile image', { userId });
+      const formData = new FormData();
+      formData.append('profile_image', imageFile);
+
+      const response = await axiosInstance.post(`/api/profiles/${userId}/upload_image/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-      logger.info('Profile search completed', { results: response.data.results.length });
+      logger.info('Profile image updated successfully', { userId });
       return response.data;
     } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to search profiles');
-    }
-  }
-
-  async getFollowStats(userId) {
-    try {
-      logger.debug('Fetching follow stats', { userId });
-      const response = await axiosInstance.get(`/api/profiles/${userId}/follow_stats/`);
-      logger.info('Follow stats fetched successfully', { userId });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch follow stats');
-    }
-  }
-
-  async getFullProfileInfo(userId) {
-    try {
-      logger.debug('Fetching full profile info', { userId });
-      const response = await axiosInstance.get(`/api/profiles/${userId}/full_info/`);
-      logger.info('Full profile info fetched successfully', { userId });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch full profile info');
-    }
-  }
-
-  async getProfileOverview(userId) {
-    try {
-      logger.debug('Fetching profile overview', { userId });
-      const [profile, stats, followStats] = await Promise.all([
-        this.getProfile(userId),
-        this.getProfileStats(userId),
-        this.getFollowStats(userId)
-      ]);
-
-      return {
-        ...profile,
-        stats,
-        followStats
-      };
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch profile overview');
+      throw errorHandler.handleApiError(err, 'Failed to update profile image');
     }
   }
 }

@@ -3,6 +3,7 @@ import axios from 'axios';
 import logger from './loggerService';
 import errorHandler from './errorHandlerService';
 
+// Updated to use environment variable with new API URL
 const API_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com/api';
 
 // Create axios instances
@@ -11,7 +12,7 @@ export const axiosReq = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: true, // Added to handle CSRF tokens
   timeout: 10000
 });
 
@@ -29,6 +30,7 @@ axiosReq.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
+      // Updated to use Token authentication scheme
       config.headers.Authorization = `Token ${token}`;
       logger.debug('Added auth token to request', {
         url: config.url,
@@ -36,10 +38,15 @@ axiosReq.interceptors.request.use(
       });
     }
 
-    // Add CSRF token if available
+    // Added CSRF token handling for Django
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
     if (csrfToken) {
       config.headers['X-CSRFToken'] = csrfToken;
+    }
+
+    // Added specific handling for multipart/form-data
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
     }
 
     return config;
@@ -71,6 +78,7 @@ axiosRes.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
           logger.debug('Attempting to refresh token');
+          // Updated to use Django REST token refresh endpoint
           const response = await axios.post(`${API_URL}/auth/token/refresh/`, {
             refresh: refreshToken
           });
@@ -90,18 +98,29 @@ axiosRes.interceptors.response.use(
       }
     }
 
+    // Handle Django specific error responses
+    if (error.response?.data) {
+      // Transform Django REST framework error format
+      if (typeof error.response.data === 'object') {
+        const djangoErrors = error.response.data;
+        const transformedErrors = {};
+        
+        Object.keys(djangoErrors).forEach(key => {
+          if (Array.isArray(djangoErrors[key])) {
+            transformedErrors[key] = djangoErrors[key][0];
+          } else {
+            transformedErrors[key] = djangoErrors[key];
+          }
+        });
+        
+        error.response.data = transformedErrors;
+      }
+    }
+
     // Handle rate limiting
     if (error.response?.status === 429) {
       logger.warn('Rate limit exceeded');
     }
-
-    // Log all API errors
-    logger.error('API Error:', {
-      url: originalRequest.url,
-      method: originalRequest.method,
-      status: error.response?.status,
-      data: error.response?.data
-    });
 
     return Promise.reject(errorHandler.handleApiError(error));
   }
