@@ -71,7 +71,6 @@ const WorkoutList = ({ filter = "" }) => {
 
   const totalWorkouts = workouts.results.length;
   const totalDuration = workouts.results.reduce((sum, w) => sum + w.duration, 0);
-  const totalCalories = workouts.results.reduce((sum, w) => sum + w.calories, 0);
   const avgDuration = Math.round(totalDuration / totalWorkouts) || 0;
 
   const chartData = workouts.results
@@ -79,7 +78,6 @@ const WorkoutList = ({ filter = "" }) => {
     .map(workout => ({
       date: new Date(workout.date_logged).toLocaleDateString(),
       duration: workout.duration,
-      calories: workout.calories
     }))
     .reverse();
 
@@ -100,8 +98,7 @@ const WorkoutList = ({ filter = "" }) => {
         {[
           { title: 'Total Workouts', value: totalWorkouts, icon: 'fas fa-dumbbell' },
           { title: 'Total Duration', value: `${totalDuration} mins`, icon: 'fas fa-clock' },
-          { title: 'Average Duration', value: `${avgDuration} mins`, icon: 'fas fa-chart-line' },
-          { title: 'Total Calories', value: totalCalories, icon: 'fas fa-fire' }
+          { title: 'Average Duration', value: `${avgDuration} mins`, icon: 'fas fa-chart-line' }
         ].map(({ title, value, icon }) => (
           <div key={title} className="p-4 bg-white rounded shadow text-center">
             <h3 className="text-lg font-semibold text-gray-600">{title}</h3>
@@ -119,11 +116,9 @@ const WorkoutList = ({ filter = "" }) => {
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-              <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+              <YAxis />
               <Tooltip />
-              <Line yAxisId="left" type="monotone" dataKey="duration" stroke="#8884d8" name="Duration (min)" />
-              <Line yAxisId="right" type="monotone" dataKey="calories" stroke="#82ca9d" name="Calories" />
+              <Line type="monotone" dataKey="duration" stroke="#8884d8" name="Duration (min)" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -142,8 +137,6 @@ const WorkoutList = ({ filter = "" }) => {
             <option value="cardio">Cardio</option>
             <option value="strength">Strength</option>
             <option value="flexibility">Flexibility</option>
-            <option value="sports">Sports</option>
-            <option value="other">Other</option>
           </select>
         </div>
 
@@ -158,8 +151,6 @@ const WorkoutList = ({ filter = "" }) => {
             <option value="date_logged">Oldest First</option>
             <option value="-duration">Duration (High to Low)</option>
             <option value="duration">Duration (Low to High)</option>
-            <option value="-calories">Calories (High to Low)</option>
-            <option value="calories">Calories (Low to High)</option>
           </select>
         </div>
       </div>
@@ -184,7 +175,6 @@ const WorkoutList = ({ filter = "" }) => {
                   <th className="p-3">Date</th>
                   <th className="p-3">Type</th>
                   <th className="p-3">Duration</th>
-                  <th className="p-3">Calories</th>
                   <th className="p-3">Intensity</th>
                   <th className="p-3">Actions</th>
                 </tr>
@@ -197,7 +187,6 @@ const WorkoutList = ({ filter = "" }) => {
                       <td className="p-3">{new Date(workout.date_logged).toLocaleDateString()}</td>
                       <td className="p-3 capitalize">{workout.workout_type}</td>
                       <td className="p-3">{workout.duration} mins</td>
-                      <td className="p-3">{workout.calories}</td>
                       <td className="p-3 capitalize">
                         <span className={`px-2 py-1 rounded ${workout.intensity === 'high' ? 'bg-red-100 text-red-600' : workout.intensity === 'moderate' ? 'bg-yellow-100 text-yellow-600' : 'bg-green-100 text-green-600'}`}>
                           {workout.intensity}

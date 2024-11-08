@@ -9,7 +9,6 @@ import {
   LogOut, 
   Users,
   LayoutDashboard,
-  LineChart,
   Target,
   LogIn,
   UserPlus,
@@ -41,10 +40,7 @@ const NavBar = () => {
   // Navigation items for authenticated users
   const authenticatedLinks = [
     { to: '/dashboard', icon: <LayoutDashboard size={20} />, text: 'Dashboard' },
-    { to: '/workouts', icon: <DumbbellIcon size={20} />, text: 'Workouts' },
-    { to: '/goals', icon: <Target size={20} />, text: 'Goals' },
     { to: '/feed', icon: <Users size={20} />, text: 'Social Feed' },
-    { to: '/stats', icon: <LineChart size={20} />, text: 'Statistics' },
   ];
 
   // Navigation items for unauthenticated users
