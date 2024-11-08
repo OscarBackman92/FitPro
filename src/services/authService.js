@@ -28,14 +28,14 @@ const login = async (credentials) => {
 
 const register = async (userData) => {
   try {
-    logger.debug('Attempting registration', { username: userData.username });
+    logger.debug('Attempting registration', { userData }); // Log user data
     const response = await axiosReq.post('/auth/registration/', userData);
     return response.data;
   } catch (err) {
+    console.error('Registration error:', err); // Log the error
     throw errorHandler.handleApiError(err, 'Registration failed');
   }
 };
-
 const logout = async () => {
   try {
     await axiosReq.post('/auth/logout/');

@@ -1,4 +1,3 @@
-// src/pages/auth/SignUpForm.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../../services/authService';
@@ -8,8 +7,8 @@ const SignUpForm = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: '',
-    password_confirm: ''
+    password1: '',
+    password2: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -27,23 +26,36 @@ const SignUpForm = () => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
-
+  
     // Client-side validation
-    if (formData.password !== formData.password_confirm) {
-      setErrors({ password_confirm: 'Passwords must match' });
+    if (formData.password1 !== formData.password2) {
+      setErrors({ password2: 'Passwords must match' });
       setIsLoading(false);
       return;
     }
-
+  
+    if (formData.password1.length < 8) {
+      setErrors({ password1: 'Password must be at least 8 characters long.' });
+      setIsLoading(false);
+      return;
+    }
+  
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(formData.email)) {
+      setErrors({ email: 'Please enter a valid email address.' });
+      setIsLoading(false);
+      return;
+    }
+  
     try {
       await register(formData);
       toast.success('Registration successful! Please check your email to verify your account.');
       navigate('/signin');
     } catch (err) {
-      setErrors(err.response?.data || {
-        non_field_errors: ['Registration failed. Please try again.']
-      });
-      toast.error(err.message || 'Registration failed');
+      console.error('Registration error response:', err.response);
+      const errorData = err.response?.data || { non_field_errors: ['Registration failed. Please try again.'] };
+      setErrors(errorData);
+      toast.error(errorData.non_field_errors ? errorData.non_field_errors.join(', ') : 'Registration failed');
     } finally {
       setIsLoading(false);
     }
@@ -63,13 +75,13 @@ const SignUpForm = () => {
       placeholder: 'Enter your email'
     },
     {
-      name: 'password',
+      name: 'password1',
       label: 'Password',
       type: 'password',
       placeholder: 'Choose a password'
     },
     {
-      name: 'password_confirm',
+      name: 'password2',
       label: 'Confirm Password',
       type: 'password',
       placeholder: 'Confirm your password'
@@ -117,8 +129,7 @@ const SignUpForm = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`
-              w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white
+            className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white
               ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500
             `}
