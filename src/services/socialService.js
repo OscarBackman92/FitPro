@@ -8,7 +8,7 @@ class SocialService {
   async getFeed(page = 1) {
     try {
       logger.debug('Fetching social feed', { page });
-      const response = await axiosInstance.get(`/feed/?page=${page}`);
+      const response = await axiosInstance.get(`/social/feed/?page=${page}`);
       logger.info('Feed fetched successfully', { count: response.data.results.length });
       return response.data;
     } catch (err) {
@@ -20,7 +20,7 @@ class SocialService {
   async followUser(userId) {
     try {
       logger.debug('Following user', { userId });
-      const response = await axiosInstance.post('/social/follows/toggle_follow/', {
+      const response = await axiosInstance.post('/social/follow/toggle_follow/', {
         user_id: userId
       });
       logger.info('User follow action completed', { userId });
@@ -33,7 +33,7 @@ class SocialService {
   async getFollowers(userId) {
     try {
       logger.debug('Fetching followers', { userId });
-      const response = await axiosInstance.get(`/social/follows/?type=followers&user=${userId}`);
+      const response = await axiosInstance.get(`/social/follow/?type=followers&user=${userId}`);
       logger.info('Followers fetched successfully', { count: response.data.results.length });
       return response.data;
     } catch (err) {
@@ -41,10 +41,21 @@ class SocialService {
     }
   }
 
+  async getFollowing(userId) {
+    try {
+      logger.debug('Fetching following', { userId });
+      const response = await axiosInstance.get(`/social/follow/?type=following&user=${userId}`);
+      logger.info('Following fetched successfully', { count: response.data.results.length });
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch following');
+    }
+  }
+
   async getFollowersCount(userId) {
     try {
       logger.debug('Fetching followers count', { userId });
-      const response = await axiosInstance.get(`/social/follows/followers_count/`);
+      const response = await axiosInstance.get(`/social/follow/followers_count/`);
       logger.info('Followers count fetched', { count: response.data.followers_count });
       return response.data;
     } catch (err) {

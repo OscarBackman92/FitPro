@@ -35,6 +35,13 @@ axiosReq.interceptors.request.use(
         method: config.method
       });
     }
+
+    // Add CSRF token if available
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    if (csrfToken) {
+      config.headers['X-CSRFToken'] = csrfToken;
+    }
+
     return config;
   },
   (error) => {
@@ -54,18 +61,64 @@ axiosRes.interceptors.response.use(
     return response;
   },
   async (error) => {
-    if (error.response?.status === 401) {
-      logger.warn('Unauthorized access detected');
-      localStorage.removeItem('token');
-      window.location.href = '/signin';
+    const originalRequest = error.config;
+
+    // Handle token expiration
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          logger.debug('Attempting to refresh token');
+          const response = await axios.post(`${API_URL}/auth/token/refresh/`, {
+            refresh: refreshToken
+          });
+          
+          if (response.data.access) {
+            localStorage.setItem('token', response.data.access);
+            axiosReq.defaults.headers.common['Authorization'] = `Token ${response.data.access}`;
+            logger.info('Token refreshed successfully');
+            return axiosReq(originalRequest);
+          }
+        }
+      } catch (refreshError) {
+        logger.error('Token refresh failed:', refreshError);
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/signin';
+      }
     }
+
+    // Handle rate limiting
+    if (error.response?.status === 429) {
+      logger.warn('Rate limit exceeded');
+    }
+
+    // Log all API errors
+    logger.error('API Error:', {
+      url: originalRequest.url,
+      method: originalRequest.method,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+
     return Promise.reject(errorHandler.handleApiError(error));
   }
 );
 
+// Add default error handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  logger.error('Unhandled Promise Rejection:', event.reason);
+  if (event.reason.isAxiosError) {
+    errorHandler.handleApiError(event.reason);
+  }
+});
+
 const axiosDefaults = {
   axiosReq,
-  axiosRes
+  axiosRes,
+  API_URL
 };
 
 export default axiosDefaults;

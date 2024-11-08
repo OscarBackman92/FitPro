@@ -58,11 +58,22 @@ class WorkoutService {
     }
   }
 
+  async getWorkoutStatistics() {
+    try {
+      logger.debug('Fetching workout statistics');
+      const response = await axiosInstance.get('/workouts/workouts/statistics/');
+      logger.info('Statistics fetched successfully');
+      return response.data;
+    } catch (err) {
+      throw errorHandler.handleApiError(err, 'Failed to fetch workout statistics');
+    }
+  }
+
   async getWorkoutSummary() {
     try {
       logger.debug('Fetching workout summary');
       const response = await axiosInstance.get('/workouts/workouts/summary/');
-      logger.info('Workout summary fetched successfully');
+      logger.info('Summary fetched successfully');
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch workout summary');
@@ -79,32 +90,6 @@ class WorkoutService {
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to filter workouts');
-    }
-  }
-
-  async searchWorkouts(searchTerm) {
-    try {
-      logger.debug('Searching workouts', { searchTerm });
-      const response = await axiosInstance.get('/workouts/workouts/', {
-        params: { search: searchTerm }
-      });
-      logger.info('Search completed successfully', { count: response.data.results.length });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to search workouts');
-    }
-  }
-
-  async orderWorkouts(orderBy) {
-    try {
-      logger.debug('Ordering workouts', { orderBy });
-      const response = await axiosInstance.get('/workouts/workouts/', {
-        params: { ordering: orderBy }
-      });
-      logger.info('Workouts ordered successfully');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to order workouts');
     }
   }
 }
