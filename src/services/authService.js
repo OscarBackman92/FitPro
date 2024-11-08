@@ -1,18 +1,27 @@
-// src/services/authService.js
 import { axiosReq } from './axiosDefaults';
 import logger from './loggerService';
 import errorHandler from './errorHandlerService';
 
-// Auth service functions
 const login = async (credentials) => {
   try {
     logger.debug('Attempting login', { username: credentials.username });
     const response = await axiosReq.post('/auth/login/', credentials);
+    
+    // Log response for debugging
+    logger.debug('Login response:', response.data);
+    
     if (response.data.key) {
       localStorage.setItem('token', response.data.key);
+      // Get user data after successful login
+      const userResponse = await axiosReq.get('/auth/user/');
+      return {
+        token: response.data.key,
+        user: userResponse.data
+      };
     }
-    return response.data;
+    throw new Error('Invalid response format');
   } catch (err) {
+    logger.error('Login failed:', err);
     throw errorHandler.handleApiError(err, 'Login failed');
   }
 };
