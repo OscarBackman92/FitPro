@@ -24,7 +24,7 @@ const WorkoutForm = () => {
     duration: '',
     intensity: 'moderate',
     notes: '',
-    date_logged: new Date().toISOString().split('T')[0],
+    date_logged: new Date().toISOString().split('T')[0], // Initialize with today's date
   });
 
   useEffect(() => {
@@ -56,7 +56,9 @@ const WorkoutForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
-
+  
+    console.log('Submitting workout data:', workoutData); // Debug log
+  
     try {
       if (id) {
         await workoutService.updateWorkout(id, workoutData);
@@ -129,6 +131,21 @@ const WorkoutForm = () => {
             <option value="moderate">Moderate</option>
             <option value="high">High</option>
           </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Date Logged</label>
+          <input
+            type="date"
+            name="date_logged"
+            value={workoutData.date_logged}
+            onChange={handleChange}
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm ${errors.date_logged ? 'border-red-500' : ''}`}
+            required
+          />
+          {errors.date_logged && (
+            <p className="text-red-500 text-sm mt-1">{errors.date_logged}</p>
+          )}
         </div>
 
         <div>
