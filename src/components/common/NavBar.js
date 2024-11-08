@@ -4,11 +4,18 @@ import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserCon
 import { 
   Menu, 
   X, 
-  Dumbbell, 
+  DumbbellIcon, 
   UserCircle, 
   LogOut, 
   Users,
-  LayoutDashboard
+  LayoutDashboard,
+  LineChart,
+  Target,
+  LogIn,
+  UserPlus,
+  Home,
+  PlusSquare,
+  Bell
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../../services/authService';
@@ -29,40 +36,51 @@ const NavBar = () => {
     }
   };
 
+  // Navigation items for authenticated users
+  const authenticatedLinks = [
+    { to: '/dashboard', icon: <LayoutDashboard size={20} />, text: 'Dashboard' },
+    { to: '/workouts', icon: <DumbbellIcon size={20} />, text: 'Workouts' },
+    { to: '/goals', icon: <Target size={20} />, text: 'Goals' },
+    { to: '/feed', icon: <Users size={20} />, text: 'Social Feed' },
+    { to: '/stats', icon: <LineChart size={20} />, text: 'Statistics' },
+  ];
+
+  // Navigation items for unauthenticated users
+  const unauthenticatedLinks = [
+    { to: '/', icon: <Home size={20} />, text: 'Home' },
+    { to: '/about', icon: <DumbbellIcon size={20} />, text: 'About' },
+    { to: '/features', icon: <Target size={20} />, text: 'Features' },
+  ];
+
   const navLinkClasses = ({ isActive }) => `
     flex items-center gap-2 px-4 py-2 rounded-lg transition-all
     ${isActive ? 
-      'bg-green-500 text-gray-900 font-semibold' : 
-      'text-gray-100 hover:bg-green-500/20 hover:text-green-400'
+      'bg-green-500 text-white font-semibold' : 
+      'text-gray-700 hover:bg-green-50 hover:text-green-600'
     }
   `;
 
-  const loggedInLinks = [
-    { to: '/', icon: <LayoutDashboard size={20} />, text: 'Dashboard' },
-    { to: '/feed', icon: <Users size={20} />, text: 'Social Feed' },
-  ];
-
   return (
-    <nav className="bg-gray-900 shadow-lg sticky top-0 z-50 border-b border-gray-800">
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo and brand */}
+          {/* Logo */}
           <div className="flex-shrink-0">
             <NavLink 
-              to="/"
-              className="flex items-center gap-2 text-green-400 font-bold text-xl hover:text-green-300 transition-colors"
+              to={currentUser ? '/dashboard' : '/'}
+              className="flex items-center gap-2 text-green-600 font-bold text-xl hover:text-green-700 transition-colors"
             >
-              <Dumbbell className="h-8 w-8" />
+              <DumbbellIcon className="h-8 w-8" />
               <span>FitTrack</span>
             </NavLink>
           </div>
 
-          {/* Desktop navigation */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-4">
             {currentUser ? (
               <>
                 {/* Main navigation links */}
-                {loggedInLinks.map((link) => (
+                {authenticatedLinks.map((link) => (
                   <NavLink
                     key={link.to}
                     to={link.to}
@@ -73,11 +91,26 @@ const NavBar = () => {
                   </NavLink>
                 ))}
 
-                {/* Profile and sign out */}
+                {/* Quick Actions */}
+                <button
+                  onClick={() => navigate('/workouts/create')}
+                  className="flex items-center gap-2 px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  <PlusSquare size={20} />
+                  <span>Log Workout</span>
+                </button>
+
+                {/* Notifications */}
+                <button className="relative p-2 text-gray-600 hover:text-green-600 transition-colors">
+                  <Bell size={20} />
+                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+
+                {/* Profile Menu */}
                 <div className="relative ml-3 flex items-center gap-4">
                   <NavLink
                     to={`/profiles/${currentUser?.profile?.id}`}
-                    className="flex items-center gap-2 px-3 py-2 text-gray-100 hover:text-green-400 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-green-600 transition-colors"
                   >
                     <Avatar
                       src={currentUser?.profile?.image}
@@ -88,7 +121,7 @@ const NavBar = () => {
 
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-100 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-all"
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-red-600 rounded-lg transition-all"
                   >
                     <LogOut size={20} />
                     <span>Sign Out</span>
@@ -96,20 +129,37 @@ const NavBar = () => {
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-4">
-                <NavLink
-                  to="/signin"
-                  className="px-4 py-2 text-green-400 border-2 border-green-400 rounded-lg hover:bg-green-400 hover:text-gray-900 transition-all font-semibold"
-                >
-                  Sign In
-                </NavLink>
-                <NavLink
-                  to="/signup"
-                  className="px-4 py-2 bg-green-400 text-gray-900 rounded-lg hover:bg-green-500 transition-all font-semibold"
-                >
-                  Sign Up
-                </NavLink>
-              </div>
+              <>
+                {/* Public navigation links */}
+                {unauthenticatedLinks.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={navLinkClasses}
+                  >
+                    {link.icon}
+                    <span>{link.text}</span>
+                  </NavLink>
+                ))}
+
+                {/* Auth buttons */}
+                <div className="flex items-center gap-4 ml-4">
+                  <NavLink
+                    to="/signin"
+                    className="flex items-center gap-2 px-4 py-2 text-green-600 border-2 border-green-600 rounded-lg hover:bg-green-50 transition-colors font-semibold"
+                  >
+                    <LogIn size={20} />
+                    <span>Sign In</span>
+                  </NavLink>
+                  <NavLink
+                    to="/signup"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                  >
+                    <UserPlus size={20} />
+                    <span>Sign Up</span>
+                  </NavLink>
+                </div>
+              </>
             )}
           </div>
 
@@ -117,7 +167,7 @@ const NavBar = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-md text-gray-100 hover:bg-gray-800 focus:outline-none"
+              className="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
               aria-expanded={isOpen}
               aria-label="Toggle menu"
             >
@@ -135,31 +185,38 @@ const NavBar = () => {
       <div 
         className={`${
           isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
-        } md:hidden bg-gray-900 shadow-lg absolute top-16 left-0 right-0 transition-all transform duration-300 ease-in-out`}
+        } md:hidden fixed inset-0 z-50 bg-white transform transition-all duration-300 ease-in-out`}
       >
-        <div className="px-2 pt-2 pb-3 space-y-1">
+        <div className="pt-16 pb-6 px-4 space-y-1">
           {currentUser ? (
             <>
-              {loggedInLinks.map((link) => (
+              {authenticatedLinks.map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}
                   onClick={() => setIsOpen(false)}
-                  className={({ isActive }) => 
-                    `block ${navLinkClasses({ isActive })}`
-                  }
+                  className={navLinkClasses}
                 >
                   {link.icon}
                   <span>{link.text}</span>
                 </NavLink>
               ))}
 
+              <button
+                onClick={() => {
+                  navigate('/workouts/create');
+                  setIsOpen(false);
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2 mt-4 text-white bg-green-500 rounded-lg hover:bg-green-600 transition-colors"
+              >
+                <PlusSquare size={20} />
+                <span>Log Workout</span>
+              </button>
+
               <NavLink
                 to={`/profiles/${currentUser?.profile?.id}`}
                 onClick={() => setIsOpen(false)}
-                className={({ isActive }) => 
-                  `block ${navLinkClasses({ isActive })}`
-                }
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-green-600 mt-4"
               >
                 <UserCircle size={20} />
                 <span>Profile</span>
@@ -170,29 +227,45 @@ const NavBar = () => {
                   handleSignOut();
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center gap-2 px-4 py-2 text-gray-100 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-all"
+                className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all mt-4"
               >
                 <LogOut size={20} />
                 <span>Sign Out</span>
               </button>
             </>
           ) : (
-            <div className="space-y-2 p-2">
-              <NavLink
-                to="/signin"
-                onClick={() => setIsOpen(false)}
-                className="block w-full text-center px-4 py-2 text-green-400 border-2 border-green-400 rounded-lg hover:bg-green-400 hover:text-gray-900 transition-all font-semibold"
-              >
-                Sign In
-              </NavLink>
-              <NavLink
-                to="/signup"
-                onClick={() => setIsOpen(false)}
-                className="block w-full text-center px-4 py-2 bg-green-400 text-gray-900 rounded-lg hover:bg-green-500 transition-all font-semibold"
-              >
-                Sign Up
-              </NavLink>
-            </div>
+            <>
+              {unauthenticatedLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setIsOpen(false)}
+                  className={navLinkClasses}
+                >
+                  {link.icon}
+                  <span>{link.text}</span>
+                </NavLink>
+              ))}
+
+              <div className="space-y-2 pt-4">
+                <NavLink
+                  to="/signin"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 w-full text-green-600 border-2 border-green-600 rounded-lg hover:bg-green-50 transition-colors font-semibold"
+                >
+                  <LogIn size={20} />
+                  <span>Sign In</span>
+                </NavLink>
+                <NavLink
+                  to="/signup"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 w-full bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                >
+                  <UserPlus size={20} />
+                  <span>Sign Up</span>
+                </NavLink>
+              </div>
+            </>
           )}
         </div>
       </div>
