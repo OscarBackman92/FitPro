@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserContext';
+import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
   Menu, 
   X, 
@@ -19,20 +19,22 @@ import {
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../../services/authService';
+import toast from 'react-hot-toast';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const currentUser = useCurrentUser();
-  const setCurrentUser = useSetCurrentUser();
+  const { currentUser, setCurrentUser } = useCurrentUser();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
       await authService.logout();
       setCurrentUser(null);
+      toast.success('Successfully signed out');
       navigate('/signin');
     } catch (err) {
       console.error('Error signing out:', err);
+      toast.error('Failed to sign out');
     }
   };
 

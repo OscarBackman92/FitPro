@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Alert, Button, Col, Container, Form, Image, Row } from 'react-bootstrap';
 import { axiosReq } from '../../services/axiosDefaults';
-import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserContext';
+import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import styles from '../../styles/ProfileEditForm.module.css';
 
 const ProfileEditForm = () => {
-  const currentUser = useCurrentUser();
-  const setCurrentUser = useSetCurrentUser();
+  const { currentUser, setCurrentUser } = useCurrentUser();
   const { id } = useParams();
   const navigate = useNavigate();
   const [hasLoaded, setHasLoaded] = useState(false);

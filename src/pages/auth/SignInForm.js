@@ -1,12 +1,11 @@
-// src/pages/auth/SignInForm.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
-import { login } from '../../services/authService';
+import { useCurrentUser } from '../../contexts/CurrentUserContext';
+import { authService } from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const SignInForm = () => {
-  const setCurrentUser = useSetCurrentUser();
+  const { setCurrentUser } = useCurrentUser();;
   const [signInData, setSignInData] = useState({
     username: '',
     password: ''
@@ -27,22 +26,15 @@ const SignInForm = () => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
-
+  
     try {
-      const data = await login(signInData);
+      const data = await authService.login(signInData);
       setCurrentUser(data.user);
-      
-      // Get redirect URL if it exists
-      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
-      sessionStorage.removeItem('redirectAfterLogin');
-      
       toast.success('Welcome back!');
-      navigate(redirectUrl || '/');
+      navigate('/');
     } catch (err) {
-      setErrors(err.response?.data || {
-        non_field_errors: ['An error occurred. Please try again.']
-      });
-      toast.error(err.message || 'Login failed');
+      toast.error('Failed to sign in');
+      setErrors(err.response?.data || { non_field_errors: ['An error occurred. Please try again.'] });
     } finally {
       setIsLoading(false);
     }

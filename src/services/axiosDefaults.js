@@ -30,7 +30,6 @@ axiosReq.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Updated to use Token authentication scheme
       config.headers.Authorization = `Token ${token}`;
       logger.debug('Added auth token to request', {
         url: config.url,

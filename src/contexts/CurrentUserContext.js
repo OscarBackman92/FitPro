@@ -5,21 +5,21 @@ import { axiosReq } from "../services/axiosDefaults";
 import logger from "../services/loggerService";
 import toast from 'react-hot-toast';
 
-const CurrentUserContext = createContext(undefined);
-const SetCurrentUserContext = createContext(undefined);
+// Single context with both value and setter
+const CurrentUserContext = createContext({
+  currentUser: null,
+  setCurrentUser: () => null,
+  isLoading: true,
+  error: null,
+  isAuthenticated: false,
+  profile: null,
+  isEmailVerified: false,
+});
 
 export const useCurrentUser = () => {
   const context = useContext(CurrentUserContext);
   if (context === undefined) {
     throw new Error('useCurrentUser must be used within a CurrentUserProvider');
-  }
-  return context;
-};
-
-export const useSetCurrentUser = () => {
-  const context = useContext(SetCurrentUserContext);
-  if (context === undefined) {
-    throw new Error('useSetCurrentUser must be used within a CurrentUserProvider');
   }
   return context;
 };
@@ -38,6 +38,7 @@ export const CurrentUserProvider = ({ children }) => {
         const token = localStorage.getItem('token');
         if (!token) {
           logger.debug('No auth token found, skipping user fetch');
+          setCurrentUser(null); // Explicitly set to null
           setIsLoading(false);
           return;
         }
@@ -45,14 +46,11 @@ export const CurrentUserProvider = ({ children }) => {
         logger.debug('Fetching current user');
         const userData = await authService.getCurrentUser();
         
-        // Transform user data to match Django structure
         const transformedUser = {
           ...userData,
-          // Ensure profile data matches Django structure
           profile: {
             ...userData.profile,
             id: userData.profile?.id || userData.id,
-            // Added fields from Django profile model
             name: userData.profile?.name || '',
             bio: userData.profile?.bio || '',
             weight: userData.profile?.weight || null,
@@ -61,7 +59,6 @@ export const CurrentUserProvider = ({ children }) => {
             gender: userData.profile?.gender || '',
             profile_image: userData.profile?.profile_image || null,
           },
-          // Added fields from Django user model
           is_email_verified: userData.is_email_verified || false,
           last_login: userData.last_login || null,
           date_joined: userData.date_joined || null,
@@ -70,7 +67,6 @@ export const CurrentUserProvider = ({ children }) => {
         setCurrentUser(transformedUser);
         logger.debug('Current user fetched successfully');
 
-        // Handle email verification reminder
         if (!transformedUser.is_email_verified) {
           toast.warning('Please verify your email address');
         }
@@ -78,8 +74,8 @@ export const CurrentUserProvider = ({ children }) => {
         logger.error('Error fetching current user:', err);
         setError(err.message);
         setCurrentUser(null);
-        // Clear auth data on error
-        authService.clearAuth();
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
       } finally {
         setIsLoading(false);
       }
@@ -88,7 +84,6 @@ export const CurrentUserProvider = ({ children }) => {
     fetchCurrentUser();
   }, []);
 
-  // Setup axios interceptor for token refresh
   useEffect(() => {
     const interceptor = axiosReq.interceptors.response.use(
       (response) => response,
@@ -100,7 +95,8 @@ export const CurrentUserProvider = ({ children }) => {
             return axiosReq(error.config);
           } catch (refreshError) {
             setCurrentUser(null);
-            authService.clearAuth();
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
             return Promise.reject(refreshError);
           }
         }
@@ -113,35 +109,21 @@ export const CurrentUserProvider = ({ children }) => {
     };
   }, []);
 
-  const setContextUser = async (user, token = null) => {
-    try {
-      if (token) {
-        localStorage.setItem('token', token);
-        authService.setAuthHeader(token);
-      }
-      
-      if (user) {
-        // Transform user data if necessary
-        const transformedUser = {
-          ...user,
-          profile: {
-            ...user.profile,
-            id: user.profile?.id || user.id,
-          }
-        };
-        setCurrentUser(transformedUser);
-      } else {
-        setCurrentUser(null);
-        authService.clearAuth();
-      }
-    } catch (err) {
-      logger.error('Error setting current user:', err);
-      setError(err.message);
+  const handleSetCurrentUser = (user) => {
+    if (!user) {
+      // Clear everything when setting user to null
+      setCurrentUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      logger.debug('User state cleared');
+    } else {
+      setCurrentUser(user);
     }
   };
 
   const contextValue = {
     currentUser,
+    setCurrentUser: handleSetCurrentUser, // Use the wrapped version
     isLoading,
     error,
     isAuthenticated: !!currentUser,
@@ -151,9 +133,7 @@ export const CurrentUserProvider = ({ children }) => {
 
   return (
     <CurrentUserContext.Provider value={contextValue}>
-      <SetCurrentUserContext.Provider value={setContextUser}>
-        {children}
-      </SetCurrentUserContext.Provider>
+      {children}
     </CurrentUserContext.Provider>
   );
 };
