@@ -69,7 +69,7 @@ const NavBar = () => {
               className="flex items-center gap-2 text-green-600 font-bold text-xl hover:text-green-700 transition-colors"
             >
               <DumbbellIcon className="h-8 w-8" />
-              <span>FitTrack</span>
+              <span>FitPro</span>
             </NavLink>
           </div>
 
