@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
@@ -25,7 +25,6 @@ const Dashboard = () => {
           workoutService.getWorkoutStatistics()
         ]);
 
-        // Calculate the week's workouts
         const workouts = workoutsRes.results || [];
         
         setRecentWorkouts(workouts);
@@ -46,11 +45,51 @@ const Dashboard = () => {
   }, []);
 
   // Get appropriate greeting based on time of day
-  const getGreeting = () => {
+  const getGreeting = useMemo(() => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
     if (hour < 18) return 'Good afternoon';
     return 'Good evening';
+  }, []);
+
+  const renderWorkoutList = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+        </div>
+      );
+    }
+
+    if (recentWorkouts.length === 0) {
+      return <p className="text-center text-gray-500">No workouts logged yet</p>;
+    }
+
+    return (
+      <div className="space-y-4">
+        {recentWorkouts.map((workout) => (
+          <div key={workout.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium">{workout.workout_type}</h3>
+              <p className="text-sm text-gray-500">
+                {format(new Date(workout.date_logged), 'MMM d')} • {workout.duration} minutes
+              </p>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-sm
+              ${workout.intensity === 'high' ? 'bg-red-100 text-red-800' : 
+                workout.intensity === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
+                'bg-green-100 text-green-800'}`}>
+              {workout.intensity}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -58,11 +97,9 @@ const Dashboard = () => {
       {/* Header Section */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">
-          {getGreeting()}, {currentUser?.username}! 👋
+          {getGreeting}, {currentUser?.username}! 👋
         </h1>
-        <p className="text-gray-500 mt-2">
-          {format(new Date(), 'EEEE, MMMM d, yyyy')}
-        </p>
+        <p className="text-gray-500 mt-2">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
       </div>
 
       {/* Quick Actions Grid */}
@@ -118,49 +155,9 @@ const Dashboard = () => {
         <div className="lg:col-span-2 bg-white rounded-lg shadow">
           <div className="p-6 flex justify-between items-center border-b">
             <h2 className="text-xl font-bold">Recent Workouts</h2>
-            <button 
-              onClick={() => navigate('/workouts')}
-              className="text-green-500 hover:text-green-600"
-            >
-              View All
-            </button>
+            <button onClick={() => navigate('/workouts')} className="text-green-500 hover:text-green-600">View All</button>
           </div>
-          <div className="p-6">
-            {loading ? (
-              <div className="flex justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-              </div>
-            ) : recentWorkouts.length > 0 ? (
-              <div className="space-y-4">
-                {recentWorkouts.map((workout) => (
-                  <div 
-                    key={workout.id}
-                    className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium">{workout.workout_type}</h3>
-                      <p className="text-sm text-gray-500">
-                        {format(new Date(workout.date_logged), 'MMM d')} • {workout.duration} minutes
-                      </p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-sm
-                      ${workout.intensity === 'high' ? 'bg-red-100 text-red-800' : 
-                        workout.intensity === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-green-100 text-green-800'}`}>
-                      {workout.intensity}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-gray-500">No workouts logged yet</p>
-            )}
-          </div>
+          <div className="p-6">{renderWorkoutList()}</div>
         </div>
 
         {/* Quick Stats */}
