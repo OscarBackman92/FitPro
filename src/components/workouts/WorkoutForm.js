@@ -10,6 +10,7 @@ const WorkoutForm = () => {
   const { fetchWorkouts } = useWorkout(); 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const WORKOUT_TYPES = [
     { value: 'cardio', label: 'Cardio' },
@@ -30,13 +31,15 @@ const WorkoutForm = () => {
   useEffect(() => {
     const loadWorkoutData = async () => {
       if (id) {
+        setLoading(true);
         try {
           const existingWorkout = await workoutService.getWorkout(id);
-          console.log('Existing Workout:', existingWorkout); // Log for debugging
           setWorkoutData(existingWorkout);
         } catch (err) {
           const handledError = errorHandler.handleApiError(err);
           setErrors(handledError.errors);
+        } finally {
+          setLoading(false);
         }
       }
     };
@@ -57,8 +60,17 @@ const WorkoutForm = () => {
     setIsSubmitting(true);
     setErrors({});
   
-    console.log('Submitting workout data:', workoutData); // Debug log
-  
+    // Basic client-side validation before submitting
+    if (!workoutData.workout_type || !workoutData.duration || !workoutData.date_logged) {
+      setErrors({
+        workout_type: 'Workout type is required',
+        duration: 'Duration is required',
+        date_logged: 'Date is required',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       if (id) {
         await workoutService.updateWorkout(id, workoutData);
@@ -76,7 +88,7 @@ const WorkoutForm = () => {
   };
 
   // Add a check to prevent errors accessing properties of undefined
-  if (!workoutData) {
+  if (loading) {
     return <div>Loading...</div>;
   }
 

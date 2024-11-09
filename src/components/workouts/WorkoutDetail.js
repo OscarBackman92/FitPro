@@ -21,7 +21,7 @@ const WorkoutDetail = () => {
         setError(null);
       } catch (err) {
         console.error('Error fetching workout:', err);
-        setError('Failed to load workout details');
+        setError('Failed to load workout details. Please try again.');
       } finally {
         setHasLoaded(true);
       }
@@ -37,15 +37,15 @@ const WorkoutDetail = () => {
         await axiosReq.delete(`/workouts/workouts/${id}/`);
         navigate('/workouts');
       } catch (err) {
-        setError('Failed to delete workout');
+        setError('Failed to delete workout. Please try again.');
       }
     }
   };
 
   if (!hasLoaded) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      <div className="flex justify-center items-center min-h-screen" aria-live="assertive">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500" />
       </div>
     );
   }
@@ -67,7 +67,7 @@ const WorkoutDetail = () => {
         <div className="flex justify-between items-start">
           <div className="flex items-center space-x-4">
             <Avatar
-              src={workout?.profile_image}
+              src={workout?.profile_image || '/default-avatar.png'}  // Use default avatar if no image
               height={48}
               className="rounded-full"
             />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import workoutService from '../../services/workoutService';
@@ -14,6 +14,7 @@ const WorkoutList = ({ filter = "" }) => {
   const [isTableExpanded, setIsTableExpanded] = useState(false);
   const navigate = useNavigate();
 
+  // Debounced fetching workouts based on filters
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
@@ -31,12 +32,7 @@ const WorkoutList = ({ filter = "" }) => {
       }
     };
 
-    setHasLoaded(false);
-    const timer = setTimeout(() => {
-      fetchWorkouts();
-    }, 300);
-
-    return () => clearTimeout(timer);
+    fetchWorkouts();
   }, [filter, sortOrder]);
 
   const handleDelete = async (workoutId) => {
@@ -52,6 +48,16 @@ const WorkoutList = ({ filter = "" }) => {
       }
     }
   };
+
+  const chartData = useMemo(() => {
+    return workouts.results
+      .slice(0, 7)
+      .map(workout => ({
+        date: new Date(workout.date_logged).toLocaleDateString(),
+        duration: workout.duration,
+      }))
+      .reverse();
+  }, [workouts.results]);
 
   if (error) {
     return (
@@ -73,14 +79,6 @@ const WorkoutList = ({ filter = "" }) => {
   const totalDuration = workouts.results.reduce((sum, w) => sum + w.duration, 0);
   const avgDuration = Math.round(totalDuration / totalWorkouts) || 0;
 
-  const chartData = workouts.results
-    .slice(0, 7)
-    .map(workout => ({
-      date: new Date(workout.date_logged).toLocaleDateString(),
-      duration: workout.duration,
-    }))
-    .reverse();
-
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -95,17 +93,16 @@ const WorkoutList = ({ filter = "" }) => {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        {[
-          { title: 'Total Workouts', value: totalWorkouts, icon: 'fas fa-dumbbell' },
-          { title: 'Total Duration', value: `${totalDuration} mins`, icon: 'fas fa-clock' },
-          { title: 'Average Duration', value: `${avgDuration} mins`, icon: 'fas fa-chart-line' }
-        ].map(({ title, value, icon }) => (
-          <div key={title} className="p-4 bg-white rounded shadow text-center">
-            <h3 className="text-lg font-semibold text-gray-600">{title}</h3>
-            <p className="text-xl font-bold text-gray-800 mt-2">{value}</p>
-            <i className={`${icon} text-green-500 text-3xl mt-4`}></i>
-          </div>
-        ))}
+        {[{ title: 'Total Workouts', value: totalWorkouts, icon: 'fas fa-dumbbell' },
+        { title: 'Total Duration', value: `${totalDuration} mins`, icon: 'fas fa-clock' },
+        { title: 'Average Duration', value: `${avgDuration} mins`, icon: 'fas fa-chart-line' }]
+          .map(({ title, value, icon }) => (
+            <div key={title} className="p-4 bg-white rounded shadow text-center">
+              <h3 className="text-lg font-semibold text-gray-600">{title}</h3>
+              <p className="text-xl font-bold text-gray-800 mt-2">{value}</p>
+              <i className={`${icon} text-green-500 text-3xl mt-4`}></i>
+            </div>
+          ))}
       </div>
 
       {/* Chart */}
