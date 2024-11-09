@@ -23,12 +23,9 @@ const Goals = () => {
     try {
       setLoading(true);
       setError(null);
-      // Changed to use getActiveGoals to match your backend endpoint
       const response = await goalsService.getActiveGoals();
-      console.log('Goals response:', response); // Debug log
       setGoals(response.results || []);
     } catch (err) {
-      console.error('Error fetching goals:', err);
       setError('Failed to load goals. Please try again.');
     } finally {
       setLoading(false);
@@ -49,9 +46,8 @@ const Goals = () => {
       setError(null);
       const created = await goalsService.createGoal({
         ...formData,
-        completed: false // Ensure we set the completed status
+        completed: false
       });
-      console.log('Created goal:', created); // Debug log
       setShowForm(false);
       setFormData({
         type: '',
@@ -59,9 +55,8 @@ const Goals = () => {
         target: '',
         deadline: format(new Date(), 'yyyy-MM-dd')
       });
-      fetchGoals(); // Refresh goals list
+      setGoals(prevGoals => [...prevGoals, created]); // Add new goal to list without refetching
     } catch (err) {
-      console.error('Error creating goal:', err);
       setError('Failed to create goal. Please try again.');
     }
   };
@@ -70,9 +65,12 @@ const Goals = () => {
     try {
       setError(null);
       await goalsService.toggleGoalCompletion(goalId);
-      fetchGoals(); // Refresh goals list
+      setGoals(prevGoals =>
+        prevGoals.map(goal =>
+          goal.id === goalId ? { ...goal, completed: !goal.completed } : goal
+        )
+      ); // Update goal completion status locally
     } catch (err) {
-      console.error('Error toggling goal completion:', err);
       setError('Failed to update goal status. Please try again.');
     }
   };
@@ -82,9 +80,8 @@ const Goals = () => {
       try {
         setError(null);
         await goalsService.deleteGoal(goalId);
-        fetchGoals(); // Refresh goals list
+        setGoals(prevGoals => prevGoals.filter(goal => goal.id !== goalId)); // Remove goal from list without refetching
       } catch (err) {
-        console.error('Error deleting goal:', err);
         setError('Failed to delete goal. Please try again.');
       }
     }
@@ -116,8 +113,7 @@ const Goals = () => {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg 
-                   hover:bg-green-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
         >
           <PlusCircle className="h-5 w-5" />
           Add Goal
@@ -220,8 +216,7 @@ const Goals = () => {
           <p className="text-gray-500 mb-4">Start setting your fitness goals and track your progress!</p>
           <button
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white 
-                     rounded-lg hover:bg-green-600 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
           >
             <PlusCircle className="h-5 w-5" />
             Create Your First Goal
