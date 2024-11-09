@@ -2,19 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
-  Menu, 
-  X, 
-  DumbbellIcon, 
-  UserCircle, 
-  LogOut, 
-  Users,
-  LayoutDashboard,
-  Target,
-  LogIn,
-  UserPlus,
-  Home,
-  PlusSquare,
-  Bell
+  Menu, X, DumbbellIcon, UserCircle, LogOut, Users,
+  LayoutDashboard, Target, LogIn, UserPlus, Home, PlusSquare, Bell
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../../services/authService';
@@ -52,10 +41,7 @@ const NavBar = () => {
 
   const navLinkClasses = ({ isActive }) => `
     flex items-center gap-2 px-4 py-2 rounded-lg transition-all
-    ${isActive ? 
-      'bg-green-500 text-white font-semibold' : 
-      'text-gray-700 hover:bg-green-50 hover:text-green-600'
-    }
+    ${isActive ? 'bg-green-500 text-white font-semibold' : 'text-gray-700 hover:bg-green-50 hover:text-green-600'}
   `;
 
   return (
@@ -167,20 +153,17 @@ const NavBar = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
               aria-expanded={isOpen}
-              aria-label="Toggle menu"
+              aria-controls="mobile-menu"
             >
-              {isOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
-      <div 
+      <div
+        id="mobile-menu"
         className={`${
           isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
         } md:hidden fixed inset-0 z-50 bg-white transform transition-all duration-300 ease-in-out`}
