@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, lazy } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import "./services/axiosDefaults";
@@ -9,24 +9,31 @@ import styles from "./App.module.css";
 import { NavBar, PrivateRoute, NotFound } from "../src/components/common/CommonIndex";
 
 // Lazy-loaded Pages
-const Home = React.lazy(() => import("./pages/Home"));
-const Goals = React.lazy(() => import("./components/goals/Goals"));
+const Home = lazy(() => import("./pages/Home"));
+const Goals = lazy(() => import("./components/goals/Goals"));
 
 // Auth Components
-const SignUpForm = React.lazy(() => import("./pages/auth/SignUpForm"));
-const SignInForm = React.lazy(() => import("./pages/auth/SignInForm"));
+const SignUpForm = lazy(() => import("./pages/auth/SignUpForm"));
+const SignInForm = lazy(() => import("./pages/auth/SignInForm"));
 
 // Profile Components
-const ProfilePage = React.lazy(() => import("./components/profiles/ProfilePage"));
-const ProfileEditForm = React.lazy(() => import("./components/profiles/ProfileEditForm"));
+const ProfilePage = lazy(() => import("./components/profiles/ProfilePage"));
+const ProfileEditForm = lazy(() => import("./components/profiles/ProfileEditForm"));
 
 // Workout Components
-const WorkoutForm = React.lazy(() => import("./components/workouts/WorkoutForm"));
-const WorkoutList = React.lazy(() => import("./components/workouts/WorkoutList"));
-const WorkoutDetail = React.lazy(() => import("./components/workouts/WorkoutDetail"));
+const WorkoutForm = lazy(() => import("./components/workouts/WorkoutForm"));
+const WorkoutList = lazy(() => import("./components/workouts/WorkoutList"));
+const WorkoutDetail = lazy(() => import("./components/workouts/WorkoutDetail"));
 
 // Dashboard
-const Dashboard = React.lazy(() => import('./components/dashboard/Dashboard'));
+const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
+
+// Fallback UI for Suspense
+const Loading = () => (
+  <div className="flex justify-center items-center h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+  </div>
+);
 
 function App() {
   const { currentUser } = useCurrentUser();
@@ -35,7 +42,7 @@ function App() {
     <div className={styles.App}>
       <NavBar />
       <Container className={styles.Main}>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<Loading />}>
           <Routes>
             {/* Public Home Route */}
             <Route 
