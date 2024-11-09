@@ -1,4 +1,3 @@
-// src/App.js
 import React from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
@@ -10,6 +9,7 @@ import { NavBar, PrivateRoute, NotFound } from "../src/components/common/CommonI
 
 // Pages
 import Home from "./pages/Home";
+import Goals from "./pages/goals/Goals";
 
 // Auth Components
 import SignUpForm from "./pages/auth/SignUpForm";
@@ -50,6 +50,16 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Goals Route */}
+          <Route
+            path="/goals"
+            element={
+              <PrivateRoute>
+                <Goals />
               </PrivateRoute>
             }
           />

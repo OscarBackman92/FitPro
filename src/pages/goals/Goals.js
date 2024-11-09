@@ -1,16 +1,39 @@
-import React, { useState } from 'react';
-import { PlusCircle, CheckCircle2, Circle, Trophy, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { PlusCircle, CheckCircle2, Circle, Target, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { goalsService } from '../../services/goalsService';
 
 const Goals = () => {
   const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     type: '',
     description: '',
     target: '',
-    deadline: ''
+    deadline: format(new Date(), 'yyyy-MM-dd')
   });
+
+  useEffect(() => {
+    fetchGoals();
+  }, []);
+
+  const fetchGoals = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Changed to use getActiveGoals to match your backend endpoint
+      const response = await goalsService.getActiveGoals();
+      console.log('Goals response:', response); // Debug log
+      setGoals(response.results || []);
+    } catch (err) {
+      console.error('Error fetching goals:', err);
+      setError('Failed to load goals. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const goalTypes = [
     { value: 'weight', label: 'Weight Goal', icon: '⚖️' },
@@ -20,50 +43,88 @@ const Goals = () => {
     { value: 'custom', label: 'Custom Goal', icon: '🎯' }
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newGoal = {
-      id: Date.now(), // temporary ID until backend integration
-      ...formData,
-      progress: 0,
-      completed: false,
-      createdAt: new Date().toISOString()
-    };
-    setGoals(prevGoals => [...prevGoals, newGoal]);
-    setShowForm(false);
-    setFormData({ type: '', description: '', target: '', deadline: '' });
-  };
-
-  const toggleGoalCompletion = (goalId) => {
-    setGoals(goals.map(goal => 
-      goal.id === goalId 
-        ? { ...goal, completed: !goal.completed }
-        : goal
-    ));
-  };
-
-  const handleDeleteGoal = (goalId) => {
-    if (window.confirm('Are you sure you want to delete this goal?')) {
-      setGoals(goals.filter(goal => goal.id !== goalId));
+    try {
+      setError(null);
+      const created = await goalsService.createGoal({
+        ...formData,
+        completed: false // Ensure we set the completed status
+      });
+      console.log('Created goal:', created); // Debug log
+      setShowForm(false);
+      setFormData({
+        type: '',
+        description: '',
+        target: '',
+        deadline: format(new Date(), 'yyyy-MM-dd')
+      });
+      fetchGoals(); // Refresh goals list
+    } catch (err) {
+      console.error('Error creating goal:', err);
+      setError('Failed to create goal. Please try again.');
     }
   };
 
+  const handleToggleCompletion = async (goalId) => {
+    try {
+      setError(null);
+      await goalsService.toggleGoalCompletion(goalId);
+      fetchGoals(); // Refresh goals list
+    } catch (err) {
+      console.error('Error toggling goal completion:', err);
+      setError('Failed to update goal status. Please try again.');
+    }
+  };
+
+  const handleDeleteGoal = async (goalId) => {
+    if (window.confirm('Are you sure you want to delete this goal?')) {
+      try {
+        setError(null);
+        await goalsService.deleteGoal(goalId);
+        fetchGoals(); // Refresh goals list
+      } catch (err) {
+        console.error('Error deleting goal:', err);
+        setError('Failed to delete goal. Please try again.');
+      }
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+          {error}
+        </div>
+        <button
+          onClick={fetchGoals}
+          className="text-green-500 hover:text-green-600 font-medium"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
-          <Trophy className="h-6 w-6 text-green-500" />
-          <h2 className="text-2xl font-bold text-gray-900">Fitness Goals</h2>
+          <Target className="h-6 w-6 text-green-500" />
+          <h1 className="text-2xl font-bold text-gray-900">Fitness Goals</h1>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg 
+                   hover:bg-green-600 transition-colors"
         >
           <PlusCircle className="h-5 w-5" />
           Add Goal
         </button>
       </div>
 
+      {/* Goal Form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg mb-6">
           <div className="grid gap-4">
@@ -123,7 +184,7 @@ const Goals = () => {
                 value={formData.deadline}
                 onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                 className="w-full p-2 border rounded-md"
-                min={new Date().toISOString().split('T')[0]}
+                min={format(new Date(), 'yyyy-MM-dd')}
                 required
               />
             </div>
@@ -147,14 +208,20 @@ const Goals = () => {
         </form>
       )}
 
-      {goals.length === 0 ? (
+      {/* Goals List */}
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+        </div>
+      ) : goals.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-lg">
-          <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No Goals Set Yet</h3>
           <p className="text-gray-500 mb-4">Start setting your fitness goals and track your progress!</p>
           <button
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white 
+                     rounded-lg hover:bg-green-600 transition-colors"
           >
             <PlusCircle className="h-5 w-5" />
             Create Your First Goal
@@ -167,7 +234,7 @@ const Goals = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => toggleGoalCompletion(goal.id)}
+                    onClick={() => handleToggleCompletion(goal.id)}
                     className="text-green-500 hover:text-green-600"
                   >
                     {goal.completed ? (
@@ -195,7 +262,8 @@ const Goals = () => {
                     className="text-red-500 hover:text-red-600"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
