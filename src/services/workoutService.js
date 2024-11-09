@@ -3,199 +3,107 @@ import errorHandler from './errorHandlerService';
 import logger from './loggerService';
 
 class WorkoutService {
-  // Get workout statistics
-  async getWorkoutStatistics() {
+  // Helper function to handle API requests and errors
+  async handleRequest(method, url, params = {}, data = null) {
     try {
-      logger.debug('Fetching workout statistics...');
-      const response = await axiosReq.get('/workouts/workouts/statistics/');
-      logger.debug('Statistics response:', response.data);
+      logger.debug(`Requesting ${method} ${url}...`, { params, data });
+      const response = await axiosReq[method](url, data, { params });
+      logger.debug(`Response from ${url}:`, response.data);
       return response.data;
     } catch (err) {
-      logger.error('Error fetching workout statistics:', err);
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout statistics');
+      logger.error(`Error in ${method} ${url}:`, err);
+      throw errorHandler.handleApiError(err);
     }
+  }
+
+  // Get workout statistics
+  async getWorkoutStatistics() {
+    return this.handleRequest('get', '/workouts/workouts/statistics/');
   }
 
   // Get all workouts with optional filtering
   async getWorkouts(params = {}) {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/', { params });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workouts');
-    }
+    return this.handleRequest('get', '/workouts/workouts/', params);
   }
 
   // Get a single workout by ID
   async getWorkout(id) {
-    try {
-      const response = await axiosReq.get(`/workouts/workouts/${id}/`);
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout');
-    }
+    return this.handleRequest('get', `/workouts/workouts/${id}/`);
   }
 
   // Create a new workout
   async createWorkout(workoutData) {
-    try {
-      const response = await axiosReq.post('/workouts/workouts/', workoutData);
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to create workout');
-    }
+    return this.handleRequest('post', '/workouts/workouts/', {}, workoutData);
   }
 
   // Update an existing workout
   async updateWorkout(id, workoutData) {
-    try {
-      const response = await axiosReq.put(`/workouts/workouts/${id}/`, workoutData);
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to update workout');
-    }
+    return this.handleRequest('put', `/workouts/workouts/${id}/`, {}, workoutData);
   }
 
   // Delete a workout
   async deleteWorkout(id) {
-    try {
-      await axiosReq.delete(`/workouts/workouts/${id}/`);
-      return true;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to delete workout');
-    }
+    return this.handleRequest('delete', `/workouts/workouts/${id}/`);
   }
 
   // Get workout summary
   async getWorkoutSummary() {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/summary/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout summary');
-    }
+    return this.handleRequest('get', '/workouts/workouts/summary/');
   }
 
   // Get workout streaks
   async getWorkoutStreaks() {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/streaks/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout streaks');
-    }
+    return this.handleRequest('get', '/workouts/workouts/streaks/');
   }
 
   // Search workouts
   async searchWorkouts(query) {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/search/', {
-        params: { query }
-      });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to search workouts');
-    }
+    return this.handleRequest('get', '/workouts/workouts/search/', { query });
   }
 
   // Get workout types
   async getWorkoutTypes() {
-    try {
-      const response = await axiosReq.get('/workouts/types/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout types');
-    }
+    return this.handleRequest('get', '/workouts/types/');
   }
 
   // Get workout progress
   async getWorkoutProgress() {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/progress/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout progress');
-    }
+    return this.handleRequest('get', '/workouts/workouts/progress/');
   }
 
   // Get monthly stats
   async getMonthlyStats(month, year) {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/monthly-stats/', {
-        params: { month, year }
-      });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch monthly stats');
-    }
+    return this.handleRequest('get', '/workouts/workouts/monthly-stats/', { month, year });
   }
 
   // Export workouts
   async exportWorkouts(format = 'csv') {
-    try {
-      const response = await axiosReq.get(`/workouts/workouts/export/`, {
-        params: { format },
-        responseType: 'blob'
-      });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to export workouts');
-    }
+    return this.handleRequest('get', '/workouts/workouts/export/', { format }, null, 'blob');
   }
 
   // Get workout intensity distribution
   async getIntensityDistribution() {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/intensity-distribution/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch intensity distribution');
-    }
+    return this.handleRequest('get', '/workouts/workouts/intensity-distribution/');
   }
 
   // Get workout count by type
   async getWorkoutCountByType() {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/count-by-type/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout count by type');
-    }
+    return this.handleRequest('get', '/workouts/workouts/count-by-type/');
   }
 
   // Filter workouts by date range
   async filterWorkoutsByDate(startDate, endDate) {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/', {
-        params: {
-          date_logged_after: startDate,
-          date_logged_before: endDate
-        }
-      });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to filter workouts by date');
-    }
+    return this.handleRequest('get', '/workouts/workouts/', { date_logged_after: startDate, date_logged_before: endDate });
   }
 
   // Get workouts this week
   async getWorkoutsThisWeek() {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/this-week/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workouts this week');
-    }
+    return this.handleRequest('get', '/workouts/workouts/this-week/');
   }
 
   // Calculate workout averages
   async getWorkoutAverages() {
-    try {
-      const response = await axiosReq.get('/workouts/workouts/averages/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch workout averages');
-    }
+    return this.handleRequest('get', '/workouts/workouts/averages/');
   }
 }
 
