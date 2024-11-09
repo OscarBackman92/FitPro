@@ -9,7 +9,7 @@ import { NavBar, PrivateRoute, NotFound } from "../src/components/common/CommonI
 
 // Pages
 import Home from "./pages/Home";
-import Goals from "./pages/goals/Goals";
+import Goals from "./components/goals/Goals";
 
 // Auth Components
 import SignUpForm from "./pages/auth/SignUpForm";
