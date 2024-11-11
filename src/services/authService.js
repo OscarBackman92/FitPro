@@ -5,7 +5,7 @@ import errorHandler from './errorHandlerService';
 const login = async (credentials) => {
   try {
     logger.debug('Attempting login', { username: credentials.username });
-    const response = await axiosReq.post('api/auth/login/', credentials);
+    const response = await axiosReq.post('/auth/login/', credentials);
     
     // Log response for debugging
     logger.debug('Login response:', response.data);
@@ -13,7 +13,7 @@ const login = async (credentials) => {
     if (response.data.key) {
       localStorage.setItem('token', response.data.key);
       // Get user data after successful login
-      const userResponse = await axiosReq.get('api/auth/user/');
+      const userResponse = await axiosReq.get('/auth/user/');
       return {
         token: response.data.key,
         user: userResponse.data
