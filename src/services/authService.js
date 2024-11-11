@@ -5,7 +5,7 @@ import errorHandler from './errorHandlerService';
 const login = async (credentials) => {
   try {
     logger.debug('Attempting login', { username: credentials.username });
-    const response = await axiosReq.post('/auth/login/', credentials);
+    const response = await axiosReq.post('api/auth/login/', credentials);
     
     // Log response for debugging
     logger.debug('Login response:', response.data);
@@ -13,7 +13,7 @@ const login = async (credentials) => {
     if (response.data.key) {
       localStorage.setItem('token', response.data.key);
       // Get user data after successful login
-      const userResponse = await axiosReq.get('/auth/user/');
+      const userResponse = await axiosReq.get('api/auth/user/');
       return {
         token: response.data.key,
         user: userResponse.data
@@ -28,17 +28,17 @@ const login = async (credentials) => {
 
 const register = async (userData) => {
   try {
-    logger.debug('Attempting registration', { userData }); // Log user data
+    logger.debug('Attempting registration', { userData });
     const response = await axiosReq.post('api/auth/registration/', userData);
     return response.data;
   } catch (err) {
-    console.error('Registration error:', err); // Log the error
+    console.error('Registration error:', err);
     throw errorHandler.handleApiError(err, 'Registration failed');
   }
 };
 const logout = async () => {
   try {
-    await axiosReq.post('/auth/logout/');
+    await axiosReq.post('api/auth/logout/');
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
   } catch (err) {
@@ -48,7 +48,7 @@ const logout = async () => {
 
 const getCurrentUser = async () => {
   try {
-    const response = await axiosReq.get('/auth/user/');
+    const response = await axiosReq.get('api/auth/user/');
     return response.data;
   } catch (err) {
     throw errorHandler.handleApiError(err, 'Failed to fetch current user');

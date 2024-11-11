@@ -3,7 +3,7 @@ import axios from 'axios';
 import logger from './loggerService';
 import errorHandler from './errorHandlerService';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com/';
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
