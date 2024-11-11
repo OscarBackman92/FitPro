@@ -59,7 +59,7 @@ const WorkoutForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
-  
+
     // Basic client-side validation before submitting
     if (!workoutData.workout_type || !workoutData.duration || !workoutData.date_logged) {
       setErrors({
@@ -87,22 +87,21 @@ const WorkoutForm = () => {
     }
   };
 
-  // Add a check to prevent errors accessing properties of undefined
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="text-center text-xl">Loading...</div>;
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-4">
-      <h2 className="text-lg font-bold mb-4">{id ? 'Update Workout' : 'Create Workout'}</h2>
-      <div className="space-y-4">
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg shadow-xl">
+      <h2 className="text-3xl font-semibold text-center mb-6 text-white">{id ? 'Update Workout' : 'Create Workout'}</h2>
+      <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Workout Type</label>
+          <label className="block text-sm font-medium text-gray-300">Workout Type</label>
           <select
             name="workout_type"
             value={workoutData.workout_type}
             onChange={handleChange}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm ${errors.workout_type ? 'border-red-500' : ''}`}
+            className={`mt-2 block w-full rounded-md p-3 text-sm bg-gray-700 text-white border-2 ${errors.workout_type ? 'border-red-500' : 'border-gray-600'}`}
           >
             <option value="">Select type</option>
             {WORKOUT_TYPES.map(type => (
@@ -117,14 +116,13 @@ const WorkoutForm = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Duration (minutes)</label>
+          <label className="block text-sm font-medium text-gray-300">Duration (minutes)</label>
           <input
             type="number"
             name="duration"
             value={workoutData.duration}
             onChange={handleChange}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm ${errors.duration ? 'border-red-500' : ''}`}
-            required
+            className={`mt-2 block w-full rounded-md p-3 text-sm bg-gray-700 text-white border-2 ${errors.duration ? 'border-red-500' : 'border-gray-600'}`}
           />
           {errors.duration && (
             <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
@@ -132,12 +130,12 @@ const WorkoutForm = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Intensity</label>
+          <label className="block text-sm font-medium text-gray-300">Intensity</label>
           <select
             name="intensity"
             value={workoutData.intensity}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            className="mt-2 block w-full rounded-md p-3 text-sm bg-gray-700 text-white border-2 border-gray-600"
           >
             <option value="low">Low</option>
             <option value="moderate">Moderate</option>
@@ -146,14 +144,13 @@ const WorkoutForm = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Date Logged</label>
+          <label className="block text-sm font-medium text-gray-300">Date Logged</label>
           <input
             type="date"
             name="date_logged"
             value={workoutData.date_logged}
             onChange={handleChange}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm ${errors.date_logged ? 'border-red-500' : ''}`}
-            required
+            className={`mt-2 block w-full rounded-md p-3 text-sm bg-gray-700 text-white border-2 ${errors.date_logged ? 'border-red-500' : 'border-gray-600'}`}
           />
           {errors.date_logged && (
             <p className="text-red-500 text-sm mt-1">{errors.date_logged}</p>
@@ -161,28 +158,28 @@ const WorkoutForm = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Notes</label>
+          <label className="block text-sm font-medium text-gray-300">Notes</label>
           <textarea
             name="notes"
             value={workoutData.notes}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+            className="mt-2 block w-full rounded-md p-3 text-sm bg-gray-700 text-white border-2 border-gray-600"
             rows="3"
           ></textarea>
         </div>
 
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end space-x-6">
           <button
             type="button"
             onClick={() => navigate('/workouts')}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md"
+            className="px-6 py-2 text-white bg-red-500 hover:bg-red-600 rounded-md transition duration-200"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 text-white bg-green-500 rounded-md disabled:opacity-50"
+            className="px-6 py-2 text-white bg-green-500 hover:bg-green-600 rounded-md transition duration-200 disabled:opacity-50"
           >
             {isSubmitting ? 'Saving...' : (id ? 'Update' : 'Create')}
           </button>
