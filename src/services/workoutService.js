@@ -18,92 +18,92 @@ class WorkoutService {
 
   // Get workout statistics
   async getWorkoutStatistics() {
-    return this.handleRequest('get', '/workouts/workouts/statistics/');
+    return this.handleRequest('get', 'api/workouts/workouts/statistics/');
   }
 
   // Get all workouts with optional filtering
   async getWorkouts(params = {}) {
-    return this.handleRequest('get', '/workouts/workouts/', params);
+    return this.handleRequest('get', 'api/workouts/workouts/', params);
   }
 
   // Get a single workout by ID
   async getWorkout(id) {
-    return this.handleRequest('get', `/workouts/workouts/${id}/`);
+    return this.handleRequest('get', `api/workouts/workouts/${id}/`);
   }
 
   // Create a new workout
   async createWorkout(workoutData) {
-    return this.handleRequest('post', '/workouts/workouts/', {}, workoutData);
+    return this.handleRequest('post', 'api/workouts/workouts/', {}, workoutData);
   }
 
   // Update an existing workout
   async updateWorkout(id, workoutData) {
-    return this.handleRequest('put', `/workouts/workouts/${id}/`, {}, workoutData);
+    return this.handleRequest('put', `api/workouts/workouts/${id}/`, {}, workoutData);
   }
 
   // Delete a workout
   async deleteWorkout(id) {
-    return this.handleRequest('delete', `/workouts/workouts/${id}/`);
+    return this.handleRequest('delete', `api/workouts/workouts/${id}/`);
   }
 
   // Get workout summary
   async getWorkoutSummary() {
-    return this.handleRequest('get', '/workouts/workouts/summary/');
+    return this.handleRequest('get', 'api/workouts/workouts/summary/');
   }
 
   // Get workout streaks
   async getWorkoutStreaks() {
-    return this.handleRequest('get', '/workouts/workouts/streaks/');
+    return this.handleRequest('get', 'api/workouts/workouts/streaks/');
   }
 
   // Search workouts
   async searchWorkouts(query) {
-    return this.handleRequest('get', '/workouts/workouts/search/', { query });
+    return this.handleRequest('get', 'api/workouts/workouts/search/', { query });
   }
 
   // Get workout types
   async getWorkoutTypes() {
-    return this.handleRequest('get', '/workouts/types/');
+    return this.handleRequest('get', 'api/workouts/types/');
   }
 
   // Get workout progress
   async getWorkoutProgress() {
-    return this.handleRequest('get', '/workouts/workouts/progress/');
+    return this.handleRequest('get', 'api/workouts/workouts/progress/');
   }
 
   // Get monthly stats
   async getMonthlyStats(month, year) {
-    return this.handleRequest('get', '/workouts/workouts/monthly-stats/', { month, year });
+    return this.handleRequest('get', 'api/workouts/workouts/monthly-stats/', { month, year });
   }
 
   // Export workouts
   async exportWorkouts(format = 'csv') {
-    return this.handleRequest('get', '/workouts/workouts/export/', { format }, null, 'blob');
+    return this.handleRequest('get', 'api/workouts/workouts/export/', { format }, null, 'blob');
   }
 
   // Get workout intensity distribution
   async getIntensityDistribution() {
-    return this.handleRequest('get', '/workouts/workouts/intensity-distribution/');
+    return this.handleRequest('get', 'api/workouts/workouts/intensity-distribution/');
   }
 
   // Get workout count by type
   async getWorkoutCountByType() {
-    return this.handleRequest('get', '/workouts/workouts/count-by-type/');
+    return this.handleRequest('get', 'api/workouts/workouts/count-by-type/');
   }
 
   // Filter workouts by date range
   async filterWorkoutsByDate(startDate, endDate) {
-    return this.handleRequest('get', '/workouts/workouts/', { date_logged_after: startDate, date_logged_before: endDate });
+    return this.handleRequest('get', 'api/workouts/workouts/', { date_logged_after: startDate, date_logged_before: endDate });
   }
 
   // Get workouts this week
   async getWorkoutsThisWeek() {
-    return this.handleRequest('get', '/workouts/workouts/this-week/');
+    return this.handleRequest('get', 'api/workouts/workouts/this-week/');
   }
 
   // Calculate workout averages
   async getWorkoutAverages() {
-    return this.handleRequest('get', '/workouts/workouts/averages/');
+    return this.handleRequest('get', 'api/workouts/workouts/averages/');
   }
 }
 
