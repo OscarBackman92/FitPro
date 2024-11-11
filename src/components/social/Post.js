@@ -29,9 +29,6 @@ const Post = ({ post, onLike, onComment }) => {
           <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
             {post.duration} mins
           </span>
-          <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-            {post.calories} calories
-          </span>
         </div>
         {post.notes && (
           <p className="text-gray-600 mt-2">{post.notes}</p>

@@ -25,7 +25,7 @@ export const ProfileHeader = ({ profile, is_owner, id, navigate }) => (
       </div>
       {is_owner && (
         <button
-          onClick={() => navigate(`/profiles/${id}/edit`)}
+          onClick={() => navigate(`api/profiles/${id}/edit`)}
           className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
         >
           <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -43,7 +43,6 @@ export const StatsGrid = ({ profile, stats }) => (
     <StatCard title="Height" value={`${profile?.height || '-'} cm`} />
     <StatCard title="Weight" value={`${profile?.weight || '-'} kg`} />
     <StatCard title="Workouts" value={stats?.total_workouts || 0} />
-    <StatCard title="Total Calories" value={stats?.total_calories || 0} />
   </div>
 );
 
@@ -66,7 +65,6 @@ export const ActivityChart = ({ chartData }) => (
           <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
           <Tooltip />
           <Line yAxisId="left" type="monotone" dataKey="duration" stroke="#8884d8" name="Duration (min)" strokeWidth={2} />
-          <Line yAxisId="right" type="monotone" dataKey="calories" stroke="#82ca9d" name="Calories" strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -104,9 +102,6 @@ export const WorkoutsList = ({ workouts, navigate, is_owner }) => (
               Duration
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Calories
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Intensity
             </th>
           </tr>
@@ -126,9 +121,6 @@ export const WorkoutsList = ({ workouts, navigate, is_owner }) => (
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {workout.duration} min
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {workout.calories}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full

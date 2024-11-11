@@ -23,9 +23,9 @@ const ProfilePage = () => {
     const fetchProfileData = async () => {
       try {
         const [{ data: profileData }, { data: statsData }, { data: workoutsData }] = await Promise.all([
-          axiosReq.get(`/profiles/${id}/`),
-          axiosReq.get(`/profiles/${id}/stats/`),
-          axiosReq.get(`/workouts/workouts/?user=${id}`)
+          axiosReq.get(`api/profiles/${id}/`),
+          axiosReq.get(`api/profiles/${id}/stats/`),
+          axiosReq.get(`api/workouts/workouts/?user=${id}`)
         ]);
         setProfile(profileData);
         setStats(statsData);
@@ -63,7 +63,6 @@ const ProfilePage = () => {
     .map(workout => ({
       date: format(new Date(workout.date_logged), 'MMM d'),
       duration: workout.duration,
-      calories: workout.calories,
     }))
     .reverse();
 

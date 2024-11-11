@@ -158,9 +158,6 @@ const Feed = () => {
           <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
             {post.duration} mins
           </span>
-          <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-            {post.calories} calories
-          </span>
           {post.intensity && (
             <span className={`px-3 py-1 rounded-full text-sm font-medium
               ${post.intensity === 'high' 

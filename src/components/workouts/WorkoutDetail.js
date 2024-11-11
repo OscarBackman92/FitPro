@@ -111,10 +111,6 @@ const WorkoutDetail = () => {
             <p className="text-2xl font-semibold text-gray-900">{workout?.duration} min</p>
           </div>
           <div className="bg-gray-50 rounded-lg p-4 text-center">
-            <p className="text-sm text-gray-500">Calories</p>
-            <p className="text-2xl font-semibold text-gray-900">{workout?.calories}</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-4 text-center">
             <p className="text-sm text-gray-500">Date</p>
             <p className="text-2xl font-semibold text-gray-900">
               {format(new Date(workout?.date_logged), 'MMM d')}

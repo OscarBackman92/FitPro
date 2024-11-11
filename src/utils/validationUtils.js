@@ -18,10 +18,6 @@ export const workoutValidation = {
       errors.duration = 'Duration must be greater than 0';
     }
 
-    if (!data.calories || data.calories < 0) {
-      errors.calories = 'Calories must be a positive number';
-    }
-
     if (data.duration > 1440) { // 24 hours in minutes
       errors.duration = 'Duration cannot exceed 24 hours';
     }
