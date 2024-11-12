@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
-  Menu, X, DumbbellIcon, UserCircle, LogOut, Users,
-  LayoutDashboard, Target, LogIn, UserPlus, Home, PlusSquare, Bell
+  Menu, X, DumbbellIcon, LogOut, Users,
+  LayoutDashboard, Target, LogIn, UserPlus, 
+  Home, PlusSquare, Bell, Activity,
+  BarChart3, Settings, HelpCircle
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../../services/authService';
@@ -26,118 +28,133 @@ const NavBar = () => {
     }
   };
 
-  // Navigation items for authenticated users
-  const authenticatedLinks = [
-    { to: '/dashboard', icon: <LayoutDashboard size={20} />, text: 'Dashboard' },
-    { to: '/feed', icon: <Users size={20} />, text: 'Social Feed' },
-  ];
-
-  // Navigation items for unauthenticated users
-  const unauthenticatedLinks = [
-    { to: '/', icon: <Home size={20} />, text: 'Home' },
-    { to: '/about', icon: <DumbbellIcon size={20} />, text: 'About' },
-    { to: '/features', icon: <Target size={20} />, text: 'Features' },
-  ];
-
   const navLinkClasses = ({ isActive }) => `
-    flex items-center gap-2 px-4 py-2 rounded-lg transition-all
-    ${isActive ? 'bg-green-500 text-white font-semibold' : 'text-gray-700 hover:bg-green-50 hover:text-green-600'}
+    flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200
+    ${isActive 
+      ? 'bg-green-500 text-white font-semibold' 
+      : 'text-gray-400 hover:text-white hover:bg-gray-800'
+    }
   `;
 
+  const mobileNavLinkClasses = ({ isActive }) => `
+    flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full
+    ${isActive 
+      ? 'bg-green-500 text-white font-semibold' 
+      : 'text-gray-400 hover:text-white hover:bg-gray-800'
+    }
+  `;
+
+  const mainNavLinks = currentUser ? [
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/workouts', icon: DumbbellIcon, label: 'Workouts' },
+    { to: '/goals', icon: Target, label: 'Goals' },
+    { to: '/feed', icon: Users, label: 'Social Feed' },
+    { to: '/progress', icon: Activity, label: 'Progress' },
+    { to: '/stats', icon: BarChart3, label: 'Statistics' },
+  ] : [
+    { to: '/', icon: Home, label: 'Home' },
+    { to: '/features', icon: Target, label: 'Features' },
+    { to: '/pricing', icon: DumbbellIcon, label: 'Pricing' },
+    { to: '/about', icon: HelpCircle, label: 'About' },
+  ];
+
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50">
+    <nav className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex-shrink-0">
-            <NavLink 
-              to={currentUser ? '/dashboard' : '/'}
-              className="flex items-center gap-2 text-green-600 font-bold text-xl hover:text-green-700 transition-colors"
-            >
-              <DumbbellIcon className="h-8 w-8" />
-              <span>FitPro</span>
-            </NavLink>
-          </div>
+          <NavLink 
+            to={currentUser ? '/dashboard' : '/'}
+            className="flex items-center gap-2 text-green-500 font-bold text-xl hover:text-green-400 transition-colors"
+          >
+            <DumbbellIcon className="h-8 w-8" />
+            <span className="tracking-tight">FitPro</span>
+          </NavLink>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-4">
             {currentUser ? (
               <>
-                {/* Main navigation links */}
-                {authenticatedLinks.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    className={navLinkClasses}
-                  >
-                    {link.icon}
-                    <span>{link.text}</span>
-                  </NavLink>
-                ))}
+                {/* Main Navigation Links */}
+                <div className="flex items-center gap-2">
+                  {mainNavLinks.map((link) => (
+                    <NavLink key={link.to} to={link.to} className={navLinkClasses}>
+                      <link.icon size={20} />
+                      <span>{link.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
 
-                {/* Quick Actions */}
-                <button
-                  onClick={() => navigate('/workouts/create')}
-                  className="flex items-center gap-2 px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600 transition-colors"
-                >
-                  <PlusSquare size={20} />
-                  <span>Log Workout</span>
-                </button>
-
-                {/* Notifications */}
-                <button className="relative p-2 text-gray-600 hover:text-green-600 transition-colors">
-                  <Bell size={20} />
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-
-                {/* Profile Menu */}
-                <div className="relative ml-3 flex items-center gap-4">
-                  <NavLink
-                    to={`/profiles/${currentUser?.profile?.id}`}
-                    className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-green-600 transition-colors"
-                  >
-                    <Avatar
-                      src={currentUser?.profile?.image}
-                      text={currentUser?.username}
-                      height={32}
-                    />
-                  </NavLink>
-
+                {/* Action Buttons */}
+                <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-800">
                   <button
-                    onClick={handleSignOut}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-red-600 rounded-lg transition-all"
+                    onClick={() => navigate('/workouts/create')}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg 
+                      hover:bg-green-600 transition-all duration-200 transform hover:scale-105 
+                      hover:shadow-lg hover:shadow-green-500/20"
                   >
-                    <LogOut size={20} />
-                    <span>Sign Out</span>
+                    <PlusSquare size={20} />
+                    <span>Log Workout</span>
                   </button>
+
+                  {/* Notifications */}
+                  <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
+                    <Bell size={20} />
+                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+                  </button>
+
+                  {/* User Menu */}
+                  <div className="flex items-center gap-4">
+                    <NavLink
+                      to={`/profiles/${currentUser?.profile?.id}`}
+                      className="flex items-center gap-2 hover:text-white transition-colors"
+                    >
+                      <Avatar
+                        src={currentUser?.profile?.image}
+                        text={currentUser?.username}
+                        height={32}
+                      />
+                    </NavLink>
+
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center gap-2 px-4 py-2 text-gray-400 
+                        hover:text-red-500 rounded-lg transition-colors"
+                    >
+                      <LogOut size={20} />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
                 </div>
               </>
             ) : (
               <>
-                {/* Public navigation links */}
-                {unauthenticatedLinks.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    className={navLinkClasses}
-                  >
-                    {link.icon}
-                    <span>{link.text}</span>
-                  </NavLink>
-                ))}
+                {/* Public Navigation */}
+                <div className="flex items-center gap-2">
+                  {mainNavLinks.map((link) => (
+                    <NavLink key={link.to} to={link.to} className={navLinkClasses}>
+                      <link.icon size={20} />
+                      <span>{link.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
 
-                {/* Auth buttons */}
-                <div className="flex items-center gap-4 ml-4">
+                {/* Auth Buttons */}
+                <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-800">
                   <NavLink
                     to="/signin"
-                    className="flex items-center gap-2 px-4 py-2 text-green-600 border-2 border-green-600 rounded-lg hover:bg-green-50 transition-colors font-semibold"
+                    className="flex items-center gap-2 px-4 py-2 text-green-500 border border-green-500 
+                      rounded-lg hover:bg-green-500 hover:text-white transition-all duration-200"
                   >
                     <LogIn size={20} />
                     <span>Sign In</span>
                   </NavLink>
+
                   <NavLink
                     to="/signup"
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white 
+                      rounded-lg hover:bg-green-600 transition-all duration-200 hover:shadow-lg 
+                      hover:shadow-green-500/20"
                   >
                     <UserPlus size={20} />
                     <span>Sign Up</span>
@@ -148,67 +165,86 @@ const NavBar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
-              aria-expanded={isOpen}
-              aria-controls="mobile-menu"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white 
+              hover:bg-gray-800 transition-colors"
+            aria-label="Toggle menu"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       <div
-        id="mobile-menu"
-        className={`${
-          isOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
-        } md:hidden fixed inset-0 z-50 bg-white transform transition-all duration-300 ease-in-out`}
+        className={`md:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
-        <div className="pt-16 pb-6 px-4 space-y-1">
+        <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+        
+        <div className="relative w-4/5 max-w-sm h-full bg-gray-900 text-white p-6 overflow-y-auto">
           {currentUser ? (
             <>
-              {authenticatedLinks.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setIsOpen(false)}
-                  className={navLinkClasses}
-                >
-                  {link.icon}
-                  <span>{link.text}</span>
-                </NavLink>
-              ))}
+              {/* User Profile Section */}
+              <div className="flex items-center gap-4 pb-6 mb-6 border-b border-gray-800">
+                <Avatar
+                  src={currentUser?.profile?.image}
+                  text={currentUser?.username}
+                  height={40}
+                />
+                <div>
+                  <h3 className="font-semibold text-white">{currentUser?.username}</h3>
+                  <p className="text-sm text-gray-400">View Profile</p>
+                </div>
+              </div>
 
+              {/* Quick Actions */}
               <button
                 onClick={() => {
                   navigate('/workouts/create');
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center gap-2 px-4 py-2 mt-4 text-white bg-green-500 rounded-lg hover:bg-green-600 transition-colors"
+                className="w-full flex items-center gap-2 px-4 py-3 mb-6 bg-green-500 text-white 
+                  rounded-lg hover:bg-green-600 transition-colors"
               >
                 <PlusSquare size={20} />
                 <span>Log Workout</span>
               </button>
 
-              <NavLink
-                to={`/profiles/${currentUser?.profile?.id}`}
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-green-600 mt-4"
-              >
-                <UserCircle size={20} />
-                <span>Profile</span>
-              </NavLink>
+              {/* Navigation Links */}
+              <div className="space-y-2">
+                {mainNavLinks.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={mobileNavLinkClasses}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <link.icon size={20} />
+                    <span>{link.label}</span>
+                  </NavLink>
+                ))}
+              </div>
 
+              {/* Settings & Help */}
+              <div className="pt-6 mt-6 border-t border-gray-800 space-y-2">
+                <NavLink to="/settings" className={mobileNavLinkClasses}>
+                  <Settings size={20} />
+                  <span>Settings</span>
+                </NavLink>
+                <NavLink to="/help" className={mobileNavLinkClasses}>
+                  <HelpCircle size={20} />
+                  <span>Help & Support</span>
+                </NavLink>
+              </div>
+
+              {/* Sign Out */}
               <button
-                onClick={() => {
-                  handleSignOut();
-                  setIsOpen(false);
-                }}
-                className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all mt-4"
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-2 px-4 py-3 mt-6 text-red-500
+                  hover:bg-red-500/10 rounded-lg transition-colors"
               >
                 <LogOut size={20} />
                 <span>Sign Out</span>
@@ -216,31 +252,39 @@ const NavBar = () => {
             </>
           ) : (
             <>
-              {unauthenticatedLinks.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setIsOpen(false)}
-                  className={navLinkClasses}
-                >
-                  {link.icon}
-                  <span>{link.text}</span>
-                </NavLink>
-              ))}
+              {/* Public Navigation */}
+              <div className="space-y-2 mb-6">
+                {mainNavLinks.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={mobileNavLinkClasses}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <link.icon size={20} />
+                    <span>{link.label}</span>
+                  </NavLink>
+                ))}
+              </div>
 
-              <div className="space-y-2 pt-4">
+              {/* Auth Buttons */}
+              <div className="space-y-3">
                 <NavLink
                   to="/signin"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3 
+                    text-green-500 border border-green-500 rounded-lg 
+                    hover:bg-green-500 hover:text-white transition-colors"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2 w-full text-green-600 border-2 border-green-600 rounded-lg hover:bg-green-50 transition-colors font-semibold"
                 >
                   <LogIn size={20} />
                   <span>Sign In</span>
                 </NavLink>
+
                 <NavLink
                   to="/signup"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3 
+                    bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2 w-full bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
                 >
                   <UserPlus size={20} />
                   <span>Sign Up</span>
