@@ -1,13 +1,13 @@
+// src/services/workoutService.js
 import { axiosReq } from './axiosDefaults';
-import errorHandler from './errorHandlerService';
 import logger from './loggerService';
+import errorHandler from './errorHandlerService';
 
 class WorkoutService {
-  // Helper function to handle API requests and errors
-  async handleRequest(method, url, params = {}, data = null) {
+  async handleRequest(method, url, data = null) {
     try {
-      logger.debug(`Requesting ${method} ${url}...`, { params, data });
-      const response = await axiosReq[method](url, data, { params });
+      logger.debug(`Requesting ${method} ${url}...`, { data });
+      const response = await axiosReq[method](url, data);
       logger.debug(`Response from ${url}:`, response.data);
       return response.data;
     } catch (err) {
@@ -16,94 +16,32 @@ class WorkoutService {
     }
   }
 
-  // Get workout statistics
-  async getWorkoutStatistics() {
-    return this.handleRequest('get', 'api/workouts/statistics/');
-  }
-
-  // Get all workouts with optional filtering
   async getWorkouts(params = {}) {
-    return this.handleRequest('get', 'api/workouts/', params);
+    return this.handleRequest('get', 'api/workouts/', { params });
   }
 
-  // Get a single workout by ID
   async getWorkout(id) {
     return this.handleRequest('get', `api/workouts/${id}/`);
   }
 
-  // Create a new workout
   async createWorkout(workoutData) {
-    return this.handleRequest('post', 'api/workouts/', {}, workoutData);
+    return this.handleRequest('post', 'api/workouts/', workoutData);
   }
 
-  // Update an existing workout
   async updateWorkout(id, workoutData) {
-    return this.handleRequest('put', `api/workouts/${id}/`, {}, workoutData);
+    return this.handleRequest('put', `api/workouts/${id}/`, workoutData);
   }
 
-  // Delete a workout
   async deleteWorkout(id) {
     return this.handleRequest('delete', `api/workouts/${id}/`);
   }
 
-  // Get workout summary
+  async getWorkoutStatistics() {
+    return this.handleRequest('get', 'api/workouts/statistics/');
+  }
+
   async getWorkoutSummary() {
     return this.handleRequest('get', 'api/workouts/summary/');
-  }
-
-  // Get workout streaks
-  async getWorkoutStreaks() {
-    return this.handleRequest('get', 'api/workouts/streaks/');
-  }
-
-  // Search workouts
-  async searchWorkouts(query) {
-    return this.handleRequest('get', 'api/workouts/search/', { query });
-  }
-
-  // Get workout types
-  async getWorkoutTypes() {
-    return this.handleRequest('get', 'api/workouts/types/');
-  }
-
-  // Get workout progress
-  async getWorkoutProgress() {
-    return this.handleRequest('get', 'api/workouts/progress/');
-  }
-
-  // Get monthly stats
-  async getMonthlyStats(month, year) {
-    return this.handleRequest('get', 'api/workouts/monthly-stats/', { month, year });
-  }
-
-  // Export workouts
-  async exportWorkouts(format = 'csv') {
-    return this.handleRequest('get', 'api/workouts/export/', { format }, null, 'blob');
-  }
-
-  // Get workout intensity distribution
-  async getIntensityDistribution() {
-    return this.handleRequest('get', 'api/workouts/intensity-distribution/');
-  }
-
-  // Get workout count by type
-  async getWorkoutCountByType() {
-    return this.handleRequest('get', 'api/workouts/count-by-type/');
-  }
-
-  // Filter workouts by date range
-  async filterWorkoutsByDate(startDate, endDate) {
-    return this.handleRequest('get', 'api/workouts/', { date_logged_after: startDate, date_logged_before: endDate });
-  }
-
-  // Get workouts this week
-  async getWorkoutsThisWeek() {
-    return this.handleRequest('get', 'api/workouts/this-week/');
-  }
-
-  // Calculate workout averages
-  async getWorkoutAverages() {
-    return this.handleRequest('get', 'api/workouts/averages/');
   }
 }
 

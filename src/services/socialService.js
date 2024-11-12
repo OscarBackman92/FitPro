@@ -17,16 +17,19 @@ class SocialService {
     }
   }
 
-  async getSocialStats(userId) {
+  async getStats(userId) {
     try {
       logger.debug('Fetching social stats', { userId });
-      const response = await axiosReq.get(`api/social/stats/${userId}/`);
+      const response = await axiosReq.get('api/social/stats/', {
+        params: { user_id: userId }
+      });
       return response.data;
     } catch (err) {
       logger.error('Error fetching social stats:', err);
       throw errorHandler.handleApiError(err, 'Failed to fetch social stats');
     }
   }
+
 
   async followUser(userId) {
     try {
