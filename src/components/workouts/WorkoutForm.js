@@ -25,7 +25,7 @@ const WorkoutForm = () => {
     duration: '',
     intensity: 'moderate',
     notes: '',
-    date_logged: new Date().toISOString().split('T')[0], // Initialize with today's date
+    date_logged: new Date().toISOString().split('T')[0],
   });
 
   useEffect(() => {

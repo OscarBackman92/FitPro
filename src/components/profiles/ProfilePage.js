@@ -33,7 +33,7 @@ const ProfilePage = () => {
         const [{ data: profileData }, { data: statsData }, { data: workoutsData }] = await Promise.all([
           axiosReq.get(`api/profiles/${id}/`),
           axiosReq.get(`api/profiles/${id}/stats/`),
-          axiosReq.get(`api/workouts/workouts/?user=${id}`)
+          axiosReq.get(`api/workouts/?user=${id}`)
         ]);
         setProfile(profileData);
         setStats(statsData);
