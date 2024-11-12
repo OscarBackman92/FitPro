@@ -3,7 +3,7 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
   Menu, X, DumbbellIcon, LogOut, Users,
-  LayoutDashboard, Target, LogIn, UserPlus, 
+  LayoutDashboard, LogIn, UserPlus, 
   Home, PlusSquare, Bell, Settings, HelpCircle
 } from 'lucide-react';
 import Avatar from './Avatar';
@@ -48,8 +48,6 @@ const NavBar = () => {
     { to: '/feed', icon: Users, label: 'Social Feed' },
   ] : [
     { to: '/', icon: Home, label: 'Home' },
-    { to: '/features', icon: Target, label: 'Features' },
-    { to: '/pricing', icon: DumbbellIcon, label: 'Pricing' },
     { to: '/about', icon: HelpCircle, label: 'About' },
   ];
 

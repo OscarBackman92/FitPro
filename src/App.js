@@ -6,7 +6,7 @@ import { useCurrentUser } from "./contexts/CurrentUserContext";
 import styles from "./App.module.css";
 
 // Common Components
-import { NavBar, PrivateRoute, NotFound } from "../src/components/common/CommonIndex";
+import { NavBar, PrivateRoute, NotFound, Footer } from "../src/components/common/CommonIndex";
 
 // Lazy-loaded Components
 // Main Pages
@@ -244,6 +244,7 @@ function App() {
           </Routes>
         </Suspense>
       </Container>
+      <Footer />
     </div>
   );
 }

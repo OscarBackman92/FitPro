@@ -6,3 +6,4 @@ export { default as PrivateRoute } from './PrivateRoute';
 export { default as NotFound } from './NotFound';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as ErrorMessage } from './ErrorMessage';
+export { default as Footer } from './Footer';
