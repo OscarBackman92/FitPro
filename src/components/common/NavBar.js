@@ -4,8 +4,7 @@ import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
   Menu, X, DumbbellIcon, LogOut, Users,
   LayoutDashboard, Target, LogIn, UserPlus, 
-  Home, PlusSquare, Bell, Activity,
-  BarChart3, Settings, HelpCircle
+  Home, PlusSquare, Bell, Settings, HelpCircle
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../../services/authService';
@@ -46,11 +45,7 @@ const NavBar = () => {
 
   const mainNavLinks = currentUser ? [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/workouts', icon: DumbbellIcon, label: 'Workouts' },
-    { to: '/goals', icon: Target, label: 'Goals' },
     { to: '/feed', icon: Users, label: 'Social Feed' },
-    { to: '/progress', icon: Activity, label: 'Progress' },
-    { to: '/stats', icon: BarChart3, label: 'Statistics' },
   ] : [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/features', icon: Target, label: 'Features' },
@@ -87,16 +82,6 @@ const NavBar = () => {
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-800">
-                  <button
-                    onClick={() => navigate('/workouts/create')}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg 
-                      hover:bg-green-600 transition-all duration-200 transform hover:scale-105 
-                      hover:shadow-lg hover:shadow-green-500/20"
-                  >
-                    <PlusSquare size={20} />
-                    <span>Log Workout</span>
-                  </button>
-
                   {/* Notifications */}
                   <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
                     <Bell size={20} />

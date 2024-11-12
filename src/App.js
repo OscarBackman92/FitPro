@@ -38,7 +38,7 @@ const GoalForm = lazy(() => import("./components/goals/GoalForm"));
 
 // Social Components
 const SocialFeed = lazy(() => import("./components/social/SocialFeed"));
-const FollowList = lazy(() => import("./components/social/components/FollowList"));
+const FollowList = lazy(() => import("./components/social/FollowList"));
 const Discover = lazy(() => import("./components/social/Discover"));
 
 // Progress & Stats

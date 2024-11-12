@@ -1,61 +1,38 @@
+// src/components/social/components/FollowList.js
 import React from 'react';
-import { toast } from 'react-hot-toast';
-import { FollowButton } from './FollowButton';
-import { socialService } from '../../services/socialService';
+import { Users } from 'lucide-react';
 
+const FollowList = ({ type = 'followers' }) => {
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <Users className="h-6 w-6 text-green-500" />
+          <h1 className="text-2xl font-bold">
+            {type === 'followers' ? 'Followers' : 'Following'}
+          </h1>
+        </div>
 
-
-export const FollowList = ({ userId, type = 'followers' }) => {
-    const [users, setUsers] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
-  
-    React.useEffect(() => {
-      const fetchUsers = async () => {
-        try {
-          const response = await socialService[type === 'followers' ? 'getFollowers' : 'getFollowing'](userId);
-          setUsers(response.results);
-        } catch (err) {
-          toast.error(`Failed to load ${type}`);
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-      fetchUsers();
-    }, [userId, type]);
-  
-    if (loading) {
-      return <div>Loading...</div>;
-    }
-  
-    return (
-      <div className="space-y-4">
-        {users.map((user) => (
-          <div key={user.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-            <div className="flex items-center gap-3">
-              <img
-                src={user.profile_image || '/default-avatar.png'}
-                alt={user.username}
-                className="w-10 h-10 rounded-full"
-              />
-              <div>
-                <p className="font-medium">{user.username}</p>
-                <p className="text-sm text-gray-500">{user.name}</p>
+        {/* Placeholder list */}
+        <div className="space-y-4">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                <div>
+                  <p className="font-medium">User {item}</p>
+                  <p className="text-sm text-gray-500">@user{item}</p>
+                </div>
               </div>
+              <button className="px-4 py-2 text-green-500 border border-green-500 rounded-lg hover:bg-green-50">
+                {type === 'followers' ? 'Follow Back' : 'Unfollow'}
+              </button>
             </div>
-            <FollowButton
-              userId={user.id}
-              isFollowing={user.is_following}
-              onFollowUpdate={(response) => {
-                setUsers(users.map(u => 
-                  u.id === user.id 
-                    ? { ...u, is_following: !u.is_following }
-                    : u
-                ));
-              }}
-            />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
+
+export default FollowList;
