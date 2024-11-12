@@ -3,21 +3,22 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { CurrentUserProvider } from './contexts/CurrentUserContext';
-import { WorkoutProvider } from './contexts/WorkoutContext'; // Import the WorkoutProvider
-import { Toaster } from 'react-hot-toast'; // Add toast notifications
+import { WorkoutProvider } from './contexts/WorkoutContext';
+import { Toaster } from 'react-hot-toast';
 import './index.css';
 import App from './App';
 
+// Common provider wrapper component
 const AppProviders = ({ children }) => (
   <React.StrictMode>
     <Router>
       <CurrentUserProvider>
-        <WorkoutProvider> {/* Wrap with WorkoutProvider */}
+        <WorkoutProvider>
           {/* Toast notification container */}
           <Toaster 
             position="top-right"
             toastOptions={{
-              // Styling for all toasts
+              // Default styles for all toasts
               duration: 4000,
               style: {
                 background: '#333',
