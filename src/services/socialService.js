@@ -17,19 +17,17 @@ class SocialService {
     }
   }
 
-  async getStats(userId) {
+  // Add the missing getSocialStats method
+  async getSocialStats(userId) {
     try {
       logger.debug('Fetching social stats', { userId });
-      const response = await axiosReq.get('api/social/stats/', {
-        params: { user_id: userId }
-      });
+      const response = await axiosReq.get(`api/social/stats/${userId}/`);
       return response.data;
     } catch (err) {
       logger.error('Error fetching social stats:', err);
       throw errorHandler.handleApiError(err, 'Failed to fetch social stats');
     }
   }
-
 
   async followUser(userId) {
     try {
@@ -41,45 +39,6 @@ class SocialService {
     } catch (err) {
       logger.error('Error following user:', err);
       throw errorHandler.handleApiError(err, 'Failed to follow user');
-    }
-  }
-
-  async getFollowers(userId, page = 1) {
-    try {
-      logger.debug('Fetching followers', { userId, page });
-      const response = await axiosReq.get(`api/social/followers/${userId}/`, {
-        params: { page }
-      });
-      return response.data;
-    } catch (err) {
-      logger.error('Error fetching followers:', err);
-      throw errorHandler.handleApiError(err, 'Failed to fetch followers');
-    }
-  }
-
-  async getFollowing(userId, page = 1) {
-    try {
-      logger.debug('Fetching following', { userId, page });
-      const response = await axiosReq.get(`api/social/following/${userId}/`, {
-        params: { page }
-      });
-      return response.data;
-    } catch (err) {
-      logger.error('Error fetching following:', err);
-      throw errorHandler.handleApiError(err, 'Failed to fetch following');
-    }
-  }
-
-  async toggleLike(workoutId) {
-    try {
-      logger.debug('Toggling like', { workoutId });
-      const response = await axiosReq.post('api/social/likes/toggle/', {
-        workout_id: workoutId
-      });
-      return response.data;
-    } catch (err) {
-      logger.error('Error toggling like:', err);
-      throw errorHandler.handleApiError(err, 'Failed to toggle like');
     }
   }
 
@@ -117,6 +76,45 @@ class SocialService {
     } catch (err) {
       logger.error('Error deleting comment:', err);
       throw errorHandler.handleApiError(err, 'Failed to delete comment');
+    }
+  }
+
+  async toggleLike(workoutId) {
+    try {
+      logger.debug('Toggling like', { workoutId });
+      const response = await axiosReq.post('api/social/likes/toggle/', {
+        workout_id: workoutId
+      });
+      return response.data;
+    } catch (err) {
+      logger.error('Error toggling like:', err);
+      throw errorHandler.handleApiError(err, 'Failed to toggle like');
+    }
+  }
+
+  async getFollowers(userId, page = 1) {
+    try {
+      logger.debug('Fetching followers', { userId, page });
+      const response = await axiosReq.get(`api/social/followers/${userId}/`, {
+        params: { page }
+      });
+      return response.data;
+    } catch (err) {
+      logger.error('Error fetching followers:', err);
+      throw errorHandler.handleApiError(err, 'Failed to fetch followers');
+    }
+  }
+
+  async getFollowing(userId, page = 1) {
+    try {
+      logger.debug('Fetching following', { userId, page });
+      const response = await axiosReq.get(`api/social/following/${userId}/`, {
+        params: { page }
+      });
+      return response.data;
+    } catch (err) {
+      logger.error('Error fetching following:', err);
+      throw errorHandler.handleApiError(err, 'Failed to fetch following');
     }
   }
 }
