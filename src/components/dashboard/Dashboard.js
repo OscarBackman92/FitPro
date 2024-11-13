@@ -7,10 +7,8 @@ import {
   PlusCircle,
   Activity,
   Award,
-  TrendingUp,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { workoutService } from '../../services/workoutService';
 import toast from 'react-hot-toast';
@@ -212,62 +210,6 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-
-        {/* Activity Chart */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">Activity Trends</h2>
-            <TrendingUp className="h-5 w-5 text-green-500" />
-          </div>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={stats.monthlyStats}>
-                <XAxis 
-                  dataKey="month"
-                  stroke="#6B7280"
-                  fontSize={12}
-                />
-                <YAxis
-                  stroke="#6B7280"
-                  fontSize={12}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1F2937',
-                    border: 'none',
-                    borderRadius: '8px',
-                    color: '#F9FAFB'
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="total_duration" 
-                  stroke="#10B981" 
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Workout Types */}
-        {stats.workoutTypes.length > 0 && (
-          <div className="lg:col-span-2 bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-6">Workout Distribution</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {stats.workoutTypes.map((type, index) => (
-                <div
-                  key={`${type.type}-${index}`}
-                  className="bg-gray-700 p-4 rounded-lg text-center"
-                >
-                  <p className="text-2xl font-bold text-green-500">{type.count}</p>
-                  <p className="text-sm text-gray-400 capitalize">{type.type}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
