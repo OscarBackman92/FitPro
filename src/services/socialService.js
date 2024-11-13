@@ -41,7 +41,8 @@ class SocialService {
   async toggleLike(postId) {
     try {
       logger.debug('Toggling like', { postId });
-      const response = await axiosReq.post(`api/social/posts/${postId}/like/`);
+      // Changed from posts to feed to match our backend URL structure
+      const response = await axiosReq.post(`api/social/feed/${postId}/like/`);
       return response.data;
     } catch (err) {
       logger.error('Failed to toggle like:', err);

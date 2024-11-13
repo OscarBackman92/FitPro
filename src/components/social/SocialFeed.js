@@ -1,16 +1,19 @@
+// src/components/social/SocialFeed.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Share2, MessageCircle, Heart, X } from 'lucide-react';  // Added X import
+import { Share2, MessageCircle, Heart, X } from 'lucide-react';
 import { socialService } from '../../services/socialService';
 import WorkoutShareModal from './WorkoutShareModal';
 import Avatar from '../common/Avatar';
 import toast from 'react-hot-toast';
 
 const SocialFeed = () => {
-  const navigate = useNavigate();  // Keep this as we'll use it for profile navigation
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [commentingOnPost, setCommentingOnPost] = useState(null);
 
   const fetchPosts = async () => {
     try {
@@ -44,18 +47,23 @@ const SocialFeed = () => {
     }
   };
 
-  const handleComment = async (postId, content) => {
+  const handleComment = async (postId) => {
+    if (!newComment.trim()) return;
+    
     try {
-      const newComment = await socialService.addComment(postId, content);
+      const response = await socialService.addComment(postId, newComment);
       setPosts(posts.map(post =>
         post.id === postId
           ? {
               ...post,
               comments_count: post.comments_count + 1,
-              latest_comments: [...(post.latest_comments || []), newComment]
+              latest_comments: [response, ...(post.latest_comments || [])]
             }
           : post
       ));
+      setNewComment('');
+      setCommentingOnPost(null);
+      toast.success('Comment added');
     } catch (err) {
       toast.error('Failed to add comment');
     }
@@ -89,7 +97,6 @@ const SocialFeed = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      {/* Share Button */}
       <div className="mb-6">
         <button
           onClick={() => setShowShareModal(true)}
@@ -100,11 +107,9 @@ const SocialFeed = () => {
         </button>
       </div>
 
-      {/* Posts Feed */}
       <div className="space-y-6">
         {posts.map((post) => (
           <div key={post.id} className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            {/* Post Header */}
             <div className="flex items-center gap-3 mb-4">
               <div onClick={() => navigate(`/profiles/${post.user.id}`)}>
                 <Avatar
@@ -120,7 +125,6 @@ const SocialFeed = () => {
               </div>
             </div>
 
-            {/* Workout Details */}
             {post.workout && (
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
@@ -137,7 +141,6 @@ const SocialFeed = () => {
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex items-center gap-6 text-gray-400">
               <button
                 onClick={() => handleLike(post.id, post.has_liked)}
@@ -149,13 +152,15 @@ const SocialFeed = () => {
                 <span>{post.likes_count}</span>
               </button>
 
-              <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
+              <button 
+                className="flex items-center gap-2 hover:text-blue-500 transition-colors"
+                onClick={() => setCommentingOnPost(post.id)}
+              >
                 <MessageCircle className="h-5 w-5" />
                 <span>{post.comments_count}</span>
               </button>
             </div>
 
-            {/* Comments */}
             {post.latest_comments?.length > 0 && (
               <div className="mt-4 space-y-2">
                 {post.latest_comments.map((comment) => (
@@ -170,7 +175,7 @@ const SocialFeed = () => {
                         <span className="font-medium text-white">
                           {comment.user.username}
                         </span>
-                        {comment.user.id === post.user.id && (
+                        {comment.user.id === comment.user.id && (
                           <button
                             onClick={() => handleDeleteComment(post.id, comment.id)}
                             className="text-gray-400 hover:text-red-500"
@@ -185,16 +190,43 @@ const SocialFeed = () => {
                 ))}
               </div>
             )}
+
+            {commentingOnPost === post.id && (
+              <div className="mt-4 flex gap-2">
+                <input
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add a comment..."
+                  className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <button
+                  onClick={() => handleComment(post.id)}
+                  disabled={!newComment.trim()}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Post
+                </button>
+                <button
+                  onClick={() => {
+                    setCommentingOnPost(null);
+                    setNewComment('');
+                  }}
+                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Share Modal */}
       {showShareModal && (
         <WorkoutShareModal
           onClose={() => {
             setShowShareModal(false);
-            fetchPosts(); // Refresh feed after sharing
+            fetchPosts();
           }}
         />
       )}
