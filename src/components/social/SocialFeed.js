@@ -1,76 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, AlertCircle } from 'lucide-react';
+import { Heart, MessageCircle, Users } from 'lucide-react';
+import { socialService } from '../../services/socialService';
 import Avatar from '../common/Avatar';
+import toast from 'react-hot-toast';
 
 const SocialFeed = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState({
+    timeframe: 'all',
+    workout_type: ''
+  });
   const navigate = useNavigate();
-  const [activeTab] = useState('all');
 
-  // Placeholder data until backend is fixed
-  const placeholderPosts = [
-    {
-      id: 1,
-      user: {
-        username: 'Demo User',
-        profile_image: null
-      },
-      workout_type: 'Cardio',
-      duration: 30,
-      date: new Date().toISOString(),
-      likes: 5,
-      comments: 2
+  const fetchPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await socialService.getFeed(filter);
+      setPosts(response.results);
+    } catch (err) {
+      toast.error('Failed to load posts');
+    } finally {
+      setLoading(false);
     }
-  ];
+  }, [filter]); // Include filter as a dependency
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]); // Now fetchPosts is a stable reference
+
+  const handleLike = async (postId) => {
+    try {
+      await socialService.toggleLike(postId);
+      fetchPosts(); // Refresh posts to update likes
+    } catch (err) {
+      toast.error('Failed to like post');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      {/* Feed Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">Social Feed</h1>
-        <div className="flex gap-4">
-          <button
-            onClick={() => navigate('/discover')}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg 
-              hover:bg-gray-700 transition-colors"
-          >
-            <Users className="h-5 w-5" />
-            Find Friends
-          </button>
-        </div>
-      </div>
-
-      {/* Feed Tabs */}
-      <div className="flex border-b border-gray-700 mb-6">
-        {['all', 'following', 'my posts'].map((tab) => (
-          <button
-            key={tab}
-            className={`px-6 py-3 text-sm font-medium capitalize ${
-              activeTab === tab
-                ? 'text-green-500 border-b-2 border-green-500'
-                : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Temporary Notice */}
-      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
-        <div className="flex items-center gap-2 text-yellow-500">
-          <AlertCircle className="h-5 w-5" />
-          <p>Social features are currently under maintenance.</p>
-        </div>
+      {/* Filter Controls */}
+      <div className="mb-6">
+        <select
+          value={filter.timeframe}
+          onChange={(e) => setFilter(prev => ({ ...prev, timeframe: e.target.value }))}
+          className="mr-4 bg-gray-800 text-white rounded-lg px-4 py-2"
+        >
+          <option value="all">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
+        
+        <select
+          value={filter.workout_type}
+          onChange={(e) => setFilter(prev => ({ ...prev, workout_type: e.target.value }))}
+          className="bg-gray-800 text-white rounded-lg px-4 py-2"
+        >
+          <option value="">All Types</option>
+          <option value="cardio">Cardio</option>
+          <option value="strength">Strength</option>
+          <option value="flexibility">Flexibility</option>
+        </select>
       </div>
 
       {/* Posts */}
       <div className="space-y-6">
-        {placeholderPosts.map((post) => (
-          <div 
-            key={post.id}
-            className="bg-gray-800 rounded-lg p-6 border border-gray-700"
-          >
+        {posts.map(post => (
+          <div key={post.id} className="bg-gray-800 rounded-lg p-6 border border-gray-700">
             {/* Post Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -82,39 +89,53 @@ const SocialFeed = () => {
                 <div>
                   <h3 className="font-medium text-white">{post.user.username}</h3>
                   <p className="text-sm text-gray-400">
-                    {new Date(post.date).toLocaleDateString()}
+                    {new Date(post.shared_at).toLocaleDateString()}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Post Content */}
+            {/* Workout Details */}
             <div className="mb-4">
               <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-green-500/20 text-green-500 
-                  rounded-full text-sm">
-                  {post.workout_type}
+                <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-sm">
+                  {post.workout.workout_type}
                 </span>
-                <span className="px-3 py-1 bg-blue-500/20 text-blue-500 
-                  rounded-full text-sm">
-                  {post.duration} mins
+                <span className="px-3 py-1 bg-blue-500/20 text-blue-500 rounded-full text-sm">
+                  {post.workout.duration} mins
                 </span>
               </div>
             </div>
 
-            {/* Post Actions */}
+            {/* Actions */}
             <div className="flex items-center gap-6 text-gray-400">
-              <button className="flex items-center gap-2 hover:text-green-500 transition-colors">
-                <span>👍</span>
-                <span>{post.likes}</span>
+              <button 
+                onClick={() => handleLike(post.id)}
+                className={`flex items-center gap-2 ${
+                  post.has_liked ? 'text-red-500' : 'hover:text-red-500'
+                } transition-colors`}
+              >
+                <Heart className={`h-5 w-5 ${post.has_liked ? 'fill-current' : ''}`} />
+                <span>{post.likes_count}</span>
               </button>
-              <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-                <span>💬</span>
-                <span>{post.comments}</span>
+              
+              <button 
+                onClick={() => navigate(`/workouts/${post.workout.id}`)}
+                className="flex items-center gap-2 hover:text-blue-500 transition-colors"
+              >
+                <MessageCircle className="h-5 w-5" />
+                <span>{post.comments_count}</span>
               </button>
             </div>
           </div>
         ))}
+
+        {posts.length === 0 && (
+          <div className="text-center py-8 bg-gray-800 rounded-lg border border-gray-700">
+            <Users className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-400">No posts found</p>
+          </div>
+        )}
       </div>
     </div>
   );
