@@ -2,17 +2,15 @@ import { axiosReq } from './axiosDefaults';
 import errorHandler from './errorHandlerService';
 
 class SocialService {
-  // Get social feed with optional filters
   async getFeed(params = {}) {
     try {
       const response = await axiosReq.get('api/social/feed/', { params });
       return response.data;
     } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch social feed');
+      throw errorHandler.handleApiError(err, 'Failed to fetch feed');
     }
   }
 
-  // Share a workout
   async shareWorkout(workoutId) {
     try {
       const response = await axiosReq.post('api/social/feed/share_workout/', {
@@ -24,7 +22,6 @@ class SocialService {
     }
   }
 
-  // Toggle like on a post
   async toggleLike(postId) {
     try {
       const response = await axiosReq.post(`api/social/feed/${postId}/toggle_like/`);
@@ -34,32 +31,15 @@ class SocialService {
     }
   }
 
-  // Get comments for a workout
-  async getComments(workoutId) {
+  async getSocialStats() {
     try {
-      const response = await axiosReq.get('api/social/comments/', {
-        params: { workout_id: workoutId }
-      });
+      const response = await axiosReq.get('api/social/follows/stats/');
       return response.data;
     } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch comments');
+      throw errorHandler.handleApiError(err, 'Failed to fetch stats');
     }
   }
 
-  // Add a comment
-  async addComment(workoutId, content) {
-    try {
-      const response = await axiosReq.post('api/social/comments/', {
-        workout: workoutId,
-        content
-      });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to add comment');
-    }
-  }
-
-  // Toggle follow user
   async toggleFollow(userId) {
     try {
       const response = await axiosReq.post('api/social/follows/toggle_follow/', {
@@ -68,26 +48,6 @@ class SocialService {
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to toggle follow');
-    }
-  }
-
-  // Get user suggestions
-  async getSuggestions() {
-    try {
-      const response = await axiosReq.get('api/social/follows/suggestions/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch suggestions');
-    }
-  }
-
-  // Get social stats
-  async getStats() {
-    try {
-      const response = await axiosReq.get('api/social/follows/stats/');
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch social stats');
     }
   }
 }
