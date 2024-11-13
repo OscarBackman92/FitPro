@@ -17,7 +17,14 @@ class WorkoutService {
   }
 
   async getWorkouts(params = {}) {
-    return this.handleRequest('get', 'api/workouts/', { params });
+    try {
+      logger.debug('Fetching workouts', { params });
+      const response = await axiosReq.get('api/workouts/', { params });
+      return response.data;
+    } catch (err) {
+      logger.error('Error fetching workouts:', err);
+      throw errorHandler.handleApiError(err, 'Failed to fetch workouts');
+    }
   }
 
   async getWorkout(id) {
