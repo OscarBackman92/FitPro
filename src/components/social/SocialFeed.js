@@ -1,138 +1,120 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCurrentUser } from '../../contexts/CurrentUserContext';
-import { socialService } from '../../services/socialService';
-import { SocialActions, Comments, FollowButton } from './SocialIndex';
-import toast from 'react-hot-toast';
+import { Users, AlertCircle } from 'lucide-react';
+import Avatar from '../common/Avatar';
 
-export const SocialFeed = () => {
-  const { currentUser } = useCurrentUser();
+const SocialFeed = () => {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [activeTab] = useState('all');
 
-  const fetchPosts = async (pageNum = 1) => {
-    try {
-      const response = await socialService.getFeed(pageNum);
-      setPosts(prev => pageNum === 1 ? response.results : [...prev, ...response.results]);
-      setHasMore(!!response.next);
-    } catch (err) {
-      toast.error('Failed to load posts');
-    } finally {
-      setLoading(false);
+  // Placeholder data until backend is fixed
+  const placeholderPosts = [
+    {
+      id: 1,
+      user: {
+        username: 'Demo User',
+        profile_image: null
+      },
+      workout_type: 'Cardio',
+      duration: 30,
+      date: new Date().toISOString(),
+      likes: 5,
+      comments: 2
     }
-  };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const loadMore = () => {
-    if (!hasMore || loading) return;
-    setPage(prev => prev + 1);
-    fetchPosts(page + 1);
-  };
-
-  if (loading && posts.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500" />
-      </div>
-    );
-  }
+  ];
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Feed Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-white">Social Feed</h1>
+        <div className="flex gap-4">
+          <button
+            onClick={() => navigate('/discover')}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg 
+              hover:bg-gray-700 transition-colors"
+          >
+            <Users className="h-5 w-5" />
+            Find Friends
+          </button>
+        </div>
+      </div>
+
+      {/* Feed Tabs */}
+      <div className="flex border-b border-gray-700 mb-6">
+        {['all', 'following', 'my posts'].map((tab) => (
+          <button
+            key={tab}
+            className={`px-6 py-3 text-sm font-medium capitalize ${
+              activeTab === tab
+                ? 'text-green-500 border-b-2 border-green-500'
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Temporary Notice */}
+      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-2 text-yellow-500">
+          <AlertCircle className="h-5 w-5" />
+          <p>Social features are currently under maintenance.</p>
+        </div>
+      </div>
+
+      {/* Posts */}
       <div className="space-y-6">
-        {posts.map((post) => (
-          <div key={post.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="p-4 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={post.user.profile_image || '/default-avatar.png'}
-                    alt={post.user.username}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium cursor-pointer hover:text-green-600"
-                       onClick={() => navigate(`/profiles/${post.user.id}`)}>
-                      {post.user.username}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
+        {placeholderPosts.map((post) => (
+          <div 
+            key={post.id}
+            className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+          >
+            {/* Post Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  src={post.user.profile_image}
+                  text={post.user.username}
+                  height={40}
+                />
+                <div>
+                  <h3 className="font-medium text-white">{post.user.username}</h3>
+                  <p className="text-sm text-gray-400">
+                    {new Date(post.date).toLocaleDateString()}
+                  </p>
                 </div>
-                {post.user.id !== currentUser?.id && (
-                  <FollowButton
-                    userId={post.user.id}
-                    isFollowing={post.user.is_following}
-                    onFollowUpdate={() => {
-                      setPosts(posts.map(p =>
-                        p.id === post.id
-                          ? { ...p, user: { ...p.user, is_following: !p.user.is_following } }
-                          : p
-                      ));
-                    }}
-                  />
-                )}
               </div>
             </div>
 
-            <div className="p-4">
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+            {/* Post Content */}
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-green-500/20 text-green-500 
+                  rounded-full text-sm">
                   {post.workout_type}
                 </span>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                <span className="px-3 py-1 bg-blue-500/20 text-blue-500 
+                  rounded-full text-sm">
                   {post.duration} mins
                 </span>
-                {post.intensity && (
-                  <span className={`px-3 py-1 rounded-full text-sm
-                    ${post.intensity === 'high' 
-                      ? 'bg-red-100 text-red-800' 
-                      : post.intensity === 'moderate'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-green-100 text-green-800'}`}
-                  >
-                    {post.intensity}
-                  </span>
-                )}
               </div>
-
-              {post.notes && (
-                <p className="text-gray-600 mb-4">{post.notes}</p>
-              )}
-
-              <SocialActions
-                workout={post}
-                onLikeUpdate={(response) => {
-                  setPosts(posts.map(p =>
-                    p.id === post.id
-                      ? { ...p, has_liked: !p.has_liked, likes_count: p.has_liked ? p.likes_count - 1 : p.likes_count + 1 }
-                      : p
-                  ));
-                }}
-              />
             </div>
 
-            <div className="border-t">
-              <Comments workoutId={post.id} />
+            {/* Post Actions */}
+            <div className="flex items-center gap-6 text-gray-400">
+              <button className="flex items-center gap-2 hover:text-green-500 transition-colors">
+                <span>👍</span>
+                <span>{post.likes}</span>
+              </button>
+              <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
+                <span>💬</span>
+                <span>{post.comments}</span>
+              </button>
             </div>
           </div>
         ))}
-
-        {hasMore && (
-          <button
-            onClick={loadMore}
-            className="w-full py-2 text-green-600 hover:text-green-700"
-          >
-            Load more
-          </button>
-        )}
       </div>
     </div>
   );
