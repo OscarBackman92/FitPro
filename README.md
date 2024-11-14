@@ -10,7 +10,7 @@
 ## Table of Contents
 
 1. [Description](#description)
-2. [Live Demo](#live-demo)
+2. [Live Site](#live-site)
 3. [Features](#features)
 4. [User Interface](#user-interface)
 5. [User Stories](#user-stories)
@@ -37,16 +37,9 @@ FitPro revolutionizes fitness tracking by providing a comprehensive platform for
 - 📱 Responsive design for all devices
 - 🔒 Secure user authentication
 
-## Live Demo
+## Live Site
 
-- **Live Site**: [https://fitpro-demo.herokuapp.com](https://fitpro-demo.herokuapp.com)
-- **Demo Account**: 
-
-  - Email: demo@fitpro.com
-
-  - Password: demo123
-
-[LIVE DEMO GIF: Add a GIF showing key app interactions - recommended size 800x400px]
+- **Live Site**: [https://frontendfitness-e0476c66fecb.herokuapp.com/](https://frontendfitness-e0476c66fecb.herokuapp.com/)
 
 ## Features
 
