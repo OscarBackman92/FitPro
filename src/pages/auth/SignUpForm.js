@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import { 
   UserPlus, Loader, Mail, Lock, User, 
-  AlertCircle, ArrowLeft, CheckCircle 
+  AlertCircle, CheckCircle 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -11,8 +11,8 @@ const SignUpForm = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: '',
-    confirmPassword: ''
+    password1: '',
+    password2: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +24,7 @@ const SignUpForm = () => {
       ...prev,
       [name]: value
     }));
-    // Clear errors when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
