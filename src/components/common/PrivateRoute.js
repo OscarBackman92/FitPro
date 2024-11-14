@@ -1,4 +1,3 @@
-// src/components/common/PrivateRoute.js
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
@@ -14,14 +13,11 @@ const PrivateRoute = ({
   const location = useLocation();
   const { currentUser, isLoading } = useCurrentUser();
 
-  // Show loading spinner while checking auth status
   if (isLoading) {
     return <LoadingSpinner centered />;
   }
 
-  // Handle authentication check
   if (requireAuth && !currentUser) {
-    // Save the attempted URL for redirect after login
     sessionStorage.setItem('redirectAfterLogin', location.pathname);
     
     return (
@@ -33,7 +29,6 @@ const PrivateRoute = ({
     );
   }
 
-  // Handle email verification requirement
   if (requireEmailVerified && !currentUser?.is_email_verified) {
     return (
       <Navigate 
@@ -44,7 +39,6 @@ const PrivateRoute = ({
     );
   }
 
-  // Handle role-based access
   if (roles.length > 0 && !roles.some(role => currentUser?.roles?.includes(role))) {
     return (
       <Navigate 
@@ -58,7 +52,6 @@ const PrivateRoute = ({
     );
   }
 
-  // Render authorized component
   return (
     <React.Suspense fallback={<LoadingSpinner centered />}>
       {children}
@@ -66,7 +59,6 @@ const PrivateRoute = ({
   );
 };
 
-// HOC version for class components
 export const withPrivateRoute = (
   WrappedComponent,
   options = { requireAuth: true, requireEmailVerified: false, roles: [] }

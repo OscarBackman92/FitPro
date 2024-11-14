@@ -48,14 +48,14 @@ const SignUpForm = () => {
       newErrors.email = 'Please enter a valid email';
     }
 
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+    if (!formData.password1) {
+      newErrors.password1 = 'Password is required';
+    } else if (formData.password1.length < 8) {
+      newErrors.password1 = 'Password must be at least 8 characters';
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+    if (formData.password1 !== formData.password2) {
+      newErrors.password2 = 'Passwords do not match';
     }
 
     return newErrors;
@@ -65,6 +65,7 @@ const SignUpForm = () => {
     e.preventDefault();
     
     const validationErrors = validateForm();
+    console.log('Validation errors:', validationErrors);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -97,7 +98,7 @@ const SignUpForm = () => {
     return checks;
   };
 
-  const checks = passwordStrength(formData.password);
+  const checks = passwordStrength(formData.password1);
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -204,11 +205,11 @@ const SignUpForm = () => {
                   <Lock className="h-5 w-5 text-gray-500" />
                 </div>
                 <input
-                  id="password"
-                  name="password"
+                  id="password1"
+                  name="password1"
                   type="password"
                   required
-                  value={formData.password}
+                  value={formData.password1}
                   onChange={handleChange}
                   className="block w-full pl-10 bg-gray-700 border border-gray-600 rounded-lg 
                     py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 
@@ -216,15 +217,15 @@ const SignUpForm = () => {
                   placeholder="Create a password"
                 />
               </div>
-              {errors.password && (
+              {errors.password1 && (
                 <p className="mt-2 text-sm text-red-500 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
-                  {errors.password}
+                  {errors.password1}
                 </p>
               )}
 
               {/* Password Strength Indicators */}
-              {formData.password && (
+              {formData.password1 && (
                 <div className="mt-4 space-y-2">
                   <p className="text-sm font-medium text-gray-300">Password strength:</p>
                   <div className="space-y-2">
@@ -254,7 +255,7 @@ const SignUpForm = () => {
             {/* Confirm Password Input */}
             <div>
               <label 
-                htmlFor="confirmPassword" 
+                htmlFor="password2" 
                 className="block text-sm font-medium text-gray-300"
               >
                 Confirm Password
@@ -264,11 +265,11 @@ const SignUpForm = () => {
                   <Lock className="h-5 w-5 text-gray-500" />
                 </div>
                 <input
-                  id="confirmPassword"
-                  name="confirmPassword"
+                  id="password2"
+                  name="password2"
                   type="password"
                   required
-                  value={formData.confirmPassword}
+                  value={formData.password2}
                   onChange={handleChange}
                   className="block w-full pl-10 bg-gray-700 border border-gray-600 rounded-lg 
                     py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 
@@ -276,10 +277,10 @@ const SignUpForm = () => {
                   placeholder="Confirm your password"
                 />
               </div>
-              {errors.confirmPassword && (
+              {errors.password2 && (
                 <p className="mt-2 text-sm text-red-500 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
-                  {errors.confirmPassword}
+                  {errors.password2}
                 </p>
               )}
             </div>

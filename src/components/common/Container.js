@@ -1,4 +1,4 @@
-// src/components/common/Container.js
+
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
@@ -7,17 +7,14 @@ const Container = ({ children, noPadding = false }) => {
   const location = useLocation();
   const { currentUser } = useCurrentUser();
 
-  // Determine if we're on a full-width page
   const isFullWidth = ['/feed', '/workouts', '/'].includes(location.pathname);
 
-  // Determine background color based on route
   const getBgColor = () => {
     if (location.pathname.startsWith('/auth')) return 'bg-white';
     if (!currentUser) return 'bg-gray-50';
     return 'bg-gray-50';
   };
 
-  // Determine max-width based on route and authentication status
   const getMaxWidth = () => {
     if (isFullWidth) return 'max-w-7xl';
     if (location.pathname.startsWith('/profiles')) return 'max-w-4xl';
@@ -65,7 +62,6 @@ const Container = ({ children, noPadding = false }) => {
             </aside>
           </div>
         ) : (
-          // Regular Layout
           children
         )}
       </div>
