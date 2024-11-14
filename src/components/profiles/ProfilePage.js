@@ -71,11 +71,12 @@ const StatCard = ({ icon: Icon, label, value }) => (
 const ProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useCurrentUser();
+  const { currentUser, setCurrentUser } = useCurrentUser();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [updating, setUpdating] = useState(false);
 
   const isOwnProfile = currentUser?.profile?.id === parseInt(id);
 
@@ -92,6 +93,40 @@ const ProfilePage = () => {
     { icon: Activity, label: 'Following', value: stats?.following_count || 0 },
     { icon: Award, label: 'Day Streak', value: stats?.streak_count || 0 }
   ];
+
+  // Profile image update handler
+  const handleImageUpdate = async (formData) => {
+    if (!isOwnProfile) return;
+
+    try {
+      setUpdating(true);
+      const updatedProfile = await profileService.updateProfileImage(id, formData);
+      
+      // Update local profile state
+      setProfile(prev => ({
+        ...prev,
+        profile_image: updatedProfile.profile_image
+      }));
+
+      // Update current user context if it's the user's own profile
+      if (isOwnProfile && setCurrentUser) {
+        setCurrentUser(prev => ({
+          ...prev,
+          profile: {
+            ...prev.profile,
+            profile_image: updatedProfile.profile_image
+          }
+        }));
+      }
+
+      toast.success('Profile image updated successfully');
+    } catch (err) {
+      console.error('Failed to update profile image:', err);
+      toast.error(err.response?.data?.message || 'Failed to update profile image');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -142,6 +177,8 @@ const ProfilePage = () => {
               size={128}
               className="ring-4 ring-gray-700"
               editable={isOwnProfile}
+              onImageUpdate={handleImageUpdate}
+              disabled={updating}
             />
             {profile.visibility === 'private' && (
               <div className="absolute -top-2 -right-2 bg-gray-700 p-1 rounded-full">
