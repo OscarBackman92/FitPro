@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { UserCircle } from 'lucide-react';
+import ProfileImageHandler from './ProfileImageHandler';
 
 const Avatar = ({ 
   src, 
@@ -12,6 +13,17 @@ const Avatar = ({
   status = 'offline',
   className = '' 
 }) => {
+  // Map size names to pixel values
+  const sizeMap = {
+    xs: 24,
+    sm: 32,
+    md: 40,
+    lg: 48,
+    xl: 64
+  };
+
+  const pixelSize = sizeMap[size] || 40;
+
   const sizeClasses = {
     xs: 'h-6 w-6 text-xs',
     sm: 'h-8 w-8 text-sm',
@@ -30,15 +42,11 @@ const Avatar = ({
   const AvatarContent = () => (
     <div className="relative inline-flex items-center justify-center">
       {src ? (
-        <img
+        <ProfileImageHandler
           src={src}
           alt={text || 'Avatar'}
-          className={`
-            ${sizeClasses[size]}
-            rounded-full object-cover
-            ring-2 ring-white
-            ${className}
-          `}
+          size={pixelSize}
+          className={className}
         />
       ) : (
         <div className={`

@@ -1,12 +1,9 @@
 // src/services/socialService.js
 import { axiosReq } from './axiosDefaults';
-import errorHandler from './errorHandlerService';
 import logger from './loggerService';
+import errorHandler from './errorHandlerService';
 
 class SocialService {
-  /**
-   * Get the social feed with optional filters
-   */
   async getFeed(params = {}) {
     try {
       logger.debug('Fetching social feed', { params });
@@ -18,9 +15,6 @@ class SocialService {
     }
   }
 
-  /**
-   * Share a workout to the social feed
-   */
   async shareWorkout(workoutId) {
     try {
       logger.debug('Sharing workout', { workoutId });
@@ -35,13 +29,9 @@ class SocialService {
     }
   }
 
-  /**
-   * Toggle like on a post
-   */
   async toggleLike(postId) {
     try {
       logger.debug('Toggling like', { postId });
-      // Changed from posts to feed to match our backend URL structure
       const response = await axiosReq.post(`api/social/feed/${postId}/like/`);
       return response.data;
     } catch (err) {
@@ -50,13 +40,10 @@ class SocialService {
     }
   }
 
-  /**
-   * Add a comment to a post
-   */
   async addComment(postId, content) {
     try {
-      logger.debug('Adding comment', { postId });
-      const response = await axiosReq.post(`api/social/posts/${postId}/comments/`, {
+      logger.debug('Adding comment', { postId, content });
+      const response = await axiosReq.post(`api/social/feed/${postId}/comments/`, {
         content
       });
       return response.data;
@@ -66,9 +53,17 @@ class SocialService {
     }
   }
 
-  /**
-   * Delete a comment
-   */
+  async getComments(postId) {
+    try {
+      logger.debug('Fetching comments', { postId });
+      const response = await axiosReq.get(`api/social/feed/${postId}/comments/`);
+      return response.data;
+    } catch (err) {
+      logger.error('Failed to fetch comments:', err);
+      throw errorHandler.handleApiError(err, 'Failed to load comments');
+    }
+  }
+
   async deleteComment(commentId) {
     try {
       logger.debug('Deleting comment', { commentId });
@@ -79,17 +74,25 @@ class SocialService {
     }
   }
 
-  /**
-   * Get comments for a post
-   */
-  async getComments(postId) {
+  async followUser(userId) {
     try {
-      logger.debug('Fetching comments', { postId });
-      const response = await axiosReq.get(`api/social/posts/${postId}/comments/`);
+      logger.debug('Following user', { userId });
+      const response = await axiosReq.post(`api/social/follow/${userId}/`);
       return response.data;
     } catch (err) {
-      logger.error('Failed to fetch comments:', err);
-      throw errorHandler.handleApiError(err, 'Failed to load comments');
+      logger.error('Failed to follow user:', err);
+      throw errorHandler.handleApiError(err, 'Failed to follow user');
+    }
+  }
+
+  async unfollowUser(userId) {
+    try {
+      logger.debug('Unfollowing user', { userId });
+      const response = await axiosReq.delete(`api/social/follow/${userId}/`);
+      return response.data;
+    } catch (err) {
+      logger.error('Failed to unfollow user:', err);
+      throw errorHandler.handleApiError(err, 'Failed to unfollow user');
     }
   }
 }
