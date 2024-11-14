@@ -1,5 +1,5 @@
 // src/services/profileService.js
-import axiosInstance from './axiosInstance';
+import { axiosReq } from './axiosDefaults';
 import logger from './loggerService';
 import errorHandler from './errorHandlerService';
 
@@ -7,8 +7,7 @@ class ProfileService {
   async getProfile(userId) {
     try {
       logger.debug('Fetching profile', { userId });
-      const response = await axiosInstance.get(`/api/profiles/${userId}/`);
-      logger.info('Profile fetched successfully', { userId });
+      const response = await axiosReq.get(`/api/profiles/${userId}/`);
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch profile');
@@ -20,6 +19,7 @@ class ProfileService {
       logger.debug('Updating profile', { userId, profileData });
       const formData = new FormData();
       
+      // Handle file and non-file fields
       Object.keys(profileData).forEach(key => {
         if (profileData[key] !== null && profileData[key] !== undefined) {
           if (key === 'profile_image' && profileData[key] instanceof File) {
@@ -30,13 +30,12 @@ class ProfileService {
         }
       });
 
-      const response = await axiosInstance.put(`/api/profiles/${userId}/`, formData, {
+      const response = await axiosReq.put(`/api/profiles/${userId}/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       
-      logger.info('Profile updated successfully', { userId });
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to update profile');
@@ -46,33 +45,10 @@ class ProfileService {
   async getProfileStats(userId) {
     try {
       logger.debug('Fetching profile stats', { userId });
-      const response = await axiosInstance.get(`/api/profiles/${userId}/stats/`);
-      logger.info('Profile stats fetched successfully', { userId });
+      const response = await axiosReq.get(`/api/profiles/${userId}/stats/`);
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to fetch profile stats');
-    }
-  }
-
-  async getProfileWorkouts(userId, params = {}) {
-    try {
-      logger.debug('Fetching profile workouts', { userId, params });
-      const response = await axiosInstance.get(`/api/profiles/${userId}/workouts/`, { params });
-      logger.info('Profile workouts fetched successfully', { userId });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch profile workouts');
-    }
-  }
-
-  async getProfileGoals(userId) {
-    try {
-      logger.debug('Fetching profile goals', { userId });
-      const response = await axiosInstance.get(`/api/profiles/${userId}/goals/`);
-      logger.info('Profile goals fetched successfully', { userId });
-      return response.data;
-    } catch (err) {
-      throw errorHandler.handleApiError(err, 'Failed to fetch profile goals');
     }
   }
 
@@ -82,12 +58,11 @@ class ProfileService {
       const formData = new FormData();
       formData.append('profile_image', imageFile);
 
-      const response = await axiosInstance.post(`/api/profiles/${userId}/upload_image/`, formData, {
+      const response = await axiosReq.post(`/api/profiles/${userId}/upload_image/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      logger.info('Profile image updated successfully', { userId });
       return response.data;
     } catch (err) {
       throw errorHandler.handleApiError(err, 'Failed to update profile image');
