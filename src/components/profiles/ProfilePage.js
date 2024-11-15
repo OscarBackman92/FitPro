@@ -84,7 +84,6 @@ const ProfilePage = () => {
     { id: 'overview', label: 'Overview' },
     { id: 'workouts', label: 'Workouts' },
     { id: 'goals', label: 'Goals' },
-    ...(isOwnProfile ? [{ id: 'settings', label: 'Settings' }] : [])
   ];
 
   const statsCards = [
