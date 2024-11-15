@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { profileService } from '../../services/profileService';
 import { 
-  Edit2, Settings, Shield, User, Lock,
+  Edit2, Shield, User, Lock,
   MapPin, Mail, Clock, Activity,
   Award, DumbbellIcon,
 } from 'lucide-react';
@@ -222,14 +222,6 @@ const ProfilePage = () => {
                   >
                     <Edit2 className="h-4 w-4" />
                     Edit Profile
-                  </button>
-                  <button
-                    onClick={() => navigate(`/profiles/${id}/settings`)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white 
-                      rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    <Settings className="h-4 w-4" />
-                    Settings
                   </button>
                 </div>
               )}

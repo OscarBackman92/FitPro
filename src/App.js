@@ -1,6 +1,5 @@
 import React, { Suspense, lazy } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
-import Container from "react-bootstrap/Container";
 import "./services/axiosDefaults";
 import { useCurrentUser } from "./contexts/CurrentUserContext";
 import styles from "./App.module.css";
@@ -23,7 +22,6 @@ const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 // Profile Components
 const ProfilePage = lazy(() => import("./components/profiles/ProfilePage"));
 const ProfileEditForm = lazy(() => import("./components/profiles/ProfileEditForm"));
-const ProfileSettings = lazy(() => import("./components/profiles/ProfileSettings"));
 
 // Workout Components
 const WorkoutForm = lazy(() => import("./components/workouts/WorkoutForm"));
@@ -58,7 +56,6 @@ function App() {
   return (
     <div className={styles.App}>
       <NavBar />
-      <Container className={styles.Main}>
         <Suspense fallback={<Loading />}>
           <Routes>
             {/* Public Routes */}
@@ -178,14 +175,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/profiles/:id/settings"
-              element={
-                <PrivateRoute>
-                  <ProfileSettings />
-                </PrivateRoute>
-              }
-            />
 
             {/* Social Routes */}
             <Route
@@ -243,7 +232,6 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-      </Container>
       <Footer />
     </div>
   );
