@@ -45,7 +45,7 @@ const NavBar = () => {
 
   const mainNavLinks = currentUser ? [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/feed', icon: Users, label: 'Social Feed' },
+    { to: '/feed', icon: Users, label: 'Community' },
   ] : [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/about', icon: HelpCircle, label: 'About' },
