@@ -41,7 +41,7 @@ const WorkoutDetail = () => {
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this workout?')) {
       try {
-        await axiosReq.delete(`api/workouts/workouts/${id}/`);
+        await axiosReq.delete(`api/workouts/${id}/`);
         toast.success('Workout deleted successfully');
         navigate('/workouts');
       } catch (err) {
