@@ -204,19 +204,6 @@ const NavBar = () => {
                   </NavLink>
                 ))}
               </div>
-
-              {/* Settings & Help */}
-              <div className="pt-6 mt-6 border-t border-gray-800 space-y-2">
-                <NavLink to="/settings" className={mobileNavLinkClasses}>
-                  <Settings size={20} />
-                  <span>Settings</span>
-                </NavLink>
-                <NavLink to="/help" className={mobileNavLinkClasses}>
-                  <HelpCircle size={20} />
-                  <span>Help & Support</span>
-                </NavLink>
-              </div>
-
               {/* Sign Out */}
               <button
                 onClick={handleSignOut}
