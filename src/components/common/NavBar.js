@@ -4,7 +4,7 @@ import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
   Menu, X, DumbbellIcon, LogOut, Users,
   LayoutDashboard, LogIn, UserPlus, 
-  Home, PlusSquare, Bell, Settings, HelpCircle
+  Home, PlusSquare, Settings, HelpCircle
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../../services/authService';
@@ -80,12 +80,6 @@ const NavBar = () => {
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-800">
-                  {/* Notifications */}
-                  <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
-                    <Bell size={20} />
-                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-                  </button>
-
                   {/* User Menu */}
                   <div className="flex items-center gap-4">
                     <NavLink

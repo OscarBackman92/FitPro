@@ -3,129 +3,118 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { profileService } from '../../services/profileService';
 import { 
-  Edit2, Shield, User, Lock,
-  MapPin, Mail, Clock, Activity,
-  Award, DumbbellIcon,
+  Edit2, Shield, User, Lock, MapPin, 
+  Mail, Clock, Activity, Award, DumbbellIcon 
 } from 'lucide-react';
-import ProfileImageHandler from '../common/ProfileImageHandler';
+import Avatar from '../common/Avatar';
 import LoadingSpinner from '../common/LoadingSpinner';
 import toast from 'react-hot-toast';
 
-// Tab content components
-const OverviewTab = ({ profile, stats }) => (
-  <div className="grid md:grid-cols-2 gap-6">
-    {/* Personal Info Card */}
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+// Reusable Card Component
+const Card = ({ title, icon: Icon, children, className = '' }) => (
+  <div className={`bg-gray-800 rounded-lg shadow-lg p-6 ${className}`}>
+    {title && (
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium text-white">Personal Info</h3>
-        <Lock className="h-4 w-4 text-gray-400" />
+        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          {Icon && <Icon className="h-5 w-5 text-gray-400" />}
+          {title}
+        </h2>
       </div>
-      
-      <dl className="space-y-4">
-        {[
-          { label: 'Height', value: profile.height ? `${profile.height} cm` : 'Not set' },
-          { label: 'Weight', value: profile.weight ? `${profile.weight} kg` : 'Not set' },
-          { label: 'Gender', value: profile.gender || 'Not set' },
-          { label: 'Birthday', value: profile.date_of_birth ? 
-            new Date(profile.date_of_birth).toLocaleDateString() : 'Not set' }
-        ].map(item => (
-          <div key={item.label}>
-            <dt className="text-sm text-gray-400">{item.label}</dt>
-            <dd className="text-white">{item.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-
-    {/* Activity Overview Card */}
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-      <h3 className="text-lg font-medium text-white mb-4">Activity Overview</h3>
-      <div className="space-y-4">
-        {[
-          { label: "Today's Activity", value: `${stats?.today_workouts || 0} workouts` },
-          { label: 'This Week', value: `${stats?.weekly_workouts || 0} workouts` },
-          { label: 'Current Streak', value: `${stats?.current_streak || 0} days` },
-          { label: 'Total Time', value: `${stats?.total_duration || 0} minutes` }
-        ].map(item => (
-          <div key={item.label} className="flex items-center justify-between">
-            <span className="text-gray-400">{item.label}</span>
-            <span className="text-white font-medium">{item.value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+    )}
+    {children}
   </div>
 );
 
-// Stats card component
+// Stat Card Component
 const StatCard = ({ icon: Icon, label, value }) => (
-  <div className="text-center p-3 bg-gray-700 rounded-lg">
-    <div className="flex items-center justify-center mb-2">
-      <Icon className="h-5 w-5 text-green-500" />
+  <div className="text-center p-4 bg-gray-700 rounded-lg">
+    <div className="flex justify-center mb-2">
+      <Icon className="h-6 w-6 text-green-500" />
     </div>
     <p className="text-2xl font-bold text-white">{value}</p>
     <p className="text-sm text-gray-400">{label}</p>
   </div>
 );
 
+// Profile Header Component
+const ProfileHeader = ({ profile, isOwnProfile, onEdit }) => (
+  <div className="flex flex-col md:flex-row gap-6">
+    <div className="flex flex-col items-center gap-4">
+      <Avatar
+        src={profile.profile_image}
+        text={profile.username}
+        size="xl"
+        className="ring-4 ring-gray-700"
+      />
+      {isOwnProfile && (
+        <button
+          onClick={onEdit}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 
+            bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+        >
+          <Edit2 className="h-4 w-4" />
+          Edit Profile
+        </button>
+      )}
+    </div>
+
+    <div className="flex-1">
+      <div className="flex items-center gap-2 mb-2">
+        <h1 className="text-2xl font-bold text-white">
+          {profile.name || profile.username}
+        </h1>
+        {profile.is_verified && <Shield className="h-5 w-5 text-blue-500" />}
+      </div>
+      <p className="text-gray-400 mb-4">@{profile.username}</p>
+      
+      {profile.bio && (
+        <p className="text-gray-300 mb-6 whitespace-pre-line">{profile.bio}</p>
+      )}
+
+      <div className="flex flex-wrap gap-4 text-sm text-gray-400">
+        <MetaInfo icon={Clock} text={`Joined ${new Date(profile.created_at).toLocaleDateString()}`} />
+        {profile.location && <MetaInfo icon={MapPin} text={profile.location} />}
+        {profile.email && <MetaInfo icon={Mail} text={profile.email} />}
+      </div>
+    </div>
+  </div>
+);
+
+// Meta Info Component
+const MetaInfo = ({ icon: Icon, text }) => (
+  <span className="flex items-center gap-1">
+    <Icon className="h-4 w-4" />
+    {text}
+  </span>
+);
+
+// Stats Grid Component
+const StatsGrid = ({ stats }) => {
+  const statsData = [
+    { icon: DumbbellIcon, label: 'Workouts', value: stats?.total_workouts || 0 },
+    { icon: Award, label: 'Current Streak', value: `${stats?.current_streak || 0} days` },
+    { icon: Activity, label: 'This Week', value: stats?.workouts_this_week || 0 },
+    { icon: Clock, label: 'Total Time', value: `${stats?.total_duration || 0} mins` }
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-700">
+      {statsData.map((stat, index) => (
+        <StatCard key={index} {...stat} />
+      ))}
+    </div>
+  );
+};
+
 const ProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentUser, setCurrentUser } = useCurrentUser();
+  const { currentUser } = useCurrentUser();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [updating, setUpdating] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const isOwnProfile = currentUser?.profile?.id === parseInt(id);
-
-  const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'workouts', label: 'Workouts' },
-    { id: 'goals', label: 'Goals' },
-  ];
-
-  const statsCards = [
-    { icon: DumbbellIcon, label: 'Workouts', value: stats?.workouts_count || 0 },
-    { icon: User, label: 'Followers', value: stats?.followers_count || 0 },
-    { icon: Activity, label: 'Following', value: stats?.following_count || 0 },
-    { icon: Award, label: 'Day Streak', value: stats?.streak_count || 0 }
-  ];
-
-  // Profile image update handler
-  const handleImageUpdate = async (formData) => {
-    if (!isOwnProfile) return;
-
-    try {
-      setUpdating(true);
-      const updatedProfile = await profileService.updateProfileImage(id, formData);
-      
-      // Update local profile state
-      setProfile(prev => ({
-        ...prev,
-        profile_image: updatedProfile.profile_image
-      }));
-
-      // Update current user context if it's the user's own profile
-      if (isOwnProfile && setCurrentUser) {
-        setCurrentUser(prev => ({
-          ...prev,
-          profile: {
-            ...prev.profile,
-            profile_image: updatedProfile.profile_image
-          }
-        }));
-      }
-
-      toast.success('Profile image updated successfully');
-    } catch (err) {
-      console.error('Failed to update profile image:', err);
-      toast.error(err.response?.data?.message || 'Failed to update profile image');
-    } finally {
-      setUpdating(false);
-    }
-  };
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -150,119 +139,63 @@ const ProfilePage = () => {
     loadProfile();
   }, [id, navigate]);
 
-  if (loading) {
-    return <LoadingSpinner fullScreen />;
-  }
+  if (loading) return <LoadingSpinner centered />;
 
   if (!profile) {
     return (
       <div className="text-center py-12">
         <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-gray-200">Profile Not Found</h2>
-        <p className="text-gray-400 mt-2">This profile doesn't exist or you don't have permission to view it.</p>
+        <p className="text-gray-400 mt-2">
+          This profile doesn't exist or you don't have permission to view it.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Profile Header */}
-      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-        <div className="flex flex-col md:flex-row items-start gap-6">
-          {/* Profile Image */}
-          <div className="relative">
-            <ProfileImageHandler
-              src={profile.profile_image}
-              size={128}
-              className="ring-4 ring-gray-700"
-              editable={isOwnProfile}
-              onImageUpdate={handleImageUpdate}
-              disabled={updating}
-            />
-            {profile.visibility === 'private' && (
-              <div className="absolute -top-2 -right-2 bg-gray-700 p-1 rounded-full">
-                <Lock className="h-4 w-4 text-gray-400" />
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <Card>
+        <ProfileHeader 
+          profile={profile}
+          isOwnProfile={isOwnProfile}
+          onEdit={() => navigate(`/profiles/${id}/edit`)}
+        />
+        <StatsGrid stats={stats} />
+      </Card>
+
+      <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <Card title="Personal Info" icon={Lock}>
+          <dl className="space-y-4">
+            {[
+              { label: 'Height', value: profile.height ? `${profile.height} cm` : 'Not set' },
+              { label: 'Weight', value: profile.weight ? `${profile.weight} kg` : 'Not set' },
+              { label: 'Gender', value: profile.gender || 'Not set' },
+              { label: 'Birthday', value: profile.date_of_birth ? 
+                new Date(profile.date_of_birth).toLocaleDateString() : 'Not set' }
+            ].map(item => (
+              <div key={item.label} className="flex justify-between">
+                <dt className="text-gray-400">{item.label}</dt>
+                <dd className="text-white font-medium">{item.value}</dd>
               </div>
-            )}
-          </div>
+            ))}
+          </dl>
+        </Card>
 
-          {/* Profile Info */}
-          <div className="flex-1">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                  {profile.name || profile.username}
-                  {profile.is_verified && (
-                    <Shield className="h-4 w-4 text-blue-500" />
-                  )}
-                </h1>
-                {profile.bio && <p className="text-gray-400 mt-1">{profile.bio}</p>}
-                <div className="flex flex-wrap gap-4 mt-3">
-                  {[
-                    { icon: Clock, text: `Joined ${new Date(profile.created_at).toLocaleDateString()}` },
-                    profile.location && { icon: MapPin, text: profile.location },
-                    profile.email && { icon: Mail, text: profile.email }
-                  ].filter(Boolean).map((item, index) => (
-                    <span key={index} className="flex items-center gap-1 text-sm text-gray-400">
-                      <item.icon className="h-4 w-4" />
-                      {item.text}
-                    </span>
-                  ))}
+        <Card title="Goals" icon={Award}>
+          {profile.goals?.length > 0 ? (
+            <div className="space-y-4">
+              {profile.goals.map((goal, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className="text-gray-300">{goal.description}</span>
+                  <span className="text-green-500">{goal.progress}%</span>
                 </div>
-              </div>
-
-              {/* Action Buttons */}
-              {isOwnProfile && (
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => navigate(`/profiles/${id}/edit`)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white 
-                      rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                    Edit Profile
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-              {statsCards.map((stat, index) => (
-                <StatCard key={index} {...stat} />
               ))}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs Navigation */}
-      <div className="mt-8">
-        <div className="border-b border-gray-700">
-          <nav className="flex gap-4">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                className={`pb-4 px-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-green-500 text-green-500'
-                    : 'border-transparent text-gray-400 hover:text-gray-300'
-                }`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        <div className="mt-6">
-          {activeTab === 'overview' && (
-            <OverviewTab profile={profile} stats={stats} />
+          ) : (
+            <p className="text-gray-400 text-center py-4">No goals set yet</p>
           )}
-          {/* Add other tab contents as needed */}
-        </div>
+        </Card>
       </div>
     </div>
   );
