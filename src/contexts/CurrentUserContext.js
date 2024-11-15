@@ -1,19 +1,14 @@
-// src/contexts/CurrentUserContext.js
-import { createContext, useContext, useState, useEffect } from "react";
-import { authService } from '../services/authService';
-import { axiosReq } from "../services/axiosDefaults";
-import logger from "../services/loggerService";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import { axiosReq, axiosRes } from "../services/axiosDefaults";
 import toast from 'react-hot-toast';
 
-// Single context with both value and setter
 const CurrentUserContext = createContext({
   currentUser: null,
   setCurrentUser: () => null,
   isLoading: true,
-  error: null,
-  isAuthenticated: false,
-  profile: null,
-  isEmailVerified: false,
+  isAuthenticated: false
 });
 
 export const useCurrentUser = () => {
@@ -27,113 +22,120 @@ export const useCurrentUser = () => {
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const token = localStorage.getItem('token');
-        if (!token) {
-          logger.debug('No auth token found, skipping user fetch');
-          setCurrentUser(null); // Explicitly set to null
-          setIsLoading(false);
-          return;
-        }
-
-        logger.debug('Fetching current user');
-        const userData = await authService.getCurrentUser();
-        
-        const transformedUser = {
-          ...userData,
-          profile: {
-            ...userData.profile,
-            id: userData.profile?.id || userData.id,
-            name: userData.profile?.name || '',
-            bio: userData.profile?.bio || '',
-            weight: userData.profile?.weight || null,
-            height: userData.profile?.height || null,
-            date_of_birth: userData.profile?.date_of_birth || null,
-            gender: userData.profile?.gender || '',
-            profile_image: userData.profile?.profile_image || null,
-          },
-          is_email_verified: userData.is_email_verified || false,
-          last_login: userData.last_login || null,
-          date_joined: userData.date_joined || null,
-        };
-
-        setCurrentUser(transformedUser);
-        logger.debug('Current user fetched successfully');
-
-        if (!transformedUser.is_email_verified) {
-          toast.warning('Please verify your email address');
-        }
-      } catch (err) {
-        logger.error('Error fetching current user:', err);
-        setError(err.message);
-        setCurrentUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-      } finally {
+  const handleMount = async () => {
+    try {
+      // Check if we have a token
+      const token = localStorage.getItem('token');
+      if (!token) {
         setIsLoading(false);
+        return;
       }
-    };
 
-    fetchCurrentUser();
-  }, []);
+      // Set the token in axios headers
+      axiosReq.defaults.headers.common["Authorization"] = `Token ${token}`;
+      axiosRes.defaults.headers.common["Authorization"] = `Token ${token}`;
 
-  useEffect(() => {
-    const interceptor = axiosReq.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        if (error.response?.status === 401 && error.config && !error.config._retry) {
-          error.config._retry = true;
-          try {
-            await authService.refreshToken();
-            return axiosReq(error.config);
-          } catch (refreshError) {
-            setCurrentUser(null);
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            return Promise.reject(refreshError);
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    return () => {
-      axiosReq.interceptors.response.eject(interceptor);
-    };
-  }, []);
-
-  const handleSetCurrentUser = (user) => {
-    if (!user) {
-      // Clear everything when setting user to null
-      setCurrentUser(null);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      logger.debug('User state cleared');
-    } else {
-      setCurrentUser(user);
+      // Try to get user data
+      const { data } = await axiosRes.get("api/auth/user/");
+      setCurrentUser(data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const contextValue = {
-    currentUser,
-    setCurrentUser: handleSetCurrentUser, // Use the wrapped version
-    isLoading,
-    error,
-    isAuthenticated: !!currentUser,
-    profile: currentUser?.profile || null,
-    isEmailVerified: currentUser?.is_email_verified || false,
-  };
+  useEffect(() => {
+    handleMount();
+  }, []);
+
+  useMemo(() => {
+    // Request interceptor
+    const requestInterceptor = axiosReq.interceptors.request.use(
+      async (config) => {
+        // Get token from localStorage
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Token ${token}`;
+        }
+        return config;
+      },
+      (err) => {
+        return Promise.reject(err);
+      }
+    );
+
+    // Response interceptor
+    const responseInterceptor = axiosRes.interceptors.response.use(
+      (response) => response,
+      async (err) => {
+        // Handle 401 unauthorized errors
+        if (err.response?.status === 401) {
+          try {
+            // Try to refresh token
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (!refreshToken) {
+              throw new Error('No refresh token available');
+            }
+
+            const response = await axios.post("/api/auth/token/refresh/", {
+              refresh: refreshToken
+            });
+
+            if (response.data.access) {
+              // Save new token
+              localStorage.setItem('token', response.data.access);
+              
+              // Update axios headers
+              axiosReq.defaults.headers.common["Authorization"] = `Token ${response.data.access}`;
+              axiosRes.defaults.headers.common["Authorization"] = `Token ${response.data.access}`;
+
+              // Retry the original request
+              const originalRequest = err.config;
+              originalRequest.headers["Authorization"] = `Token ${response.data.access}`;
+              return axios(originalRequest);
+            }
+          } catch (refreshError) {
+            // Only clear user and redirect if refresh token is invalid
+            if (refreshError.response?.status === 401) {
+              // Clear tokens and user data
+              localStorage.removeItem('token');
+              localStorage.removeItem('refreshToken');
+              setCurrentUser(null);
+              
+              // Redirect to login only if user was previously logged in
+              if (currentUser) {
+                toast.error('Session expired. Please sign in again.');
+                navigate('/signin');
+              }
+            }
+          }
+        }
+        return Promise.reject(err);
+      }
+    );
+
+    // Cleanup function
+    return () => {
+      axiosReq.interceptors.request.eject(requestInterceptor);
+      axiosRes.interceptors.response.eject(responseInterceptor);
+    };
+  }, [navigate, currentUser]);
 
   return (
-    <CurrentUserContext.Provider value={contextValue}>
+    <CurrentUserContext.Provider 
+      value={{
+        currentUser,
+        setCurrentUser,
+        isLoading,
+        isAuthenticated: !!currentUser
+      }}
+    >
       {children}
     </CurrentUserContext.Provider>
   );
 };
+
+export default CurrentUserProvider;
