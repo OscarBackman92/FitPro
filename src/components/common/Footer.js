@@ -14,19 +14,19 @@ const Footer = () => {
           {/* Social Media Icons Section */}
           <div className="flex justify-center space-x-6">
             <Link to="/facebook" className="text-gray-400 hover:text-white">
-              <i className="uxwing-facebook text-2xl"></i>
+              <i className="fab fa-facebook-f text-2xl"></i>
             </Link>
             <Link to="/twitter" className="text-gray-400 hover:text-white">
-              <i className="uxwing-twitter text-2xl"></i>
+              <i className="fab fa-twitter text-2xl"></i>
             </Link>
             <Link to="/instagram" className="text-gray-400 hover:text-white">
-              <i className="uxwing-instagram text-2xl"></i>
+              <i className="fab fa-instagram text-2xl"></i>
             </Link>
             <Link to="/linkedin" className="text-gray-400 hover:text-white">
-              <i className="uxwing-linkedin text-2xl"></i>
+              <i className="fab fa-linkedin-in text-2xl"></i>
             </Link>
             <Link to="/github" className="text-gray-400 hover:text-white">
-              <i className="uxwing-github text-2xl"></i>
+              <i className="fab fa-github text-2xl"></i>
             </Link>
           </div>
         </div>
