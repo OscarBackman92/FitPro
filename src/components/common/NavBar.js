@@ -4,7 +4,7 @@ import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
   Menu, X, DumbbellIcon, LogOut, Users,
   LayoutDashboard, LogIn, UserPlus, 
-  Home, PlusSquare, Settings, HelpCircle
+  Home, PlusSquare, HelpCircle
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { authService } from '../../services/authService';
