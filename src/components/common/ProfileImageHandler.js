@@ -31,9 +31,11 @@ const ProfileImageHandler = ({
       const formData = new FormData();
       formData.append('profile_image', file);
 
+      // Assuming profileService.updateProfileImage makes the API call
       const response = await profileService.updateProfileImage(formData);
       
-      onImageUpdate(response.profile_image);
+      // Assuming the API returns the new image URL in 'profile_image'
+      onImageUpdate(response.profile_image); 
       toast.success('Profile image updated successfully');
     } catch (err) {
       console.error('Error uploading image:', err);

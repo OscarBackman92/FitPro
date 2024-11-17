@@ -5,7 +5,6 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { format } from 'date-fns';
 
-
 const WorkoutList = () => {
   const navigate = useNavigate();
   const { workouts, deleteWorkout } = useCurrentUser();
@@ -157,7 +156,7 @@ const WorkoutList = () => {
             ))}
           </tbody>
         </table>
-        
+
         {filteredWorkouts.length === 0 && (
           <div className="text-center py-12">
             <DumbbellIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />

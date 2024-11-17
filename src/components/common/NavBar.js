@@ -27,7 +27,7 @@ const NavBar = () => {
     }
   };
 
-  const navLinkClasses = ({ isActive }) => `
+  const navLinkClasses = ({ isActive }) => ` 
     flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200
     ${isActive 
       ? 'bg-green-500 text-white font-semibold' 
@@ -155,9 +155,7 @@ const NavBar = () => {
 
       {/* Mobile menu */}
       <div
-        className={`md:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`md:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
         
@@ -173,7 +171,11 @@ const NavBar = () => {
                 />
                 <div>
                   <h3 className="font-semibold text-white">{currentUser?.username}</h3>
-                  <p className="text-sm text-gray-400">View Profile</p>
+                  <p className="text-sm text-gray-400">
+                    <NavLink to={`/profiles/${currentUser?.profile?.id}`} onClick={() => setIsOpen(false)}>
+                      View Profile
+                    </NavLink>
+                  </p>
                 </div>
               </div>
 

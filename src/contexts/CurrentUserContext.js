@@ -40,7 +40,6 @@ export const CurrentUserProvider = ({ children }) => {
     following: []
   });
 
-  // Memoize the handleMount function
   const handleMount = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
@@ -55,7 +54,7 @@ export const CurrentUserProvider = ({ children }) => {
       const { data } = await axiosRes.get("api/auth/user/");
       setCurrentUser(data);
       
-      // After setting user, fetch related data
+      // Fetch related data after setting user
       await Promise.all([
         fetchWorkouts(),
         fetchWorkoutStats(),
@@ -66,11 +65,11 @@ export const CurrentUserProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);  // Empty dependency array
+  }, []); 
 
   useEffect(() => {
     handleMount();
-  }, [handleMount]);  // Include handleMount in the dependency array
+  }, [handleMount]);
 
   // Workout related methods
   const fetchWorkouts = async () => {
@@ -128,7 +127,6 @@ export const CurrentUserProvider = ({ children }) => {
     }
   };
 
-  // Social related methods
   const fetchSocialData = async () => {
     try {
       const [feed, followers, following] = await Promise.all([
