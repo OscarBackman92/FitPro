@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
-import { axiosReq } from '../../services/axiosDefaults';
 import { 
-  Edit2, 
-  Activity,
-  Calendar,
-  MapPin,
-  Users,
-  Scale,
-  Award,
-  Clock,
-  Target
+  Edit2, Shield, Lock, MapPin, Activity, 
+  Award, DumbbellIcon, Calendar, ChevronRight
 } from 'lucide-react';
+import { format } from 'date-fns';
 import Avatar from '../common/Avatar';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { axiosReq } from '../../services/axiosDefaults';
 import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
@@ -22,207 +16,141 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser();
   const [profile, setProfile] = useState(null);
-  const [workoutStats, setWorkoutStats] = useState(null);
-  const [recentWorkouts, setRecentWorkouts] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [workouts, setWorkouts] = useState([]);
 
-  const isOwner = currentUser?.profile?.id === parseInt(id);
+  const isOwnProfile = currentUser?.profile?.id === parseInt(id);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const loadProfile = async () => {
       try {
-        const [profileRes, statsRes, workoutsRes] = await Promise.all([
+        const [profileData, statsData, workoutsData] = await Promise.all([
           axiosReq.get(`/api/profiles/${id}/`),
           axiosReq.get('/api/workouts/statistics/'),
-          axiosReq.get(`/api/workouts/?user=${id}&limit=5`)
+          axiosReq.get('/api/workouts/', { params: { limit: 5 } })
         ]);
 
-        setProfile(profileRes.data);
-        setWorkoutStats(statsRes.data);
-        setRecentWorkouts(workoutsRes.data.results);
+        setProfile(profileData.data);
+        setStats(statsData.data);
+        setWorkouts(workoutsData.data.results);
       } catch (err) {
         toast.error('Failed to load profile');
+        if (err.response?.status === 404) navigate('/404');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfileData();
-  }, [id]);
+    loadProfile();
+  }, [id, navigate]);
 
   if (loading) return <LoadingSpinner centered />;
 
-  const stats = [
-    {
-      label: 'Workouts',
-      value: workoutStats?.total_workouts || 0,
-      icon: Activity,
-      color: 'blue'
-    },
-    {
-      label: 'Current Streak',
-      value: `${workoutStats?.current_streak || 0} days`,
-      icon: Award,
-      color: 'yellow'
-    },
-    {
-      label: 'This Week',
-      value: workoutStats?.workouts_this_week || 0,
-      icon: Target,
-      color: 'green'
-    },
-    {
-      label: 'Time Spent',
-      value: `${workoutStats?.total_duration || 0}m`,
-      icon: Clock,
-      color: 'purple'
-    }
-  ];
-
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Main Profile Card */}
-      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+    <div className="min-h-screen bg-gray-900 relative">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-green-500/10 to-gray-900/50" />
+
+      <div className="relative px-4 py-8 max-w-4xl mx-auto space-y-6">
         {/* Profile Header */}
-        <div className="flex items-start gap-6">
-          <div className="flex flex-col items-center gap-4">
+        <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Avatar */}
             <Avatar
               src={profile?.profile_image}
               text={profile?.username}
               size="xl"
-              className="ring-4 ring-gray-700"
+              className="w-32 h-32 ring-4 ring-gray-700"
             />
-            {isOwner && (
-              <button
-                onClick={() => navigate(`/profiles/${id}/edit`)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-700 
-                  text-white rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                <Edit2 className="h-4 w-4" />
-                Edit Profile
-              </button>
-            )}
-          </div>
-
-          <div className="flex-1">
-            {/* Name and Basic Info */}
+            
+            {/* Basic Info */}
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                 {profile?.name || profile?.username}
+                {profile?.is_verified && <Shield className="h-4 w-4 text-blue-500" />}
               </h1>
               <p className="text-gray-400">@{profile?.username}</p>
-            </div>
-
-            {/* Bio Section */}
-            <div className="mt-4">
-              {profile?.bio ? (
-                <p className="text-gray-300 whitespace-pre-wrap">{profile.bio}</p>
-              ) : (
-                <p className="text-gray-500 italic">
-                  {isOwner ? 'Add a bio in profile settings' : 'No bio yet'}
-                </p>
-              )}
-            </div>
-
-            {/* Profile Stats */}
-            <div className="flex gap-4 mt-4">
-              <div className="text-center">
-                <p className="text-xl font-bold text-white">{profile?.followers_count || 0}</p>
-                <p className="text-sm text-gray-400">Followers</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl font-bold text-white">{profile?.following_count || 0}</p>
-                <p className="text-sm text-gray-400">Following</p>
-              </div>
-            </div>
-
-            {/* Profile Details */}
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              {profile?.location && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <MapPin className="h-4 w-4" />
-                  <span>{profile.location}</span>
-                </div>
-              )}
-              {profile?.date_of_birth && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Calendar className="h-4 w-4" />
-                  <span>{new Date(profile.date_of_birth).toLocaleDateString()}</span>
-                </div>
-              )}
-              {profile?.weight && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Scale className="h-4 w-4" />
-                  <span>{profile.weight} kg</span>
-                </div>
-              )}
-              {profile?.created_at && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <Users className="h-4 w-4" />
-                  <span>Joined {new Date(profile.created_at).toLocaleDateString()}</span>
-                </div>
+              {profile?.bio && <p className="text-gray-300 mt-2">{profile?.bio}</p>}
+              
+              {isOwnProfile && (
+                <button
+                  onClick={() => navigate(`/profiles/${id}/edit`)}
+                  className="mt-4 px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                >
+                  <Edit2 className="h-4 w-4 inline mr-2" />
+                  Edit Profile
+                </button>
               )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-            <div className="flex items-center gap-4">
-              <div className={`p-3 bg-${stat.color}-500/20 rounded-lg`}>
-                <stat.icon className={`h-6 w-6 text-${stat.color}-500`} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-sm text-gray-400">{stat.label}</p>
-              </div>
-            </div>
+        {/* Personal Info */}
+        <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">Personal Info</h2>
+            <Lock className="h-4 w-4 text-gray-400" />
           </div>
-        ))}
-      </div>
-
-      {/* Recent Workouts */}
-      {recentWorkouts.length > 0 && (
-        <div className="mt-6 bg-gray-800 rounded-xl p-6 border border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-white">Recent Workouts</h2>
-            <button
-              onClick={() => navigate('/workouts')}
-              className="text-green-500 hover:text-green-400 transition-colors"
-            >
-              View All
-            </button>
-          </div>
-          <div className="space-y-4">
-            {recentWorkouts.map((workout) => (
-              <div
-                key={workout.id}
-                onClick={() => navigate(`/workouts/${workout.id}`)}
-                className="flex items-center justify-between p-4 bg-gray-700 
-                  rounded-lg cursor-pointer hover:bg-gray-600 transition-colors"
-              >
-                <div>
-                  <p className="text-white font-medium capitalize">
-                    {workout.workout_type}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    {new Date(workout.date_logged).toLocaleDateString()}
-                  </p>
+          
+          <div className="space-y-3">
+            {[
+              { label: 'Member Since', value: format(new Date(profile?.created_at), 'MMMM yyyy'), icon: Calendar },
+              { label: 'Location', value: profile?.location || 'Not set', icon: MapPin },
+              { label: 'Total Workouts', value: stats?.total_workouts || 0, icon: DumbbellIcon },
+              { label: 'Current Streak', value: `${stats?.current_streak || 0} days`, icon: Award }
+            ].map((item) => (
+              <div key={item.label} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <item.icon className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-300">{item.label}</span>
                 </div>
-                <div className="text-right">
-                  <p className="text-white">{workout.duration} mins</p>
-                  <p className="text-sm text-gray-400 capitalize">
-                    {workout.intensity} intensity
-                  </p>
-                </div>
+                <span className="text-white font-medium">{item.value}</span>
               </div>
             ))}
           </div>
         </div>
-      )}
+
+        {/* Recent Workouts */}
+        <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">Recent Workouts</h2>
+            <button onClick={() => navigate('/workouts')} className="text-green-500 hover:text-green-400">
+              View all <ChevronRight className="h-4 w-4 inline" />
+            </button>
+          </div>
+
+          {workouts.length > 0 ? (
+            <div className="space-y-3">
+              {workouts.map((workout) => (
+                <div
+                  key={workout.id}
+                  onClick={() => navigate(`/workouts/${workout.id}`)}
+                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700"
+                >
+                  <div className="flex items-center gap-3">
+                    <Activity className={`h-4 w-4 ${
+                      workout.intensity === 'high' ? 'text-red-500' : 
+                      workout.intensity === 'moderate' ? 'text-yellow-500' : 
+                      'text-green-500'
+                    }`} />
+                    <div>
+                      <p className="text-white">{workout.workout_type}</p>
+                      <p className="text-sm text-gray-400">{format(new Date(workout.date_logged), 'MMM d, yyyy')}</p>
+                    </div>
+                  </div>
+                  <span className="text-white">{workout.duration} mins</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6 text-gray-400">
+              <DumbbellIcon className="h-12 w-12 mx-auto mb-3" />
+              <p>No workouts recorded yet</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

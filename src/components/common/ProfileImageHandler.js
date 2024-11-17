@@ -16,13 +16,11 @@ const ProfileImageHandler = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
     }
 
-    // Validate file size (2MB limit)
     if (file.size > 2 * 1024 * 1024) {
       toast.error('Image must be less than 2MB');
       return;
@@ -30,15 +28,11 @@ const ProfileImageHandler = ({
 
     try {
       setUploading(true);
-
-      // Create FormData for upload
       const formData = new FormData();
       formData.append('profile_image', file);
 
-      // Upload image using profile service
       const response = await profileService.updateProfileImage(formData);
       
-      // Update UI with new image URL
       onImageUpdate(response.profile_image);
       toast.success('Profile image updated successfully');
     } catch (err) {
