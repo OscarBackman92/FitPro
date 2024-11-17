@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
@@ -10,7 +10,7 @@ import {
   PlusCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { profileService } from '../../services/profileService'; // Assuming this service exists for fetching user profiles
+import { profileService } from '../../services/profileService'; // Ensure this is correct
 
 const ProfilePage = () => {
   const { id } = useParams();
@@ -21,40 +21,40 @@ const ProfilePage = () => {
   // Check if the profile being viewed is the logged-in user's profile
   const isOwnProfile = currentUser?.id === parseInt(id);
 
-  // Fetch profile data for the user specified by `id`
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await profileService.getProfile(id); // Fetch the profile by ID
-        setProfileData(response);
-      } catch (err) {
-        console.error('Failed to fetch profile:', err);
-      }
-    };
+  // Memoized fetchProfile function to prevent unnecessary re-renders
+  const fetchProfile = useCallback(async () => {
+    try {
+      const response = await profileService.getProfile(id); // Fetch the profile by ID
+      setProfileData(response);
+    } catch (err) {
+      console.error('Failed to fetch profile:', err);
+    }
+  }, [id]); // Only run when the `id` changes
 
+  // Fetch profile data when component mounts or `id` changes
+  useEffect(() => {
     fetchProfile();
-  }, [id]); // Re-run this effect when `id` changes
+  }, [fetchProfile]); // Add fetchProfile as dependency to avoid infinite loops
 
   // Get recent workouts for this user
   const recentWorkouts = useMemo(() => {
     return workouts
-      .filter(workout => workout.user.id === parseInt(id)) // Filter workouts for the current user
+      .filter(workout => workout.user && workout.user.id === parseInt(id)) // Guard against undefined user
       .sort((a, b) => new Date(b.date_logged) - new Date(a.date_logged))
       .slice(0, 5);
   }, [workouts, id]);
 
   // Calculate user stats for the specific profile being viewed
   const stats = useMemo(() => {
-    const totalWorkouts = workouts.filter(workout => workout.user.id === parseInt(id)).length;
-    const totalDuration = workouts.filter(workout => workout.user.id === parseInt(id))
+    const totalWorkouts = workouts.filter(workout => workout.user && workout.user.id === parseInt(id)).length;
+    const totalDuration = workouts.filter(workout => workout.user && workout.user.id === parseInt(id))
       .reduce((sum, w) => sum + w.duration, 0);
     const avgDuration = totalWorkouts ? Math.round(totalDuration / totalWorkouts) : 0;
 
     let currentStreak = 0;
     const today = new Date().setHours(0, 0, 0, 0);
-    const sortedDates = [...new Set(workouts.filter(w => w.user.id === parseInt(id))
-      .map(w => new Date(w.date_logged).setHours(0, 0, 0, 0)))]
-      .sort((a, b) => b - a);
+    const sortedDates = [...new Set(workouts.filter(w => w.user && w.user.id === parseInt(id))
+      .map(w => new Date(w.date_logged).setHours(0, 0, 0, 0)))].sort((a, b) => b - a);
 
     for (let i = 0; i < sortedDates.length; i++) {
       if (i === 0 && (today - sortedDates[0]) > 86400000) break;
@@ -83,6 +83,10 @@ const ProfilePage = () => {
     return <div>Loading...</div>;
   }
 
+  // Check if `date_joined` is a valid date string
+  const dateJoined = new Date(profileData.date_joined);
+  const formattedDate = dateJoined instanceof Date && !isNaN(dateJoined) ? format(dateJoined, 'MMMM yyyy') : 'Invalid Date';
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       {/* Profile Header */}
@@ -99,7 +103,7 @@ const ProfilePage = () => {
                 <h1 className="text-2xl font-bold text-white">
                   {profileData.username}'s Profile
                 </h1>
-                <p className="text-gray-400 mt-1">Member since {format(new Date(profileData.date_joined), 'MMMM yyyy')}</p>
+                <p className="text-gray-400 mt-1">Member since {formattedDate}</p>
               </div>
               {isOwnProfile && (
                 <button
