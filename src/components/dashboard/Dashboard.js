@@ -149,13 +149,6 @@ const Dashboard = () => {
             <DumbbellIcon className="h-5 w-5 text-green-500" />
             <h2 className="text-xl font-bold text-white">Recent Workouts</h2>
           </div>
-          <button
-            onClick={() => navigate('/workouts')}
-            className="flex items-center gap-1 text-green-500 hover:text-green-400 transition-colors text-sm"
-          >
-            View all
-            <ChevronRight className="h-4 w-4" />
-          </button>
         </div>
 
         {workouts.length > 0 ? (

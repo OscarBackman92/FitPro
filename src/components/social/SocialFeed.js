@@ -175,14 +175,12 @@ const SocialFeed = () => {
                         <span className="font-medium text-white">
                           {comment.user.username}
                         </span>
-                        {comment.user.id === comment.user.id && (
                           <button
                             onClick={() => handleDeleteComment(post.id, comment.id)}
                             className="text-gray-400 hover:text-red-500"
                           >
                             <X className="h-4 w-4" />
                           </button>
-                        )}
                       </div>
                       <p className="text-gray-300 text-sm">{comment.content}</p>
                     </div>
