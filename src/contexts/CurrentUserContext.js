@@ -3,7 +3,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosReq, axiosRes } from '../services/axiosDefaults';
 import { workoutService } from '../services/workoutService';
-import { profileService } from '../services/profileService';
 import { socialService } from '../services/socialService';
 import toast from 'react-hot-toast';
 
