@@ -1,155 +1,198 @@
-import React, { useState, useEffect } from 'react';
+import React, {  useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
-  Edit2, Shield, Lock, MapPin, Activity, 
-  Award, DumbbellIcon, Calendar, ChevronRight
+  DumbbellIcon, 
+  Activity,
+  Edit2,
+  Award,
+  Clock,
+  PlusCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
-import Avatar from '../common/Avatar';
-import LoadingSpinner from '../common/LoadingSpinner';
-import { axiosReq } from '../../services/axiosDefaults';
-import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useCurrentUser();
-  const [profile, setProfile] = useState(null);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [workouts, setWorkouts] = useState([]);
+  const { currentUser, workouts } = useCurrentUser();
 
   const isOwnProfile = currentUser?.profile?.id === parseInt(id);
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const [profileData, statsData, workoutsData] = await Promise.all([
-          axiosReq.get(`/api/profiles/${id}/`),
-          axiosReq.get('/api/workouts/statistics/'),
-          axiosReq.get('/api/workouts/', { params: { limit: 5 } })
-        ]);
+  // Get recent workouts for this user
+  const recentWorkouts = useMemo(() => {
+    return workouts
+      .sort((a, b) => new Date(b.date_logged) - new Date(a.date_logged))
+      .slice(0, 5);
+  }, [workouts]);
 
-        setProfile(profileData.data);
-        setStats(statsData.data);
-        setWorkouts(workoutsData.data.results);
-      } catch (err) {
-        toast.error('Failed to load profile');
-        if (err.response?.status === 404) navigate('/404');
-      } finally {
-        setLoading(false);
-      }
+  // Calculate user stats
+  const stats = useMemo(() => {
+    const totalWorkouts = workouts.length;
+    const totalDuration = workouts.reduce((sum, w) => sum + w.duration, 0);
+    const avgDuration = totalWorkouts ? Math.round(totalDuration / totalWorkouts) : 0;
+
+    // Calculate current streak
+    let currentStreak = 0;
+    const today = new Date().setHours(0, 0, 0, 0);
+    const sortedDates = [...new Set(workouts.map(w => new Date(w.date_logged).setHours(0, 0, 0, 0)))]
+      .sort((a, b) => b - a);
+
+    for (let i = 0; i < sortedDates.length; i++) {
+      if (i === 0 && (today - sortedDates[0]) > 86400000) break;
+      if (i > 0 && (sortedDates[i-1] - sortedDates[i]) > 86400000) break;
+      currentStreak++;
+    }
+
+    return {
+      totalWorkouts,
+      totalDuration,
+      avgDuration,
+      currentStreak
     };
+  }, [workouts]);
 
-    loadProfile();
-  }, [id, navigate]);
-
-  if (loading) return <LoadingSpinner centered />;
+  const intensityColor = (intensity) => {
+    switch (intensity) {
+      case 'high': return 'bg-red-500/20 text-red-400';
+      case 'moderate': return 'bg-yellow-500/20 text-yellow-400';
+      default: return 'bg-green-500/20 text-green-400';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 relative">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-green-500/10 to-gray-900/50" />
-
-      <div className="relative px-4 py-8 max-w-4xl mx-auto space-y-6">
-        {/* Profile Header */}
-        <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Avatar */}
-            <Avatar
-              src={profile?.profile_image}
-              text={profile?.username}
-              size="xl"
-              className="w-32 h-32 ring-4 ring-gray-700"
-            />
-            
-            {/* Basic Info */}
-            <div>
-              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                {profile?.name || profile?.username}
-                {profile?.is_verified && <Shield className="h-4 w-4 text-blue-500" />}
-              </h1>
-              <p className="text-gray-400">@{profile?.username}</p>
-              {profile?.bio && <p className="text-gray-300 mt-2">{profile?.bio}</p>}
-              
+    <div className="max-w-6xl mx-auto p-6">
+      {/* Profile Header */}
+      <div className="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Avatar/Image placeholder */}
+          <div className="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center">
+            <DumbbellIcon className="h-12 w-12 text-gray-500" />
+          </div>
+          
+          <div className="flex-1">
+            <div className="flex justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  {currentUser?.username}'s Profile
+                </h1>
+                <p className="text-gray-400 mt-1">Member since {format(new Date(currentUser?.date_joined), 'MMMM yyyy')}</p>
+              </div>
               {isOwnProfile && (
                 <button
                   onClick={() => navigate(`/profiles/${id}/edit`)}
-                  className="mt-4 px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                  className="px-4 py-2 text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
                 >
-                  <Edit2 className="h-4 w-4 inline mr-2" />
-                  Edit Profile
+                  <Edit2 className="h-5 w-5" />
                 </button>
               )}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Personal Info */}
-        <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white">Personal Info</h2>
-            <Lock className="h-4 w-4 text-gray-400" />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <DumbbellIcon className="h-6 w-6 text-green-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Total Workouts</p>
+              <p className="text-xl font-bold text-white">{stats.totalWorkouts}</p>
+            </div>
           </div>
-          
-          <div className="space-y-3">
-            {[
-              { label: 'Member Since', value: format(new Date(profile?.created_at), 'MMMM yyyy'), icon: Calendar },
-              { label: 'Location', value: profile?.location || 'Not set', icon: MapPin },
-              { label: 'Total Workouts', value: stats?.total_workouts || 0, icon: DumbbellIcon },
-              { label: 'Current Streak', value: `${stats?.current_streak || 0} days`, icon: Award }
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <item.icon className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-300">{item.label}</span>
+        </div>
+
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <Clock className="h-6 w-6 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Avg Duration</p>
+              <p className="text-xl font-bold text-white">{stats.avgDuration} mins</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <Award className="h-6 w-6 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Current Streak</p>
+              <p className="text-xl font-bold text-white">{stats.currentStreak} days</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-orange-500/10 rounded-lg">
+              <Activity className="h-6 w-6 text-orange-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Total Minutes</p>
+              <p className="text-xl font-bold text-white">{stats.totalDuration}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Workouts */}
+      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-white">Recent Workouts</h2>
+          <button
+            onClick={() => navigate('/workouts')}
+            className="text-sm text-gray-400 hover:text-white"
+          >
+            View All
+          </button>
+        </div>
+
+        {recentWorkouts.length > 0 ? (
+          <div className="space-y-4">
+            {recentWorkouts.map((workout) => (
+              <div
+                key={workout.id}
+                className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg hover:bg-gray-700"
+              >
+                <div className="flex-1">
+                  <h3 className="font-medium text-white mb-1">{workout.title}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                      {workout.workout_type}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-sm ${intensityColor(workout.intensity)}`}>
+                      {workout.intensity}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-white font-medium">{item.value}</span>
+                <div className="text-right">
+                  <p className="text-gray-300">{workout.duration} mins</p>
+                  <p className="text-sm text-gray-400">
+                    {format(new Date(workout.date_logged), 'MMM d, yyyy')}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Recent Workouts */}
-        <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">Recent Workouts</h2>
-            <button onClick={() => navigate('/workouts')} className="text-green-500 hover:text-green-400">
-              View all <ChevronRight className="h-4 w-4 inline" />
+        ) : (
+          <div className="text-center py-12">
+            <DumbbellIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-400 mb-4">No workouts recorded yet</p>
+            <button
+              onClick={() => navigate('/workouts/create')}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+              <PlusCircle className="h-5 w-5" />
+              Log Your First Workout
             </button>
           </div>
-
-          {workouts.length > 0 ? (
-            <div className="space-y-3">
-              {workouts.map((workout) => (
-                <div
-                  key={workout.id}
-                  onClick={() => navigate(`/workouts/${workout.id}`)}
-                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700"
-                >
-                  <div className="flex items-center gap-3">
-                    <Activity className={`h-4 w-4 ${
-                      workout.intensity === 'high' ? 'text-red-500' : 
-                      workout.intensity === 'moderate' ? 'text-yellow-500' : 
-                      'text-green-500'
-                    }`} />
-                    <div>
-                      <p className="text-white">{workout.workout_type}</p>
-                      <p className="text-sm text-gray-400">{format(new Date(workout.date_logged), 'MMM d, yyyy')}</p>
-                    </div>
-                  </div>
-                  <span className="text-white">{workout.duration} mins</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-6 text-gray-400">
-              <DumbbellIcon className="h-12 w-12 mx-auto mb-3" />
-              <p>No workouts recorded yet</p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

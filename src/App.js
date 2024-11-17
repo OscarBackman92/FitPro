@@ -26,7 +26,6 @@ const ProfileEditForm = lazy(() => import("./components/profiles/ProfileEditForm
 // Workout Components
 const WorkoutForm = lazy(() => import("./components/workouts/WorkoutForm"));
 const WorkoutList = lazy(() => import("./components/workouts/WorkoutList"));
-const WorkoutStats = lazy(() => import("./components/workouts/WorkoutStats"));
 
 // Goals Components
 const Goals = lazy(() => import("./components/goals/Goals"));
@@ -106,15 +105,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/workouts/stats"
-              element={
-                <PrivateRoute>
-                  <WorkoutStats />
-                </PrivateRoute>
-              }
-            />
-
             {/* Goals Routes */}
             <Route
               path="/goals"
