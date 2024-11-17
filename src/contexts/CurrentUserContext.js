@@ -1,14 +1,27 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from 'axios';
-import { axiosReq, axiosRes } from "../services/axiosDefaults";
+// src/contexts/CurrentUserContext.js
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { axiosReq, axiosRes } from '../services/axiosDefaults';
+import { workoutService } from '../services/workoutService';
+import { profileService } from '../services/profileService';
+import { socialService } from '../services/socialService';
 import toast from 'react-hot-toast';
 
 const CurrentUserContext = createContext({
   currentUser: null,
   setCurrentUser: () => null,
   isLoading: true,
-  isAuthenticated: false
+  isAuthenticated: false,
+  workouts: [],
+  workoutStats: null,
+  socialData: { feed: [], followers: [], following: [] },
+  // Action methods
+  fetchWorkouts: () => null,
+  updateWorkout: () => null,
+  deleteWorkout: () => null,
+  createWorkout: () => null,
+  toggleWorkoutLike: () => null,
+  toggleFollow: () => null,
 });
 
 export const useCurrentUser = () => {
@@ -22,26 +35,38 @@ export const useCurrentUser = () => {
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [workouts, setWorkouts] = useState([]);
+  const [workoutStats, setWorkoutStats] = useState(null);
+  const [socialData, setSocialData] = useState({
+    feed: [],
+    followers: [],
+    following: []
+  });
   const navigate = useNavigate();
 
+  // Authentication and user data
   const handleMount = async () => {
     try {
-      // Check if we have a token
       const token = localStorage.getItem('token');
       if (!token) {
         setIsLoading(false);
         return;
       }
 
-      // Set the token in axios headers
       axiosReq.defaults.headers.common["Authorization"] = `Token ${token}`;
       axiosRes.defaults.headers.common["Authorization"] = `Token ${token}`;
 
-      // Try to get user data
       const { data } = await axiosRes.get("api/auth/user/");
       setCurrentUser(data);
+      
+      // After setting user, fetch related data
+      await Promise.all([
+        fetchWorkouts(),
+        fetchWorkoutStats(),
+        fetchSocialData()
+      ]);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -51,88 +76,130 @@ export const CurrentUserProvider = ({ children }) => {
     handleMount();
   }, []);
 
-  useMemo(() => {
-    // Request interceptor
-    const requestInterceptor = axiosReq.interceptors.request.use(
-      async (config) => {
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers.Authorization = `Token ${token}`;
-        }
-        return config;
-      },
-      (err) => {
-        return Promise.reject(err);
-      }
-    );
+  // Workout related methods
+  const fetchWorkouts = async () => {
+    try {
+      const response = await workoutService.getWorkouts();
+      setWorkouts(response.results);
+    } catch (err) {
+      toast.error('Failed to fetch workouts');
+    }
+  };
 
-    // Response interceptor
-    const responseInterceptor = axiosRes.interceptors.response.use(
-      (response) => response,
-      async (err) => {
-        // Handle 401 unauthorized errors
-        if (err.response?.status === 401) {
-          try {
-            // Try to refresh token
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (!refreshToken) {
-              throw new Error('No refresh token available');
-            }
+  const createWorkout = async (workoutData) => {
+    try {
+      const response = await workoutService.createWorkout(workoutData);
+      setWorkouts(prev => [response, ...prev]);
+      toast.success('Workout created successfully');
+      return response;
+    } catch (err) {
+      toast.error('Failed to create workout');
+      throw err;
+    }
+  };
 
-            const response = await axios.post("/api/auth/token/refresh/", {
-              refresh: refreshToken
-            });
+  const updateWorkout = async (id, workoutData) => {
+    try {
+      const response = await workoutService.updateWorkout(id, workoutData);
+      setWorkouts(prev => prev.map(workout => 
+        workout.id === id ? response : workout
+      ));
+      toast.success('Workout updated successfully');
+      return response;
+    } catch (err) {
+      toast.error('Failed to update workout');
+      throw err;
+    }
+  };
 
-            if (response.data.access) {
-              // Save new token
-              localStorage.setItem('token', response.data.access);
-              
-              // Update axios headers
-              axiosReq.defaults.headers.common["Authorization"] = `Token ${response.data.access}`;
-              axiosRes.defaults.headers.common["Authorization"] = `Token ${response.data.access}`;
+  const deleteWorkout = async (id) => {
+    try {
+      await workoutService.deleteWorkout(id);
+      setWorkouts(prev => prev.filter(workout => workout.id !== id));
+      toast.success('Workout deleted successfully');
+    } catch (err) {
+      toast.error('Failed to delete workout');
+      throw err;
+    }
+  };
 
-              // Retry the original request
-              const originalRequest = err.config;
-              originalRequest.headers["Authorization"] = `Token ${response.data.access}`;
-              return axios(originalRequest);
-            }
-          } catch (refreshError) {
-            // Only clear user and redirect if refresh token is invalid
-            if (refreshError.response?.status === 401) {
-              // Clear tokens and user data
-              localStorage.removeItem('token');
-              localStorage.removeItem('refreshToken');
-              setCurrentUser(null);
-              
-              // Redirect to login only if user was previously logged in
-              if (currentUser) {
-                toast.error('Session expired. Please sign in again.');
-                navigate('/signin');
-              }
-            }
-          }
-        }
-        return Promise.reject(err);
-      }
-    );
+  const fetchWorkoutStats = async () => {
+    try {
+      const stats = await workoutService.getWorkoutStatistics();
+      setWorkoutStats(stats);
+    } catch (err) {
+      console.error('Failed to fetch workout stats:', err);
+    }
+  };
 
-    // Cleanup function
-    return () => {
-      axiosReq.interceptors.request.eject(requestInterceptor);
-      axiosRes.interceptors.response.eject(responseInterceptor);
-    };
-  }, [navigate, currentUser]);
+  // Social related methods
+  const fetchSocialData = async () => {
+    try {
+      const [feed, followers, following] = await Promise.all([
+        socialService.getFeed(),
+        socialService.getFollowers(),
+        socialService.getFollowing()
+      ]);
+      setSocialData({
+        feed: feed.results,
+        followers: followers.results,
+        following: following.results
+      });
+    } catch (err) {
+      console.error('Failed to fetch social data:', err);
+    }
+  };
+
+  const toggleWorkoutLike = async (workoutId) => {
+    try {
+      const response = await socialService.toggleLike(workoutId);
+      setWorkouts(prev => prev.map(workout => 
+        workout.id === workoutId 
+          ? { ...workout, has_liked: !workout.has_liked } 
+          : workout
+      ));
+      return response;
+    } catch (err) {
+      toast.error('Failed to toggle like');
+      throw err;
+    }
+  };
+
+  const toggleFollow = async (userId) => {
+    try {
+      const response = await socialService.toggleFollow(userId);
+      setSocialData(prev => ({
+        ...prev,
+        following: response.isFollowing
+          ? [...prev.following, response.user]
+          : prev.following.filter(user => user.id !== userId)
+      }));
+      return response;
+    } catch (err) {
+      toast.error('Failed to toggle follow');
+      throw err;
+    }
+  };
+
+  const contextValue = {
+    currentUser,
+    setCurrentUser,
+    isLoading,
+    isAuthenticated: !!currentUser,
+    workouts,
+    workoutStats,
+    socialData,
+    // Methods
+    fetchWorkouts,
+    createWorkout,
+    updateWorkout,
+    deleteWorkout,
+    toggleWorkoutLike,
+    toggleFollow
+  };
 
   return (
-    <CurrentUserContext.Provider 
-      value={{
-        currentUser,
-        setCurrentUser,
-        isLoading,
-        isAuthenticated: !!currentUser
-      }}
-    >
+    <CurrentUserContext.Provider value={contextValue}>
       {children}
     </CurrentUserContext.Provider>
   );

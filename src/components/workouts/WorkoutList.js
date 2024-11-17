@@ -1,217 +1,169 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import workoutService from '../../services/workoutService';
-import Asset from '../common/Asset';
-import { Alert } from 'react-bootstrap';
+import { DumbbellIcon, PlusCircle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useCurrentUser } from '../../contexts/CurrentUserContext';
+import { format } from 'date-fns';
 
-const WorkoutList = ({ filter = "" }) => {
-  const [workouts, setWorkouts] = useState({ results: [] });
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [error, setError] = useState(null);
-  const [workoutType, setWorkoutType] = useState('all');
-  const [sortOrder, setSortOrder] = useState('-date_logged');
-  const [isTableExpanded, setIsTableExpanded] = useState(false);
+
+const WorkoutList = () => {
   const navigate = useNavigate();
+  const { workouts, deleteWorkout } = useCurrentUser();
+  const [filters, setFilters] = useState({ type: 'all', search: '' });
 
-  // Debounced fetching workouts based on filters
-  useEffect(() => {
-    const fetchWorkouts = async () => {
-      try {
-        const data = await workoutService.getWorkouts({
-          ...filter && { filter },
-          ordering: sortOrder
-        });
-        setWorkouts(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching workouts:', err);
-        setError('Failed to load workouts');
-      } finally {
-        setHasLoaded(true);
-      }
-    };
-
-    fetchWorkouts();
-  }, [filter, sortOrder]);
-
-  const handleDelete = async (workoutId) => {
-    if (window.confirm('Are you sure you want to delete this workout?')) {
-      try {
-        await workoutService.deleteWorkout(workoutId);
-        setWorkouts(prevWorkouts => ({
-          ...prevWorkouts,
-          results: prevWorkouts.results.filter(workout => workout.id !== workoutId)
-        }));
-      } catch (err) {
-        setError('Failed to delete workout');
-      }
-    }
-  };
-
+  // Analytics data
   const chartData = useMemo(() => {
-    return workouts.results
-      .slice(0, 7)
-      .map(workout => ({
-        date: new Date(workout.date_logged).toLocaleDateString(),
-        duration: workout.duration,
-      }))
-      .reverse();
-  }, [workouts.results]);
+    const typeCounts = workouts.reduce((acc, workout) => {
+      acc[workout.workout_type] = (acc[workout.workout_type] || 0) + 1;
+      return acc;
+    }, {});
 
-  if (error) {
-    return (
-      <div className="p-6 bg-red-50 rounded-lg text-center max-w-lg mx-auto shadow-md">
-        <Alert variant="warning">{error}</Alert>
-      </div>
-    );
-  }
+    return Object.entries(typeCounts).map(([type, count]) => ({
+      type: type.charAt(0).toUpperCase() + type.slice(1),
+      count
+    }));
+  }, [workouts]);
 
-  if (!hasLoaded) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Asset spinner />
-      </div>
-    );
-  }
-
-  const totalWorkouts = workouts.results.length;
-  const totalDuration = workouts.results.reduce((sum, w) => sum + w.duration, 0);
-  const avgDuration = Math.round(totalDuration / totalWorkouts) || 0;
+  const filteredWorkouts = useMemo(() => {
+    return workouts
+      .filter(w => {
+        if (filters.type !== 'all' && w.workout_type !== filters.type) return false;
+        if (filters.search && !w.title.toLowerCase().includes(filters.search.toLowerCase())) return false;
+        return true;
+      })
+      .sort((a, b) => new Date(b.date_logged) - new Date(a.date_logged));
+  }, [workouts, filters]);
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-white">{filter ? 'Activity Feed' : 'Workouts'}</h2>
-        <button
-          onClick={() => navigate('/workouts/create')}
-          className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition-colors"
-        >
-          <i className="fas fa-plus mr-2"></i> Log Workout
-        </button>
-      </div>
-
-      {/* Stats Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-        {[{ title: 'Total Workouts', value: totalWorkouts, icon: 'fas fa-dumbbell' },
-        { title: 'Total Duration', value: `${totalDuration} mins`, icon: 'fas fa-clock' },
-        { title: 'Average Duration', value: `${avgDuration} mins`, icon: 'fas fa-chart-line' }].map(({ title, value, icon }) => (
-          <div key={title} className="p-6 bg-gray-700 rounded-lg text-center shadow-md transition-all">
-            <h3 className="text-lg font-semibold text-gray-300">{title}</h3>
-            <p className="text-2xl font-bold text-white mt-2">{value}</p>
-            <i className={`${icon} text-green-500 text-4xl mt-4`}></i>
-          </div>
-        ))}
-      </div>
-
-      {/* Chart */}
-      {chartData.length > 0 && (
-        <div className="bg-gray-700 p-6 rounded-lg shadow-md mb-8">
-          <h3 className="text-lg font-bold text-white mb-4">Activity Overview</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="duration" stroke="#8884d8" name="Duration (min)" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex gap-6 mb-6">
-        <div className="flex flex-col">
-          <label className="text-sm font-semibold text-gray-300 mb-2">Workout Type</label>
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Header & Analytics */}
+      <div className="grid md:grid-cols-3 gap-6">
+        {/* Controls */}
+        <div className="md:col-span-2 flex flex-wrap items-center gap-4">
+          <input
+            type="text"
+            placeholder="Search workouts..."
+            value={filters.search}
+            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white flex-1"
+          />
           <select
-            value={workoutType}
-            onChange={(e) => setWorkoutType(e.target.value)}
-            className="bg-gray-600 text-white border rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all"
+            value={filters.type}
+            onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+            className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
           >
             <option value="all">All Types</option>
             <option value="cardio">Cardio</option>
             <option value="strength">Strength</option>
             <option value="flexibility">Flexibility</option>
+            <option value="sports">Sports</option>
           </select>
-        </div>
-
-        <div className="flex flex-col">
-          <label className="text-sm font-semibold text-gray-300 mb-2">Sort By</label>
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className="bg-gray-600 text-white border rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all"
-          >
-            <option value="-date_logged">Newest First</option>
-            <option value="date_logged">Oldest First</option>
-            <option value="-duration">Duration (High to Low)</option>
-            <option value="duration">Duration (Low to High)</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Workout Table */}
-      <div className="bg-gray-700 rounded-lg shadow-md overflow-hidden">
-        <div className="flex justify-between items-center p-4">
-          <h3 className="text-lg font-bold text-white">Workout History</h3>
           <button
-            onClick={() => setIsTableExpanded(!isTableExpanded)}
-            className="text-gray-500 hover:text-gray-400 transition-colors"
+            onClick={() => navigate('/workouts/create')}
+            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
           >
-            <i className={`fas fa-chevron-${isTableExpanded ? 'up' : 'down'}`}></i>
+            <PlusCircle className="h-5 w-5" />
+            Log Workout
           </button>
         </div>
 
-        <div className={`${isTableExpanded ? 'max-h-full' : 'max-h-64 overflow-y-auto'}`}>
-          {workouts.results.length > 0 ? (
-            <table className="w-full text-left text-gray-300">
-              <thead className="bg-gray-800">
-                <tr>
-                  <th className="p-4">Date</th>
-                  <th className="p-4">Type</th>
-                  <th className="p-4">Duration</th>
-                  <th className="p-4">Intensity</th>
-                  <th className="p-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workouts.results
-                  .filter(workout => workoutType === 'all' || workout.workout_type === workoutType)
-                  .map((workout) => (
-                    <tr key={workout.id} className="border-t border-gray-600">
-                      <td className="p-4">{new Date(workout.date_logged).toLocaleDateString()}</td>
-                      <td className="p-4 capitalize">{workout.workout_type}</td>
-                      <td className="p-4">{workout.duration} mins</td>
-                      <td className="p-4 capitalize">
-                        <span className={`px-3 py-1 rounded-full ${workout.intensity === 'high' ? 'bg-red-600 text-white' : workout.intensity === 'moderate' ? 'bg-yellow-600 text-white' : 'bg-green-600 text-white'}`}>
-                          {workout.intensity}
-                        </span>
-                      </td>
-                      <td className="p-4 space-x-4">
-                        <button onClick={() => navigate(`/workouts/${workout.id}/edit`)} className="text-blue-600 hover:text-blue-800">
-                          <i className="fas fa-edit"></i>
-                        </button>
-                        <button onClick={() => handleDelete(workout.id)} className="text-red-600 hover:text-red-800">
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="text-center p-4 text-white">
-              <p>No workouts recorded yet. Start logging your fitness journey!</p>
-              <button
-                onClick={() => navigate('/workouts/create')}
-                className="mt-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition-colors"
-              >
-                <i className="fas fa-plus"></i> Log Your First Workout
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Mini Graph */}
+        {chartData.length > 0 && (
+          <div className="bg-gray-800 rounded-lg p-4 h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <XAxis 
+                  dataKey="type" 
+                  tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis 
+                  tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                  allowDecimals={false}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: '#1F2937',
+                    border: '1px solid #374151',
+                    borderRadius: '0.5rem',
+                    color: '#F9FAFB'
+                  }}
+                />
+                <Bar dataKey="count" fill="#10B981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
+      {/* Workouts Table */}
+      <div className="bg-gray-800 rounded-lg overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-900/50">
+            <tr>
+              <th className="p-4 text-left text-gray-300">Title</th>
+              <th className="p-4 text-left text-gray-300">Date</th>
+              <th className="p-4 text-left text-gray-300">Type</th>
+              <th className="p-4 text-left text-gray-300">Duration</th>
+              <th className="p-4 text-left text-gray-300">Intensity</th>
+              <th className="p-4 text-left text-gray-300">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {filteredWorkouts.map((workout) => (
+              <tr key={workout.id} className="hover:bg-gray-700/50">
+                <td className="p-4 text-white font-medium">{workout.title}</td>
+                <td className="p-4 text-gray-300">
+                  {format(new Date(workout.date_logged), 'MMM d, yyyy')}
+                </td>
+                <td className="p-4">
+                  <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                    {workout.workout_type}
+                  </span>
+                </td>
+                <td className="p-4 text-gray-300">{workout.duration} mins</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    workout.intensity === 'high' ? 'bg-red-500/20 text-red-400' :
+                    workout.intensity === 'moderate' ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-green-500/20 text-green-400'
+                  }`}>
+                    {workout.intensity}
+                  </span>
+                </td>
+                <td className="p-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigate(`/workouts/${workout.id}/edit`)}
+                      className="text-sm px-2 py-1 text-blue-400 hover:text-blue-300"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Delete this workout?')) {
+                          deleteWorkout(workout.id);
+                        }
+                      }}
+                      className="text-sm px-2 py-1 text-red-400 hover:text-red-300"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        {filteredWorkouts.length === 0 && (
+          <div className="text-center py-12">
+            <DumbbellIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-400 mb-4">No workouts found</p>
+          </div>
+        )}
       </div>
     </div>
   );
