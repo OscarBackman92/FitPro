@@ -35,7 +35,6 @@ const GoalForm = lazy(() => import("./components/goals/GoalForm"));
 // Social Components
 const SocialFeed = lazy(() => import("./components/social/SocialFeed"));
 const FollowList = lazy(() => import("./components/social/FollowList"));
-const Discover = lazy(() => import("./components/social/Discover"));
 
 // Progress & Stats
 const Progress = lazy(() => import("./components/progress/Progress"));
@@ -182,15 +181,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/discover"
-              element={
-                <PrivateRoute>
-                  <Discover />
-                </PrivateRoute>
-              }
-            />
-
             {/* Progress & Stats Routes */}
             <Route
               path="/progress"
