@@ -36,10 +36,6 @@ const GoalForm = lazy(() => import("./components/goals/GoalForm"));
 const SocialFeed = lazy(() => import("./components/social/SocialFeed"));
 const FollowList = lazy(() => import("./components/social/FollowList"));
 
-// Progress & Stats
-const Progress = lazy(() => import("./components/progress/Progress"));
-const Statistics = lazy(() => import("./components/statistics/Statistics"));
-
 // Fallback UI for Suspense
 const Loading = () => (
   <div className="flex justify-center items-center h-screen">
@@ -181,24 +177,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            {/* Progress & Stats Routes */}
-            <Route
-              path="/progress"
-              element={
-                <PrivateRoute>
-                  <Progress />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/stats"
-              element={
-                <PrivateRoute>
-                  <Statistics />
-                </PrivateRoute>
-              }
-            />
-
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>

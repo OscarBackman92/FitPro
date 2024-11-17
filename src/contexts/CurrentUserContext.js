@@ -1,6 +1,4 @@
-// src/contexts/CurrentUserContext.js
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { axiosReq, axiosRes } from '../services/axiosDefaults';
 import { workoutService } from '../services/workoutService';
 import { socialService } from '../services/socialService';
@@ -41,10 +39,9 @@ export const CurrentUserProvider = ({ children }) => {
     followers: [],
     following: []
   });
-  const navigate = useNavigate();
 
-  // Authentication and user data
-  const handleMount = async () => {
+  // Memoize the handleMount function
+  const handleMount = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -69,11 +66,11 @@ export const CurrentUserProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);  // Empty dependency array
 
   useEffect(() => {
     handleMount();
-  }, []);
+  }, [handleMount]);  // Include handleMount in the dependency array
 
   // Workout related methods
   const fetchWorkouts = async () => {
