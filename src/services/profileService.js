@@ -131,7 +131,7 @@ class ProfileService {
     formData.append('profile_image', imageFile);
     formData.append('folder', 'profile_images');
 
-    return this.#makeRequest('POST', `/api/profiles/${userId}/upload_image/`, {
+    return this.#makeRequest('POST', `/api/profiles/${userId}/profile_image/`, {
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 30000,

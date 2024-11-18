@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { axiosReq, axiosRes } from '../services/axiosDefaults';
 import { workoutService } from '../services/workoutService';
-import { socialService } from '../services/socialService';
 import toast from 'react-hot-toast';
 
 const CurrentUserContext = createContext({
@@ -11,14 +10,8 @@ const CurrentUserContext = createContext({
   isAuthenticated: false,
   workouts: [],
   workoutStats: null,
-  socialData: { feed: [], followers: [], following: [] },
-  // Action methods
   fetchWorkouts: () => null,
-  updateWorkout: () => null,
-  deleteWorkout: () => null,
-  createWorkout: () => null,
-  toggleWorkoutLike: () => null,
-  toggleFollow: () => null,
+  fetchWorkoutStats: () => null,
 });
 
 export const useCurrentUser = () => {
@@ -34,11 +27,24 @@ export const CurrentUserProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [workouts, setWorkouts] = useState([]);
   const [workoutStats, setWorkoutStats] = useState(null);
-  const [socialData, setSocialData] = useState({
-    feed: [],
-    followers: [],
-    following: []
-  });
+
+  const fetchWorkouts = async () => {
+    try {
+      const response = await workoutService.getWorkouts();
+      setWorkouts(response.results);
+    } catch (err) {
+      toast.error('Failed to fetch workouts');
+    }
+  };
+
+  const fetchWorkoutStats = async () => {
+    try {
+      const stats = await workoutService.getWorkoutStatistics();
+      setWorkoutStats(stats);
+    } catch (err) {
+      toast.error('Failed to fetch workout stats');
+    }
+  };
 
   const handleMount = useCallback(async () => {
     try {
@@ -54,147 +60,20 @@ export const CurrentUserProvider = ({ children }) => {
       const { data } = await axiosRes.get("api/auth/user/");
       setCurrentUser(data);
       
-      // Fetch related data after setting user
-      await Promise.all([
-        fetchWorkouts(),
-        fetchWorkoutStats(),
-        fetchSocialData()
-      ]);
+      await Promise.all([fetchWorkouts(), fetchWorkoutStats()]);
     } catch (err) {
       console.error(err);
     } finally {
       setIsLoading(false);
     }
-  }, []); 
+  }, []);
 
   useEffect(() => {
     handleMount();
   }, [handleMount]);
 
-  // Workout related methods
-  const fetchWorkouts = async () => {
-    try {
-      const response = await workoutService.getWorkouts();
-      setWorkouts(response.results);
-    } catch (err) {
-      toast.error('Failed to fetch workouts');
-    }
-  };
-
-  const createWorkout = async (workoutData) => {
-    try {
-      const response = await workoutService.createWorkout(workoutData);
-      setWorkouts(prev => [response, ...prev]);
-      toast.success('Workout created successfully');
-      return response;
-    } catch (err) {
-      toast.error('Failed to create workout');
-      throw err;
-    }
-  };
-
-  const updateWorkout = async (id, workoutData) => {
-    try {
-      const response = await workoutService.updateWorkout(id, workoutData);
-      // Update the workouts state immediately after the workout is updated
-      setWorkouts(prev =>
-        prev.map(workout =>
-          workout.id === id ? { ...workout, ...response } : workout
-        )
-      );
-      toast.success('Workout updated successfully');
-    } catch (err) {
-      toast.error('Failed to update workout');
-    }
-  };
-
-  const deleteWorkout = async (id) => {
-    try {
-      await workoutService.deleteWorkout(id);
-      setWorkouts(prev => prev.filter(workout => workout.id !== id));
-      toast.success('Workout deleted successfully');
-    } catch (err) {
-      toast.error('Failed to delete workout');
-      throw err;
-    }
-  };
-
-  const fetchWorkoutStats = async () => {
-    try {
-      const stats = await workoutService.getWorkoutStatistics();
-      setWorkoutStats(stats);
-    } catch (err) {
-      console.error('Failed to fetch workout stats:', err);
-    }
-  };
-
-  const fetchSocialData = async () => {
-    try {
-      const [feed, followers, following] = await Promise.all([
-        socialService.getFeed(),
-        socialService.getFollowers(),
-        socialService.getFollowing()
-      ]);
-      setSocialData({
-        feed: feed.results,
-        followers: followers.results,
-        following: following.results
-      });
-    } catch (err) {
-      console.error('Failed to fetch social data:', err);
-    }
-  };
-
-  const toggleWorkoutLike = async (workoutId) => {
-    try {
-      const response = await socialService.toggleLike(workoutId);
-      setWorkouts(prev => prev.map(workout => 
-        workout.id === workoutId 
-          ? { ...workout, has_liked: !workout.has_liked } 
-          : workout
-      ));
-      return response;
-    } catch (err) {
-      toast.error('Failed to toggle like');
-      throw err;
-    }
-  };
-
-  const toggleFollow = async (userId) => {
-    try {
-      const response = await socialService.toggleFollow(userId);
-      setSocialData(prev => ({
-        ...prev,
-        following: response.isFollowing
-          ? [...prev.following, response.user]
-          : prev.following.filter(user => user.id !== userId)
-      }));
-      return response;
-    } catch (err) {
-      toast.error('Failed to toggle follow');
-      throw err;
-    }
-  };
-
-  const contextValue = {
-    currentUser,
-    setCurrentUser,
-    isLoading,
-    isAuthenticated: !!currentUser,
-    workouts,
-    workoutStats,
-    socialData,
-    // Methods
-    fetchWorkouts,
-    createWorkout,
-    updateWorkout,
-    deleteWorkout,
-    toggleWorkoutLike,
-    toggleFollow
-  };
-
   return (
-    <CurrentUserContext.Provider value={contextValue}>
+    <CurrentUserContext.Provider value={{ currentUser, setCurrentUser, isLoading, isAuthenticated: !!currentUser, workouts, workoutStats }}>
       {children}
     </CurrentUserContext.Provider>
   );

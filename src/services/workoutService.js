@@ -1,4 +1,3 @@
-// src/services/workoutService.js
 import { axiosReq } from './axiosDefaults';
 import logger from './loggerService';
 import errorHandler from './errorHandlerService';
@@ -8,7 +7,7 @@ class WorkoutService {
     try {
       logger.debug(`Requesting ${method} ${url}...`, { data });
       const response = await axiosReq[method](url, data);
-      logger.debug(`Response from ${url}:`, response.data);
+      logger.debug(`Response from ${url}:`, response.data);  // Logs response data for better debugging
       return response.data;
     } catch (err) {
       logger.error(`Error in ${method} ${url}:`, err);
@@ -43,8 +42,23 @@ class WorkoutService {
     return this.handleRequest('delete', `api/workouts/${id}/`);
   }
 
+  // Get workout statistics and ensure it handles the response correctly
   async getWorkoutStatistics() {
-    return this.handleRequest('get', 'api/workouts/statistics/');
+    try {
+      logger.debug('Requesting workout statistics...');
+      const response = await axiosReq.get('api/workouts/statistics/');
+      logger.debug('Workout statistics response:', response.data);
+
+      if (response.data) {
+        // Return the data if available
+        return response.data;
+      } else {
+        throw new Error('No statistics data found');
+      }
+    } catch (err) {
+      logger.error('Error fetching workout statistics:', err);
+      throw errorHandler.handleApiError(err, 'Failed to fetch workout statistics');
+    }
   }
 
   async getWorkoutSummary() {

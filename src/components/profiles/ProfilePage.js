@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { profileService } from '../../services/profileService';
-import Avatar from '../../components/common/Avatar'; //
+import Avatar from '../../components/common/Avatar'; 
 
 const ProfilePage = () => {
   const { id } = useParams();
@@ -30,39 +30,42 @@ const ProfilePage = () => {
     } catch (err) {
       console.error('Failed to fetch profile:', err);
     }
-  }, [id]); // Only run when the `id` changes
+  }, [id]);
 
   // Fetch profile data when component mounts or `id` changes
   useEffect(() => {
     fetchProfile();
-  }, [fetchProfile]); // Add fetchProfile as dependency to avoid infinite loops
+  }, [fetchProfile]);
 
   // Get recent workouts for this user
   const recentWorkouts = useMemo(() => {
-    return workouts
-      .filter(workout => workout.user && workout.user.id === parseInt(id)) // Guard against undefined user
+    if (!workouts) return [];
+    const filtered = workouts
+      .filter(workout => workout.user && workout.user.id === parseInt(id)) 
       .sort((a, b) => new Date(b.date_logged) - new Date(a.date_logged))
       .slice(0, 5);
+    console.log(filtered); // Check if the filtering works
+    return filtered;
   }, [workouts, id]);
 
   // Calculate user stats for the specific profile being viewed
   const stats = useMemo(() => {
-    const totalWorkouts = workouts.filter(workout => workout.user && workout.user.id === parseInt(id)).length;
-    const totalDuration = workouts.filter(workout => workout.user && workout.user.id === parseInt(id))
-      .reduce((sum, w) => sum + w.duration, 0);
+    const totalWorkouts = workouts?.filter(workout => workout.user && workout.user.id === parseInt(id)).length || 0;
+    const totalDuration = workouts?.filter(workout => workout.user && workout.user.id === parseInt(id))
+      .reduce((sum, w) => sum + w.duration, 0) || 0;
     const avgDuration = totalWorkouts ? Math.round(totalDuration / totalWorkouts) : 0;
-
+  
     let currentStreak = 0;
     const today = new Date().setHours(0, 0, 0, 0);
-    const sortedDates = [...new Set(workouts.filter(w => w.user && w.user.id === parseInt(id))
+    const sortedDates = [...new Set(workouts?.filter(w => w.user && w.user.id === parseInt(id))
       .map(w => new Date(w.date_logged).setHours(0, 0, 0, 0)))].sort((a, b) => b - a);
-
+  
     for (let i = 0; i < sortedDates.length; i++) {
       if (i === 0 && (today - sortedDates[0]) > 86400000) break;
       if (i > 0 && (sortedDates[i - 1] - sortedDates[i]) > 86400000) break;
       currentStreak++;
     }
-
+  
     return {
       totalWorkouts,
       totalDuration,
@@ -70,6 +73,8 @@ const ProfilePage = () => {
       currentStreak
     };
   }, [workouts, id]);
+  
+  console.log(stats); 
 
   // Helper function to determine workout intensity color
   const intensityColor = (intensity) => {
@@ -84,7 +89,6 @@ const ProfilePage = () => {
     return <div>Loading...</div>;
   }
 
-  // Check if `date_joined` is a valid date string
   const dateJoined = new Date(profileData.date_joined);
   const formattedDate = dateJoined instanceof Date && !isNaN(dateJoined) ? format(dateJoined, 'MMMM yyyy') : 'Invalid Date';
 
@@ -93,9 +97,7 @@ const ProfilePage = () => {
       {/* Profile Header */}
       <div className="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Avatar/Image */}
           <div className="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center">
-            {/* Display profile image using Avatar component */}
             <Avatar src={profileData.profile_image} alt={`${profileData.username}'s avatar`} />
           </div>
 
