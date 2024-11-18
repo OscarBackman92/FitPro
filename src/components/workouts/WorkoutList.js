@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DumbbellIcon, PlusCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -9,10 +9,11 @@ const WorkoutList = () => {
   const navigate = useNavigate();
   const { workouts, deleteWorkout } = useCurrentUser();
   const [filters, setFilters] = useState({ type: 'all', search: '' });
+  const [workoutsList, setWorkoutsList] = useState(workouts);
 
   // Analytics data
   const chartData = useMemo(() => {
-    const typeCounts = workouts.reduce((acc, workout) => {
+    const typeCounts = workoutsList.reduce((acc, workout) => {
       acc[workout.workout_type] = (acc[workout.workout_type] || 0) + 1;
       return acc;
     }, {});
@@ -21,17 +22,21 @@ const WorkoutList = () => {
       type: type.charAt(0).toUpperCase() + type.slice(1),
       count
     }));
-  }, [workouts]);
+  }, [workoutsList]);
 
   const filteredWorkouts = useMemo(() => {
-    return workouts
+    return workoutsList
       .filter(w => {
         if (filters.type !== 'all' && w.workout_type !== filters.type) return false;
         if (filters.search && !w.title.toLowerCase().includes(filters.search.toLowerCase())) return false;
         return true;
       })
       .sort((a, b) => new Date(b.date_logged) - new Date(a.date_logged));
-  }, [workouts, filters]);
+  }, [workoutsList, filters]);
+
+  useEffect(() => {
+    setWorkoutsList(workouts);  // Update the workouts list when the workouts state changes
+  }, [workouts]);
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -71,18 +76,18 @@ const WorkoutList = () => {
           <div className="bg-gray-800 rounded-lg p-4 h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                <XAxis 
-                  dataKey="type" 
+                <XAxis
+                  dataKey="type"
                   tick={{ fill: '#9CA3AF', fontSize: 12 }}
                   angle={-45}
                   textAnchor="end"
                   height={60}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fill: '#9CA3AF', fontSize: 12 }}
                   allowDecimals={false}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     backgroundColor: '#1F2937',
                     border: '1px solid #374151',
@@ -144,6 +149,7 @@ const WorkoutList = () => {
                       onClick={() => {
                         if (window.confirm('Delete this workout?')) {
                           deleteWorkout(workout.id);
+                          setWorkoutsList(prevWorkouts => prevWorkouts.filter(w => w.id !== workout.id));
                         }
                       }}
                       className="text-sm px-2 py-1 text-red-400 hover:text-red-300"
@@ -169,3 +175,4 @@ const WorkoutList = () => {
 };
 
 export default WorkoutList;
+

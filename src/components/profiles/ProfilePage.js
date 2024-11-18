@@ -4,13 +4,14 @@ import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
   DumbbellIcon, 
   Activity,
-  Edit2,
   Award,
   Clock,
-  PlusCircle
+  PlusCircle,
+  Edit2
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { profileService } from '../../services/profileService'; // Ensure this is correct
+import { profileService } from '../../services/profileService';
+import Avatar from '../../components/common/Avatar'; //
 
 const ProfilePage = () => {
   const { id } = useParams();
@@ -92,9 +93,10 @@ const ProfilePage = () => {
       {/* Profile Header */}
       <div className="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Avatar/Image placeholder */}
+          {/* Avatar/Image */}
           <div className="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center">
-            <DumbbellIcon className="h-12 w-12 text-gray-500" />
+            {/* Display profile image using Avatar component */}
+            <Avatar src={profileData.profile_image} alt={`${profileData.username}'s avatar`} />
           </div>
 
           <div className="flex-1">
@@ -113,6 +115,13 @@ const ProfilePage = () => {
                   <Edit2 className="h-5 w-5" />
                 </button>
               )}
+            </div>
+            <div className="mt-4 text-gray-400">
+              <p><strong>Bio:</strong> {profileData.bio}</p>
+              <p><strong>Weight:</strong> {profileData.weight} kg</p>
+              <p><strong>Height:</strong> {profileData.height} cm</p>
+              <p><strong>Gender:</strong> {profileData.gender === 'M' ? 'Male' : profileData.gender === 'F' ? 'Female' : 'Other'}</p>
+              <p><strong>Date of Birth:</strong> {format(new Date(profileData.date_of_birth), 'MMMM dd, yyyy')}</p>
             </div>
           </div>
         </div>
@@ -191,7 +200,7 @@ const ProfilePage = () => {
                     <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
                       {workout.workout_type}
                     </span>
-                    <span className={`px-2 py-1 rounded-full text-sm ${intensityColor(workout.intensity)}`}>
+                    <span className={`px-2 py-1 rounded-full text-sm ${intensityColor(workout.intensity)}`} >
                       {workout.intensity}
                     </span>
                   </div>

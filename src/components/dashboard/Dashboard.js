@@ -169,7 +169,7 @@ const Dashboard = () => {
                           : 'bg-green-500'
                       }`} />
                       <h3 className="text-white capitalize font-medium">
-                        {workout.workout_type}
+                        {workout.title}
                       </h3>
                     </div>
                     <p className="text-sm text-gray-400 mt-1">

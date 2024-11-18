@@ -96,14 +96,15 @@ export const CurrentUserProvider = ({ children }) => {
   const updateWorkout = async (id, workoutData) => {
     try {
       const response = await workoutService.updateWorkout(id, workoutData);
-      setWorkouts(prev => prev.map(workout => 
-        workout.id === id ? response : workout
-      ));
+      // Update the workouts state immediately after the workout is updated
+      setWorkouts(prev =>
+        prev.map(workout =>
+          workout.id === id ? { ...workout, ...response } : workout
+        )
+      );
       toast.success('Workout updated successfully');
-      return response;
     } catch (err) {
       toast.error('Failed to update workout');
-      throw err;
     }
   };
 
