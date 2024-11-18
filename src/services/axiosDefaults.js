@@ -4,7 +4,7 @@ import logger from './loggerService';
 import errorHandler from './errorHandlerService';
 
 // Updated to use environment variable with new API URL
-const API_URL = process.env.REACT_APP_API_URL || 'https://localhost:8000/';
+const API_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com/';
 
 // Create axios instances
 export const axiosReq = axios.create({

@@ -4,12 +4,25 @@ import { DumbbellIcon, PlusCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { format } from 'date-fns';
+import workoutService from '../../services/workoutService';
 
 const WorkoutList = () => {
   const navigate = useNavigate();
-  const { workouts, deleteWorkout } = useCurrentUser();
+  const { workouts } = useCurrentUser();
   const [filters, setFilters] = useState({ type: 'all', search: '' });
-  const [workoutsList, setWorkoutsList] = useState(workouts);
+  const [workoutsList, setWorkoutsList] = useState([]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await workoutService.getWorkouts();
+        setWorkoutsList(response.results || []);
+      } catch (err) {}
+    };
+
+    fetchComments();
+  }, [workouts]);
+
 
   // Analytics data
   const chartData = useMemo(() => {
@@ -24,19 +37,6 @@ const WorkoutList = () => {
     }));
   }, [workoutsList]);
 
-  const filteredWorkouts = useMemo(() => {
-    return workoutsList
-      .filter(w => {
-        if (filters.type !== 'all' && w.workout_type !== filters.type) return false;
-        if (filters.search && !w.title.toLowerCase().includes(filters.search.toLowerCase())) return false;
-        return true;
-      })
-      .sort((a, b) => new Date(b.date_logged) - new Date(a.date_logged));
-  }, [workoutsList, filters]);
-
-  useEffect(() => {
-    setWorkoutsList(workouts);  // Update the workouts list when the workouts state changes
-  }, [workouts]);
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -116,7 +116,7 @@ const WorkoutList = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {filteredWorkouts.map((workout) => (
+            {workoutsList.map((workout) => (
               <tr key={workout.id} className="hover:bg-gray-700/50">
                 <td className="p-4 text-white font-medium">{workout.title}</td>
                 <td className="p-4 text-gray-300">
@@ -148,7 +148,7 @@ const WorkoutList = () => {
                     <button
                       onClick={() => {
                         if (window.confirm('Delete this workout?')) {
-                          deleteWorkout(workout.id);
+                          workoutService.deleteWorkout(workout.id);
                           setWorkoutsList(prevWorkouts => prevWorkouts.filter(w => w.id !== workout.id));
                         }
                       }}
@@ -163,7 +163,7 @@ const WorkoutList = () => {
           </tbody>
         </table>
 
-        {filteredWorkouts.length === 0 && (
+        {workoutsList.length === 0 && (
           <div className="text-center py-12">
             <DumbbellIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400 mb-4">No workouts found</p>

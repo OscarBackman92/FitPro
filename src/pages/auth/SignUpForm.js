@@ -65,7 +65,6 @@ const SignUpForm = () => {
     e.preventDefault();
     
     const validationErrors = validateForm();
-    console.log('Validation errors:', validationErrors);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;

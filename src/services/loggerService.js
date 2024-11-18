@@ -27,7 +27,6 @@ class Logger {
   debug(message, data = null) {
     if (DEBUG) {
       const logEntry = this.formatMessage('DEBUG', message, data);
-      console.log(`[DEBUG] ${message}`, data);
       this.storelog(logEntry);
     }
   }

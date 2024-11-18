@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useCurrentUser } from '../../contexts/CurrentUserContext';
+import { workoutService } from '../../services/workoutService';
 import toast from 'react-hot-toast';
 
 const WorkoutForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { workouts, createWorkout, updateWorkout, deleteWorkout } = useCurrentUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [workoutData, setWorkoutData] = useState({
-    title: '',
     workout_type: '',
     duration: '',
     intensity: 'moderate',
@@ -18,32 +16,27 @@ const WorkoutForm = () => {
     date_logged: new Date().toISOString().split('T')[0]
   });
 
-  const WORKOUT_TYPES = [
-    { value: 'cardio', label: 'Cardio' },
-    { value: 'strength', label: 'Strength Training' },
-    { value: 'flexibility', label: 'Flexibility' },
-    { value: 'sports', label: 'Sports' },
-    { value: 'other', label: 'Other' }
-  ];
-
   useEffect(() => {
-    if (id) {
-      const workout = workouts.find(w => w.id === parseInt(id));
-      if (workout) {
-        setWorkoutData({
-          title: workout.title || '',
-          workout_type: workout.workout_type || '',
-          duration: workout.duration || '',
-          intensity: workout.intensity || 'moderate',
-          notes: workout.notes || '',
-          date_logged: workout.date_logged || new Date().toISOString().split('T')[0]
-        });
-      } else {
-        toast.error('Workout not found');
-        navigate('/workouts');
+    const loadWorkout = async () => {
+      if (id) {
+        try {
+          const data = await workoutService.getWorkout(id);
+          setWorkoutData({
+            workout_type: data.workout_type || '',
+            duration: data.duration || '',
+            intensity: data.intensity || 'moderate',
+            notes: data.notes || '',
+            date_logged: data.date_logged || new Date().toISOString().split('T')[0]
+          });
+        } catch (err) {
+          toast.error('Failed to load workout');
+          navigate('/workouts');
+        }
       }
-    }
-  }, [id, workouts, navigate]);
+    };
+
+    loadWorkout();
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,9 +52,6 @@ const WorkoutForm = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!workoutData.title.trim()) {
-      newErrors.title = 'Title is required';
-    }
     if (!workoutData.workout_type) {
       newErrors.workout_type = 'Workout type is required';
     }
@@ -87,60 +77,37 @@ const WorkoutForm = () => {
     setIsSubmitting(true);
     try {
       if (id) {
-        await updateWorkout(id, workoutData);
-        toast.success('Workout updated');
+        await workoutService.updateWorkout(id, workoutData);
+        toast.success('Workout updated successfully');
       } else {
-        await createWorkout(workoutData);
-        toast.success('Workout created');
+        await workoutService.createWorkout(workoutData);
+        toast.success('Workout created successfully');
       }
       navigate('/workouts');
     } catch (err) {
       const serverErrors = err.errors || {};
       setErrors(serverErrors);
+      toast.error(err.message || 'Failed to save workout');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this workout?')) {
-      try {
-        await deleteWorkout(id);
-        toast.success('Workout deleted');
-        navigate('/workouts');
-      } catch (err) {
-        toast.error('Failed to delete workout');
-      }
-    }
-  };
+  const WORKOUT_TYPES = [
+    { value: 'cardio', label: 'Cardio' },
+    { value: 'strength', label: 'Strength Training' },
+    { value: 'flexibility', label: 'Flexibility' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'other', label: 'Other' }
+  ];
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-4 lg:mx-auto p-6 bg-gray-800 rounded-lg shadow-xl">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-white">
-          {id ? 'Edit Workout' : 'Create Workout'}
-        </h2>
-      </div>
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-6 bg-gray-800 rounded-lg shadow-xl">
+      <h2 className="text-3xl font-semibold text-center mb-6 text-white">
+        {id ? 'Update Workout' : 'Create Workout'}
+      </h2>
 
       <div className="space-y-6">
-        {/* Title Field */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300">Title</label>
-          <input
-            type="text"
-            name="title"
-            value={workoutData.title}
-            onChange={handleChange}
-            className={`mt-2 block w-full rounded-md p-3 text-sm bg-gray-700 text-white border-2 
-              ${errors.title ? 'border-red-500' : 'border-gray-600'}`}
-            placeholder="Give your workout a title"
-          />
-          {errors.title && (
-            <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-          )}
-        </div>
-
-        {/* Workout Type Field */}
         <div>
           <label className="block text-sm font-medium text-gray-300">Workout Type</label>
           <select
@@ -160,7 +127,6 @@ const WorkoutForm = () => {
           )}
         </div>
 
-        {/* Duration Field */}
         <div>
           <label className="block text-sm font-medium text-gray-300">Duration (minutes)</label>
           <input
@@ -176,7 +142,6 @@ const WorkoutForm = () => {
           )}
         </div>
 
-        {/* Intensity Field */}
         <div>
           <label className="block text-sm font-medium text-gray-300">Intensity</label>
           <select
@@ -191,7 +156,6 @@ const WorkoutForm = () => {
           </select>
         </div>
 
-        {/* Date Field */}
         <div>
           <label className="block text-sm font-medium text-gray-300">Date</label>
           <input
@@ -207,7 +171,6 @@ const WorkoutForm = () => {
           )}
         </div>
 
-        {/* Notes Field */}
         <div>
           <label className="block text-sm font-medium text-gray-300">Notes</label>
           <textarea
@@ -219,9 +182,7 @@ const WorkoutForm = () => {
           />
         </div>
 
-        {/* Form Actions */}
         <div className="flex justify-end gap-4">
-          {/* Right side - Cancel and Save buttons */}
           <button
             type="button"
             onClick={() => navigate('/workouts')}
@@ -236,17 +197,6 @@ const WorkoutForm = () => {
           >
             {isSubmitting ? 'Saving...' : (id ? 'Update' : 'Create')}
           </button>
-
-          {/* Left side - Delete button (only shows when editing) */}
-          {id && (
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="px-6 py-2 text-red-400 hover:text-white hover:bg-red-500 rounded-md border border-red-400 hover:border-red-500"
-            >
-              Delete
-            </button>
-          )}
         </div>
       </div>
     </form>
