@@ -7,7 +7,7 @@ import {
   LineChart, 
   Users, 
   Target, 
-  CheckCircle
+  CheckCircle 
 } from 'lucide-react';
 
 const Home = () => {
@@ -66,7 +66,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gray-900">
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-gray-900 to-gray-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -96,7 +96,7 @@ const Home = () => {
             </div>
             <div className="flex-1">
               <img 
-                src="/api/placeholder/600/400" 
+                src="/public/images/dashboard_hero_image.png" 
                 alt="App Dashboard Preview" 
                 className="rounded-lg shadow-2xl"
               />

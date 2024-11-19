@@ -21,41 +21,61 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Reset Password
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email address and we'll send you instructions to reset your password.
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-              />
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="text-center text-3xl font-bold text-white">
+          Reset Password
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-400">
+          Enter your email address and we'll send you instructions to reset your password.
+        </p>
+      </div>
 
-          <div>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-gray-800 py-8 px-4 shadow-xl sm:rounded-xl sm:px-10 border border-gray-700">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Email Input */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-300"
+              >
+                Email Address
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-500" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full pl-10 bg-gray-700 border border-gray-600 rounded-lg 
+                    py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 
+                    focus:ring-green-500 focus:border-transparent transition-all"
+                  placeholder="Enter your email"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+              className="w-full flex justify-center items-center gap-2 px-4 py-2 
+                border border-transparent rounded-lg shadow-sm text-base font-medium 
+                text-white bg-green-500 hover:bg-green-600 focus:outline-none 
+                focus:ring-2 focus:ring-offset-2 focus:ring-green-500 
+                disabled:opacity-50 disabled:cursor-not-allowed transition-all
+                focus:ring-offset-gray-800"
             >
               {isLoading ? 'Processing...' : 'Send Reset Instructions'}
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
