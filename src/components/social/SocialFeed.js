@@ -1,4 +1,3 @@
-// src/components/social/SocialFeed.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Share2, MessageCircle, Heart, X } from 'lucide-react';
@@ -89,98 +88,85 @@ const SocialFeed = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="mb-6">
+    <div className="min-h-screen bg-gray-900 p-6">
+      {/* Share a Workout Button */}
+      <div className="mb-8 max-w-2xl mx-auto">
         <button
           onClick={() => setShowShareModal(true)}
-          className="w-full flex items-center justify-center gap-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+          className="w-full flex items-center justify-center gap-2 p-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
         >
           <Share2 className="h-5 w-5" />
           Share a Workout
         </button>
       </div>
 
-      <div className="space-y-6">
+      {/* Social Feed */}
+      <div className="max-w-2xl mx-auto space-y-6">
         {posts.map((post) => (
-          <div key={post.id} className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+          <div key={post.id} className="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-6">
+            {/* Post Header */}
             <div className="flex items-center gap-3 mb-4">
               <div onClick={() => navigate(`/profiles/${post.user.id}`)}>
-                <Avatar
-                  src={post.user.profile_image}
-                  text={post.user.username}
-                />
+                <Avatar src={post.user.profile_image} text={post.user.username} />
               </div>
               <div>
                 <h3 className="font-medium text-white">{post.user.username}</h3>
-                <p className="text-sm text-gray-400">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </p>
+                <p className="text-sm text-gray-400">{new Date(post.created_at).toLocaleDateString()}</p>
               </div>
             </div>
 
+            {/* Workout Details */}
             {post.workout && (
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-sm">
-                    {post.workout.workout_type}
-                  </span>
-                  <span className="px-3 py-1 bg-blue-500/20 text-blue-500 rounded-full text-sm">
-                    {post.workout.duration} mins
-                  </span>
+                  <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-sm">{post.workout.workout_type}</span>
+                  <span className="px-3 py-1 bg-blue-500/20 text-blue-500 rounded-full text-sm">{post.workout.duration} mins</span>
                 </div>
-                {post.workout.notes && (
-                  <p className="mt-2 text-gray-300">{post.workout.notes}</p>
-                )}
+                {post.workout.notes && <p className="mt-2 text-gray-300">{post.workout.notes}</p>}
               </div>
             )}
 
+            {/* Like and Comment Section */}
             <div className="flex items-center gap-6 text-gray-400">
               <button
                 onClick={() => handleLike(post.id, post.has_liked)}
-                className={`flex items-center gap-2 ${
-                  post.has_liked ? 'text-red-500' : 'hover:text-red-500'
-                } transition-colors`}
+                className={`flex items-center gap-2 ${post.has_liked ? 'text-red-500' : 'hover:text-red-500'} transition-colors`}
               >
                 <Heart className={`h-5 w-5 ${post.has_liked ? 'fill-current' : ''}`} />
                 <span>{post.likes_count}</span>
               </button>
 
-              <button 
-                className="flex items-center gap-2 hover:text-blue-500 transition-colors"
+              <button
                 onClick={() => setCommentingOnPost(post.id)}
+                className="flex items-center gap-2 hover:text-blue-500 transition-colors"
               >
                 <MessageCircle className="h-5 w-5" />
                 <span>{post.comments_count}</span>
               </button>
             </div>
 
+            {/* Display Latest Comments */}
             {post.latest_comments?.length > 0 && (
               <div className="mt-4 space-y-2">
                 {post.latest_comments.map((comment) => (
                   <div key={comment.id} className="flex gap-2">
-                    <Avatar
-                      src={comment.user.profile_image}
-                      text={comment.user.username}
-                      size="sm"
-                    />
+                    <Avatar src={comment.user.profile_image} text={comment.user.username} size="sm" />
                     <div className="bg-gray-700 rounded-lg p-2 flex-1">
                       <div className="flex justify-between items-start">
-                        <span className="font-medium text-white">
-                          {comment.user.username}
-                        </span>
-                          <button
-                            onClick={() => handleDeleteComment(post.id, comment.id)}
-                            className="text-gray-400 hover:text-red-500"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+                        <span className="font-medium text-white">{comment.user.username}</span>
+                        <button
+                          onClick={() => handleDeleteComment(post.id, comment.id)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
                       <p className="text-gray-300 text-sm">{comment.content}</p>
                     </div>
@@ -189,6 +175,7 @@ const SocialFeed = () => {
               </div>
             )}
 
+            {/* Comment Input */}
             {commentingOnPost === post.id && (
               <div className="mt-4 flex gap-2">
                 <input
@@ -201,7 +188,7 @@ const SocialFeed = () => {
                 <button
                   onClick={() => handleComment(post.id)}
                   disabled={!newComment.trim()}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Post
                 </button>
@@ -210,7 +197,7 @@ const SocialFeed = () => {
                     setCommentingOnPost(null);
                     setNewComment('');
                   }}
-                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>
@@ -220,6 +207,7 @@ const SocialFeed = () => {
         ))}
       </div>
 
+      {/* Share Modal */}
       {showShareModal && (
         <WorkoutShareModal
           onClose={() => {

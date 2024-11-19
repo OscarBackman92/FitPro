@@ -34,7 +34,7 @@ const WorkoutShareModal = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-gray-800 rounded-lg shadow-xl max-w-md w-full border border-gray-600">
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <h2 className="text-lg font-semibold text-white">Share Workout</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-300">
@@ -50,7 +50,7 @@ const WorkoutShareModal = ({ onClose }) => {
           ) : workouts.length > 0 ? (
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {workouts.map((workout) => (
-                <div key={workout.id} className="flex items-center justify-between bg-gray-700 p-4 rounded-lg">
+                <div key={workout.id} className="flex items-center justify-between bg-gray-700 p-4 rounded-lg border border-gray-600">
                   <div>
                     <h3 className="text-white font-medium">{workout.workout_type} Workout</h3>
                     <p className="text-gray-400 text-sm">

@@ -45,7 +45,7 @@ const Footer = () => {
               <i className="fab fa-linkedin-in text-2xl"></i>
             </a>
             <a 
-              href="https://github.com/your-profile" 
+              href="https://github.com/OscarBackman92" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-gray-400 hover:text-white"
