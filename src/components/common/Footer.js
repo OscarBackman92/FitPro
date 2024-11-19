@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -13,21 +12,46 @@ const Footer = () => {
 
           {/* Social Media Icons Section */}
           <div className="flex justify-center space-x-6">
-            <Link to="/facebook" className="text-gray-400 hover:text-white">
+            <a 
+              href="https://www.facebook.com/your-profile" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-400 hover:text-white"
+            >
               <i className="fab fa-facebook-f text-2xl"></i>
-            </Link>
-            <Link to="/twitter" className="text-gray-400 hover:text-white">
+            </a>
+            <a 
+              href="https://twitter.com/your-profile" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-400 hover:text-white"
+            >
               <i className="fab fa-twitter text-2xl"></i>
-            </Link>
-            <Link to="/instagram" className="text-gray-400 hover:text-white">
+            </a>
+            <a 
+              href="https://www.instagram.com/your-profile" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-400 hover:text-white"
+            >
               <i className="fab fa-instagram text-2xl"></i>
-            </Link>
-            <Link to="/linkedin" className="text-gray-400 hover:text-white">
+            </a>
+            <a 
+              href="https://www.linkedin.com/in/your-profile" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-400 hover:text-white"
+            >
               <i className="fab fa-linkedin-in text-2xl"></i>
-            </Link>
-            <Link to="/github" className="text-gray-400 hover:text-white">
+            </a>
+            <a 
+              href="https://github.com/your-profile" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-400 hover:text-white"
+            >
               <i className="fab fa-github text-2xl"></i>
-            </Link>
+            </a>
           </div>
         </div>
       </div>
