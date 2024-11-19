@@ -165,11 +165,18 @@ Tested on:
 
 ## Known Bugs & Future Improvements
 
-### Known Issues
+### Known bugs
 
-1. Profile image upload occasionally fails
-2. Goal tracking feature incomplete
-3. Social feed pagination issues
+1. Profile image upload is failing, the code is there for it but due to time constraints debugging it is pushed forward
+2. Goal tracking feature incomplete and not implemented.
+3. If one user goes to another users profile. in recent workouts, the user that is visiting the profiles workouts is shown.
+4. Adding your weight and height in profile the "keyboard" stops working and you're only allowed to write one number at a time
+5. On phone the birth date shows funky.
+6. Member since date is invalid, don't know why.
+7. workout search and filter ise'nt working
+8. pictures missing from home and about pages.
+9. Reset password is not working.
+10. no terms of service and therefor 404 error.
 
 ### Planned Improvements
 
@@ -178,6 +185,7 @@ Tested on:
 3. Offline support
 4. Performance optimizations
 5. Enhanced analytics
+6. Every known bug.
 
 ## CORS & Security
 
@@ -240,22 +248,19 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 - React Toastify
 - React Hot Toast
 - Date-fns
+- Tailwind CSS
 
 ### Tutorials
 
 - Code Institute's React Module
-- Traversy Media Tutorials
-- Net Ninja React Series
-- Kent C. Dodds Blog
 
 ## Acknowledgments
 
 Special thanks to:
 
 - Code Institute tutors
-- Project mentor
-- Testing team
-- UX reviewers
+- Mentor Daisy
+- Testing team/family
 - Fellow developers who provided feedback
 
 ## License
