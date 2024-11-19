@@ -93,9 +93,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-900 p-4">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-white">
           Welcome back, {currentUser?.username}!
         </h1>
@@ -105,7 +105,7 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 max-w-4xl mx-auto">
         {statCards.map(card => (
           <div
             key={card.id}
@@ -121,11 +121,11 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 max-w-4xl mx-auto">
         <button
           onClick={() => navigate('/workouts/create')}
           className="flex items-center justify-center gap-2 p-4 bg-green-500 
-            text-white rounded-lg hover:bg-green-600 transition-colors"
+            text-white rounded-lg hover:bg-green-600 transition-colors w-full sm:w-auto"
         >
           <PlusCircle className="h-5 w-5" />
           Log Workout
@@ -133,14 +133,15 @@ const Dashboard = () => {
         <button
           onClick={() => navigate('/workouts')}
           className="flex items-center justify-center gap-2 p-4 bg-gray-800 
-            text-white rounded-lg hover:bg-gray-700 transition-colors"
+            text-white rounded-lg hover:bg-gray-700 transition-colors w-full sm:w-auto"
         >
           <Calendar className="h-5 w-5" />
           View History
         </button>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      {/* Recent Workouts Section */}
+      <div className="max-w-4xl mx-auto w-full">
         {/* Recent Workouts */}
         <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
