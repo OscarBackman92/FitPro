@@ -54,24 +54,48 @@ Comprehensive testing was performed on all features of the FitTrack application.
 ## Testing Summary
 
 ### Results Overview
+
 - Total Tests: 19
 - Passed: 16
 - Failed: 3
 - Pass Rate: 84%
 
 ### Failed Tests:
+
 1. Change profile image - Visibility issues
 2. Follow another user - Missing button
 3. Create fitness goal - Feature not implemented
 
 ### Testing Notes:
+
 - Core workout tracking features working as expected
 - Social features partially implemented
 - Goals system needs implementation
 - Profile image handling needs investigation
 
 ### Next Steps:
+
 1. Fix profile image visibility issue
 2. Implement follow user functionality
 3. Complete goals system implementation
 4. Add missing social features
+
+## Lighthouse scores
+
+![lighthouse](/documentation/readme_images/lighthouse_home.png)
+
+![lighthouse](/documentation/readme_images/lighthouse_about.png)
+
+![lighthouse](/documentation/readme_images/lighthouse_signup.png)
+
+![lighthouse](/documentation/readme_images/lighthouse_signin.png)
+
+![lighthouse](/documentation/readme_images/lighthouse_dashboard.png)
+
+![lighthouse](/documentation/readme_images/lighthouse_workoutform.png)
+
+![lighthouse](/documentation/readme_images/lighthouse_workoutlist.png)
+
+![lighthouse](/documentation/readme_images/lighthouse_feed.png
+
+![lighthouse](/documentation/readme_images/lighthouse_profilepage.png)

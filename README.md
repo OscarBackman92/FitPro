@@ -1,4 +1,4 @@
-# FitTrack Frontend Application
+# FitPro Frontend Application
 
 [![React](https://img.shields.io/badge/react-18.3.1-blue.svg)](https://reactjs.org/)
 [![Bootstrap](https://img.shields.io/badge/bootstrap-5.3.3-purple.svg)](https://getbootstrap.com/)
@@ -8,6 +8,7 @@
 ## Project Goals & Strategy
 
 ### Primary Goals
+
 - Create an intuitive fitness tracking interface
 - Enable social interaction between users
 - Provide visual progress tracking
@@ -15,44 +16,44 @@
 - Maintain high performance and accessibility
 
 ### Target Audience
+
 - Fitness enthusiasts
 - Personal trainers
 - Gym-goers
 - Health-conscious individuals
 
-## Agile Development Methodology
-
-### Sprint Structure
-- 2-week sprints
-- Daily standups
-- Sprint planning & retrospectives
-- Kanban board for task tracking
 
 ### User Story Prioritization
+
 - Must Have (Core functionality)
 - Should Have (Important features)
 - Could Have (Nice to have features)
 - Won't Have (Future considerations)
 
-[View Project Board](https://github.com/yourusername/fittrack/projects/1)
+[View Project Board](https://github.com/users/OscarBackman92/projects/11/views/1)
 
 ## Design & UX
 
 ### Color Scheme
-![Color Palette](documentation/images/color-palette.png)
 
 Primary Colors:
+
 - Brand Green: `#10B981`
 - Dark Background: `#1F2937`
 - Light Text: `#F9FAFB`
 - Accent Blue: `#3B82F6`
 
 ### Typography
+
 - Primary Font: Inter (Headers)
+
 ```css
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 ```
+
 - Secondary Font: Open Sans (Body)
+
 ```css
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
 ```
@@ -60,47 +61,56 @@ Primary Colors:
 ## Features with Screenshots
 
 ### Authentication
-![Authentication Flow](documentation/screenshots/auth-flow.png)
+
 - User registration
+![register](/documentation/readme_images/sign_up.png)
+
 - Login/Logout
+![login](/documentation/readme_images/login.png)
 - Password reset
+![reset](/documentation/readme_images/reset_pw.png)
 - JWT token management
 
 ### Dashboard
-![Dashboard](documentation/screenshots/dashboard.png)
+
+![Dashboard](documentation/readme_images/dashboard_hero_image.png)
+
 - Workout summary
 - Recent activities
-- Progress charts
 - Quick actions
 
 ### Workout Tracking
-![Workout Form](documentation/screenshots/workout-form.png)
+
+![Workout Form](documentation/readme_images/workout_form.png)
+
 - Create workouts
 - Track duration & intensity
 - Add notes
 - View history
 
 ### Social Features
-![Social Feed](documentation/screenshots/social-feed.png)
+
+![Social Feed](documentation/readme_images/feed.png)
+
 - Activity feed
 - Like & comment
 - Share workouts
-- Follow users
 
 ## Installation & Setup
 
 ### Prerequisites
+
 - Node.js (v18.x+)
 - npm (v9.x+)
 - Git
 
 ### Installation Steps
+
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/fittrack.git
+git clone https://github.com/OscarBackman92/FitPro
 
 # Install dependencies
-cd fittrack
 npm install
 
 # Setup environment
@@ -112,6 +122,7 @@ npm start
 ```
 
 ### Required Packages
+
 ```json
 {
   "dependencies": {
@@ -131,6 +142,7 @@ npm start
 
 Tested on:
 | Browser | Version | Status |
+
 |---------|---------|---------|
 | Chrome  | 120.0   | ✅ Pass |
 | Firefox | 119.0   | ✅ Pass |
@@ -147,20 +159,20 @@ Tested on:
 - Screen reader testing
 
 ### Lighthouse Scores
-![Lighthouse Scores](documentation/screenshots/lighthouse.png)
-- Performance: 95+
-- Accessibility: 98+
-- Best Practices: 95+
-- SEO: 98+
+
+- See testing file for lighthouse scores.
+- [TESTING.md](TESTING.md)
 
 ## Known Bugs & Future Improvements
 
 ### Known Issues
+
 1. Profile image upload occasionally fails
 2. Goal tracking feature incomplete
 3. Social feed pagination issues
 
 ### Planned Improvements
+
 1. Dark mode implementation
 2. Push notifications
 3. Offline support
@@ -170,6 +182,7 @@ Tested on:
 ## CORS & Security
 
 ### CORS Configuration
+
 ```javascript
 // axios configuration
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
@@ -178,6 +191,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 ```
 
 ### Security Measures
+
 - JWT token refresh
 - XSS prevention
 - CSRF protection
@@ -186,6 +200,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 ## Tools & Technologies
 
 ### Core Technologies
+
 - React 18.3.1
 - React Router 6.27.0
 - Axios 1.7.7
@@ -194,6 +209,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 - Recharts
 
 ### Development Tools
+
 - ESLint
 - Prettier
 - Husky
@@ -202,6 +218,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 - Cypress
 
 ### Design Tools
+
 - Figma
 - Adobe XD
 - Lucide Icons
@@ -209,6 +226,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 ## Credits
 
 ### Code Resources
+
 - React Documentation
 - React Router Documentation
 - JavaScript.info
@@ -216,6 +234,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 - Stack Overflow solutions
 
 ### Tools & Libraries
+
 - React Bootstrap
 - React Icons
 - React Toastify
@@ -223,6 +242,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 - Date-fns
 
 ### Tutorials
+
 - Code Institute's React Module
 - Traversy Media Tutorials
 - Net Ninja React Series
@@ -231,6 +251,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json';
 ## Acknowledgments
 
 Special thanks to:
+
 - Code Institute tutors
 - Project mentor
 - Testing team
