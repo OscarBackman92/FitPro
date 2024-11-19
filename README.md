@@ -1,9 +1,11 @@
 # FitPro Frontend Application
 
+FitPro Frontend Application
+Welcome to FitPro, a comprehensive fitness tracking platform designed to help users stay on top of their workouts, monitor progress, and engage with a supportive community. Whether you're a fitness enthusiast, personal trainer, or someone looking to improve their health, this application provides the tools and features necessary to manage your fitness goals efficiently. With a focus on intuitive design and user experience, FitPro is your reliable partner in achieving and tracking your fitness milestones.
+
 [![React](https://img.shields.io/badge/react-18.3.1-blue.svg)](https://reactjs.org/)
 [![Bootstrap](https://img.shields.io/badge/bootstrap-5.3.3-purple.svg)](https://getbootstrap.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/xxxxx/deploy-status)](https://app.netlify.com/sites/fittrack/deploys)
 
 ## Project Goals & Strategy
 
@@ -21,7 +23,6 @@
 - Personal trainers
 - Gym-goers
 - Health-conscious individuals
-
 
 ### User Story Prioritization
 
@@ -177,6 +178,7 @@ Tested on:
 8. pictures missing from home and about pages.
 9. Reset password is not working.
 10. no terms of service and therefor 404 error.
+11. When you logout and want to login again you have to refresh the login page. otherwise its you cant login. Very annoying and i dont know why.
 
 ### Planned Improvements
 
@@ -262,13 +264,14 @@ Special thanks to:
 - Mentor Daisy
 - Testing team/family
 - Fellow developers who provided feedback
+- Myself for not giving up and continuing pushing forward and testing myself and my capabilities.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
+For testing documentation, visit the [TESTING.md](TESTING.md).
+Live site is here:
 
-For API documentation, visit the [Backend README](../backend/README.md)
-
-For testing documentation, visit the [TESTING.md](TESTING.md)
+(https://frontendfitness-e0476c66fecb.herokuapp.com/)
