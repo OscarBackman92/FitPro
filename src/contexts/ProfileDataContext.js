@@ -1,14 +1,15 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import axiosRes from '../services/axiosDefaults'; 
-import { useCurrentUser } from './useCurrentUser';
-import { followHelper, unfollowHelper } from './helpers';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axiosRes from './axiosRes';
+import { useCurrentUser } from './useCurrentUser'; 
+import { followHelper, unfollowHelper } from './helpers'; 
+
 export const ProfileDataContext = createContext();
 export const SetProfileDataContext = createContext();
 
 export const useProfileData = () => useContext(ProfileDataContext);
 export const useSetProfileData = () => useContext(SetProfileDataContext);
 
-export const useProfileDataProvider = ({ children }) => {
+export const ProfileDataProvider = ({ children }) => {
   const [profileData, setProfileData] = useState({
     pageProfile: { results: [] },
     popularProfiles: { results: [] },
@@ -37,7 +38,7 @@ export const useProfileDataProvider = ({ children }) => {
         },
       }));
     } catch (err) {
-      console.error(err); // Optionally handle error
+      console.error(err); // Consider handling the error more gracefully
     }
   };
 
@@ -59,24 +60,26 @@ export const useProfileDataProvider = ({ children }) => {
         },
       }));
     } catch (err) {
-      console.error(err); // Optionally handle error
+      console.error(err); // Consider handling the error more gracefully
     }
   };
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const handleMount = async () => {
       try {
-        const { data } = await axiosRes.get("/api/profiles/?ordering=-followers_count");
+        const { data } = await axiosRes.get(
+          "/api/profiles/?ordering=-followers_count"
+        );
         setProfileData((prevState) => ({
           ...prevState,
           popularProfiles: data,
         }));
       } catch (err) {
-        console.error(err); // Optionally handle error
+        console.error(err); // Consider handling the error more gracefully
       }
     };
 
-    fetchProfileData();
+    handleMount();
   }, [currentUser]);
 
   return (

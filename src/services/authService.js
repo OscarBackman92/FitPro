@@ -1,67 +1,36 @@
 import { axiosReq } from './axiosDefaults';
-import logger from './loggerService';
-import errorHandler from './errorHandlerService';
-
-const login = async (credentials) => {
-  try {
-    logger.debug('Attempting login', { username: credentials.username });
-    const response = await axiosReq.post('api/auth/login/', credentials);
-    
-    // Log response for debugging
-    logger.debug('Login response:', response.data);
-    
-    if (response.data.key) {
-      localStorage.setItem('token', response.data.key);
-      // Get user data after successful login
-      const userResponse = await axiosReq.get('api/auth/user/');
-      return {
-        token: response.data.key,
-        user: userResponse.data
-      };
-    }
-    throw new Error('Invalid response format');
-  } catch (err) {
-    logger.error('Login failed:', err);
-    throw errorHandler.handleApiError(err, 'Login failed');
-  }
-};
-
-const register = async (userData) => {
-  try {
-    logger.debug('Attempting registration', { userData });
-    const response = await axiosReq.post('api/auth/registration/', userData);
-    return response.data;
-  } catch (err) {
-    console.error('Registration error:', err);
-    throw errorHandler.handleApiError(err, 'Registration failed');
-  }
-};
-const logout = async () => {
-  try {
-    await axiosReq.post('api/auth/logout/');
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-  } catch (err) {
-    throw errorHandler.handleApiError(err, 'Logout failed');
-  }
-};
-
-const getCurrentUser = async () => {
-  try {
-    const response = await axiosReq.get('api/auth/user/');
-    return response.data;
-  } catch (err) {
-    throw errorHandler.handleApiError(err, 'Failed to fetch current user');
-  }
-};
 
 export const authService = {
-  login,
-  register,
-  logout,
-  getCurrentUser
+  async login(credentials) {
+    const response = await axiosReq.post('dj-rest-auth/login/', credentials);
+    if (response.data.key) {
+      localStorage.setItem('token', response.data.key);
+    }
+    return response.data;
+  },
+
+  async register(userData) {
+    const response = await axiosReq.post('dj-rest-auth/registration/', userData);
+    return response.data;
+  },
+
+  async logout() {
+    await axiosReq.post('dj-rest-auth/logout/');
+    localStorage.removeItem('token');
+  },
+
+  async refreshToken() {
+    const response = await axiosReq.post('dj-rest-auth/token/refresh/');
+    if (response.data.key) {
+      localStorage.setItem('token', response.data.key);
+    }
+    return response.data;
+  },
+
+  async getCurrentUser() {
+    const response = await axiosReq.get('dj-rest-auth/user/');
+    return response.data;
+  }
 };
 
-// Export both named and default
-export { login, register, logout, getCurrentUser };
 export default authService;

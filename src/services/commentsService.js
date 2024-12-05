@@ -1,43 +1,24 @@
-// src/services/commentsService.js
 import { axiosReq } from './axiosDefaults';
-import logger from './loggerService';
-import errorHandler from './errorHandlerService';
 
-class CommentsService {
-  async getComments(workoutId) {
-    try {
-      logger.debug('Fetching comments', { workoutId });
-      const response = await axiosReq.get(`api/workouts/${workoutId}/comments/`);
-      return response.data;
-    } catch (err) {
-      logger.error('Failed to fetch comments:', err);
-      throw errorHandler.handleApiError(err, 'Failed to fetch comments');
-    }
+export const commentsService = {
+  async getPostComments(postId) {
+    const response = await axiosReq.get(`api/comments/?post=${postId}`);
+    return response.data;
+  },
+
+  async createComment(data) {
+    const response = await axiosReq.post('api/comments/', data);
+    return response.data;
+  },
+
+  async deleteComment(id) {
+    await axiosReq.delete(`api/comments/${id}/`);
+  },
+
+  async updateComment(id, data) {
+    const response = await axiosReq.put(`api/comments/${id}/`, data);
+    return response.data;
   }
+};
 
-  async addComment(workoutId, content) {
-    try {
-      logger.debug('Adding comment', { workoutId, content });
-      const response = await axiosReq.post(`api/workouts/${workoutId}/comments/`, {
-        content
-      });
-      return response.data;
-    } catch (err) {
-      logger.error('Failed to add comment:', err);
-      throw errorHandler.handleApiError(err, 'Failed to add comment');
-    }
-  }
-
-  async deleteComment(workoutId, commentId) {
-    try {
-      logger.debug('Deleting comment', { workoutId, commentId });
-      await axiosReq.delete(`api/workouts/${workoutId}/comments/${commentId}/`);
-    } catch (err) {
-      logger.error('Failed to delete comment:', err);
-      throw errorHandler.handleApiError(err, 'Failed to delete comment');
-    }
-  }
-}
-
-export const commentsService = new CommentsService();
 export default commentsService;

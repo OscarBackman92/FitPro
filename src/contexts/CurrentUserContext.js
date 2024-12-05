@@ -1,68 +1,81 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { axiosReq } from '../services/axiosDefaults';
-import { workoutService } from '../services/workoutService';
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { axiosReq, axiosRes } from "../services/axiosDefaults";
+import { useNavigate } from "react-router-dom";
+import { removeTokenTimestamp, shouldRefreshToken } from "../utils/utils";
 
-const CurrentUserContext = createContext();
+export const CurrentUserContext = createContext();
+export const SetCurrentUserContext = createContext();
 
-export const useCurrentUser = () => {
-  const context = useContext(CurrentUserContext);
-  if (!context) {
-    throw new Error('useCurrentUser must be used within a CurrentUserProvider');
-  }
-  return context;
-};
+export const useCurrentUser = () => useContext(CurrentUserContext);
+export const useSetCurrentUser = () => useContext(SetCurrentUserContext);
 
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [workouts, setWorkouts] = useState([]);
-  const [workoutStats, setWorkoutStats] = useState(null);
+  const navigate = useNavigate();
+
+  const handleMount = async () => {
+    try {
+      const { data } = await axiosRes.get("dj-rest-auth/user/");
+      setCurrentUser(data);
+    } catch (err) {}
+  };
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setIsLoading(false);
-          return;
-        }
-
-        const { data } = await axiosReq.get('api/auth/user/');
-        setCurrentUser(data);
-        
-        // Load user's workouts and stats
-        const [workoutsRes, statsRes] = await Promise.all([
-          workoutService.getWorkouts(),
-          workoutService.getWorkoutStatistics()
-        ]);
-        
-        setWorkouts(workoutsRes.results);
-        setWorkoutStats(statsRes);
-      } catch (err) {
-        localStorage.removeItem('token');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUser();
+    handleMount();
   }, []);
 
+  useMemo(() => {
+    axiosReq.interceptors.request.use(
+      async (config) => {
+        if (shouldRefreshToken()) {
+          try {
+            await axios.post("/dj-rest-auth/token/refresh/");
+          } catch (err) {
+            setCurrentUser((prevCurrentUser) => {
+              if (prevCurrentUser) {
+                navigate("/signin");
+              }
+              return null;
+            });
+            removeTokenTimestamp();
+            return config;
+          }
+        }
+        return config;
+      },
+      (err) => {
+        return Promise.reject(err);
+      }
+    );
+
+    axiosRes.interceptors.response.use(
+      (response) => response,
+      async (err) => {
+        if (err.response?.status === 401) {
+          try {
+            await axios.post("/dj-rest-auth/token/refresh/");
+          } catch (err) {
+            setCurrentUser((prevCurrentUser) => {
+              if (prevCurrentUser) {
+                navigate("/signin");
+              }
+              return null;
+            });
+            removeTokenTimestamp();
+          }
+          return axios(err.config);
+        }
+        return Promise.reject(err);
+      }
+    );
+  }, [navigate]);
+
   return (
-    <CurrentUserContext.Provider 
-      value={{ 
-        currentUser, 
-        setCurrentUser, 
-        isLoading,
-        workouts,
-        workoutStats,
-        setWorkouts,
-        setWorkoutStats
-      }}
-    >
-      {children}
+    <CurrentUserContext.Provider value={currentUser}>
+      <SetCurrentUserContext.Provider value={setCurrentUser}>
+        {children}
+      </SetCurrentUserContext.Provider>
     </CurrentUserContext.Provider>
   );
 };
-
-export default CurrentUserProvider;

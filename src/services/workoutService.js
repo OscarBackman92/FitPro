@@ -63,4 +63,3 @@ class WorkoutService {
 }
 
 export const workoutService = new WorkoutService();
-export default workoutService;
