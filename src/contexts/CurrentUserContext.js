@@ -1,22 +1,12 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { axiosReq, axiosRes } from '../services/axiosDefaults';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { axiosReq } from '../services/axiosDefaults';
 import { workoutService } from '../services/workoutService';
-import toast from 'react-hot-toast';
 
-const CurrentUserContext = createContext({
-  currentUser: null,
-  setCurrentUser: () => null,
-  isLoading: true,
-  isAuthenticated: false,
-  workouts: [],
-  workoutStats: null,
-  fetchWorkouts: () => null,
-  fetchWorkoutStats: () => null,
-});
+const CurrentUserContext = createContext();
 
 export const useCurrentUser = () => {
   const context = useContext(CurrentUserContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useCurrentUser must be used within a CurrentUserProvider');
   }
   return context;
@@ -28,52 +18,48 @@ export const CurrentUserProvider = ({ children }) => {
   const [workouts, setWorkouts] = useState([]);
   const [workoutStats, setWorkoutStats] = useState(null);
 
-  const fetchWorkouts = async () => {
-    try {
-      const response = await workoutService.getWorkouts();
-      setWorkouts(response.results);
-    } catch (err) {
-      toast.error('Failed to fetch workouts');
-    }
-  };
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setIsLoading(false);
+          return;
+        }
 
-  const fetchWorkoutStats = async () => {
-    try {
-      const stats = await workoutService.getWorkoutStatistics();
-      setWorkoutStats(stats);
-    } catch (err) {
-      toast.error('Failed to fetch workout stats');
-    }
-  };
-
-  const handleMount = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+        const { data } = await axiosReq.get('api/auth/user/');
+        setCurrentUser(data);
+        
+        // Load user's workouts and stats
+        const [workoutsRes, statsRes] = await Promise.all([
+          workoutService.getWorkouts(),
+          workoutService.getWorkoutStatistics()
+        ]);
+        
+        setWorkouts(workoutsRes.results);
+        setWorkoutStats(statsRes);
+      } catch (err) {
+        localStorage.removeItem('token');
+      } finally {
         setIsLoading(false);
-        return;
       }
+    };
 
-      axiosReq.defaults.headers.common["Authorization"] = `Token ${token}`;
-      axiosRes.defaults.headers.common["Authorization"] = `Token ${token}`;
-
-      const { data } = await axiosRes.get("api/auth/user/");
-      setCurrentUser(data);
-      
-      await Promise.all([fetchWorkouts(), fetchWorkoutStats()]);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
+    loadUser();
   }, []);
 
-  useEffect(() => {
-    handleMount();
-  }, [handleMount]);
-
   return (
-    <CurrentUserContext.Provider value={{ currentUser, setCurrentUser, isLoading, isAuthenticated: !!currentUser, workouts, workoutStats }}>
+    <CurrentUserContext.Provider 
+      value={{ 
+        currentUser, 
+        setCurrentUser, 
+        isLoading,
+        workouts,
+        workoutStats,
+        setWorkouts,
+        setWorkoutStats
+      }}
+    >
       {children}
     </CurrentUserContext.Provider>
   );
