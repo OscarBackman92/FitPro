@@ -11,29 +11,36 @@ const api = axios.create({
   }
 });
 
-export const authService = {
+const authService = {
   async register(userData) {
     try {
-      console.log('Registration attempt:', userData);
       const response = await api.post('dj-rest-auth/registration/', userData);
-      console.log('Registration success:', response.data);
+      // Store tokens if they're included in registration response
+      if (response.data.access) {
+        localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
+      }
       return response.data;
     } catch (error) {
-      console.error('Registration API error:', error.response?.data);
       throw error;
     }
   },
 
   async login(credentials) {
     const response = await api.post('dj-rest-auth/login/', credentials);
+    // Save both access and refresh tokens
     if (response.data.access) {
-      localStorage.setItem('token', response.data.access);
+      localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('refresh_token', response.data.refresh);
     }
     return response.data;
   },
 
   async logout() {
     await api.post('dj-rest-auth/logout/');
-    localStorage.removeItem('token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
   }
 };
+
+export default authService;

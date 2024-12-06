@@ -1,27 +1,16 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  React, createContext, useContext, useEffect, useMemo, useState,
+} from "react";
 import axios from "axios";
-import { axiosReq, axiosRes } from "../services/axiosDefaults";
 import { useNavigate } from "react-router-dom";
+import { axiosReq, axiosRes } from "../services/axiosDefaults";
 import { removeTokenTimestamp, shouldRefreshToken } from "../utils/utils";
 
 export const CurrentUserContext = createContext();
 export const SetCurrentUserContext = createContext();
 
-export const useCurrentUser = () => {
-  const context = useContext(CurrentUserContext);
-  if (context === undefined) {
-    throw new Error("useCurrentUser must be used within a CurrentUserProvider");
-  }
-  return context;
-};
-
-export const useSetCurrentUser = () => {
-  const context = useContext(SetCurrentUserContext);
-  if (context === undefined) {
-    throw new Error("useSetCurrentUser must be used within a CurrentUserProvider");
-  }
-  return context;
-};
+export const useCurrentUser = () => useContext(CurrentUserContext);
+export const useSetCurrentUser = () => useContext(SetCurrentUserContext);
 
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -32,7 +21,6 @@ export const CurrentUserProvider = ({ children }) => {
       const { data } = await axiosRes.get("dj-rest-auth/user/");
       setCurrentUser(data);
     } catch (err) {
-      console.log(err);
     }
   };
 
@@ -59,9 +47,7 @@ export const CurrentUserProvider = ({ children }) => {
         }
         return config;
       },
-      (err) => {
-        return Promise.reject(err);
-      }
+      (err) => Promise.reject(err),
     );
 
     axiosRes.interceptors.response.use(
@@ -82,12 +68,12 @@ export const CurrentUserProvider = ({ children }) => {
           return axios(err.config);
         }
         return Promise.reject(err);
-      }
+      },
     );
   }, [navigate]);
 
   return (
-    <CurrentUserContext.Provider value={{ currentUser }}>
+    <CurrentUserContext.Provider value={{ currentUser }}> 
       <SetCurrentUserContext.Provider value={setCurrentUser}>
         {children}
       </SetCurrentUserContext.Provider>

@@ -29,7 +29,7 @@ const Loading = () => (
 );
 
 function App() {
-  const { currentUser } = useCurrentUser();
+  const { currentUser = null } = useCurrentUser() || {};
 
   return (
     <div className={styles.App}>

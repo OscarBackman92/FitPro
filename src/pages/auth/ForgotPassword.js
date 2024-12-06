@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
-import { authService } from '../../services/authService';
+import authService from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
