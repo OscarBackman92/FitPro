@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCurrentUser } from '../../contexts/CurrentUserContext';
+import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
 import { authService } from '../../services/authService';
 import { User, Lock, Loader, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const SignInForm = () => {
-  const { setCurrentUser } = useCurrentUser();
+  const setCurrentUser = useSetCurrentUser();
   const [signInData, setSignInData] = useState({
     username: '',
     password: ''
@@ -21,7 +21,7 @@ const SignInForm = () => {
       ...prev,
       [name]: value
     }));
-    // Clear errors when user starts typing
+    
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -52,7 +52,6 @@ const SignInForm = () => {
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        {/* Logo/Brand Section */}
         <h2 className="text-center text-3xl font-bold text-white">
           Welcome back
         </h2>
@@ -70,7 +69,6 @@ const SignInForm = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-gray-800 py-8 px-4 shadow-xl sm:rounded-xl sm:px-10 border border-gray-700">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Username Input */}
             <div>
               <label 
                 htmlFor="username" 
@@ -103,7 +101,6 @@ const SignInForm = () => {
               ))}
             </div>
 
-            {/* Password Input */}
             <div>
               <label 
                 htmlFor="password" 
@@ -136,7 +133,6 @@ const SignInForm = () => {
               ))}
             </div>
 
-            {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -161,7 +157,6 @@ const SignInForm = () => {
               </div>
             </div>
 
-            {/* Non-field Errors */}
             {errors.non_field_errors?.map((message, idx) => (
               <div key={idx} className="bg-red-500/10 text-red-500 p-3 rounded-lg flex items-center gap-2">
                 <AlertCircle className="h-5 w-5" />
@@ -169,7 +164,6 @@ const SignInForm = () => {
               </div>
             ))}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
