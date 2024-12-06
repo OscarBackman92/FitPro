@@ -84,11 +84,14 @@ class ProfileService {
   }
 
   // Main API methods
-  async getProfile(userId) {
-    return this.#makeRequest('GET', `/api/profiles/${userId}/`, {
-      logInfo: { userId }
-    });
+  async getProfile(profileId) {
+    if (!profileId) {
+      throw new Error('Profile ID is required');
+    }
+    const response = await axiosReq.get(`api/profiles/${profileId}/`);
+    return response.data;
   }
+
 
   async updateProfile(userId, profileData) {
     const formData = new FormData();

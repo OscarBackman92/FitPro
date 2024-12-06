@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
@@ -7,9 +7,9 @@ import {
   Award,
   Clock,
   PlusCircle,
-  Edit2
+  Edit2,
+  Loader
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { profileService } from '../../services/profileService';
 import Avatar from '../../components/common/Avatar'; 
 import { workoutService } from '../../services/workoutService';
@@ -21,24 +21,8 @@ const ProfilePage = () => {
   const { currentUser } = useCurrentUser();
   const [workouts, setWorkouts] = useState([]);
   const [profileData, setProfileData] = useState(null);
-
-  // Check if the profile being viewed is the logged-in user's profile
-  const isOwnProfile = currentUser?.id === parseInt(id);
-  const fetchProfile = useCallback(async () => {
-    try {
-      const response = await profileService.getProfile(id); // Fetch the profile by ID
-      setProfileData(response);
-    } catch (err) {
-      console.error('Failed to fetch profile:', err);
-    }
-  }, [id]);
-
-  // Memoized fetchProfile function to prevent unnecessary re-renders
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  // Get recent workouts for this user
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     totalWorkouts: 0,
     weeklyWorkouts: 0,
@@ -48,33 +32,49 @@ const ProfilePage = () => {
     monthlyStats: []
   });
 
-  // Fetch profile data when component mounts or `id` changes
-  useEffect(() => {
-    const fetchWorkoutData = async () => {
-      try {
-        const [workoutsResponse, statsResponse] = await Promise.all([
-          workoutService.getWorkouts({ limit: 5 }),
-          workoutService.getWorkoutStatistics()
-        ]);
+  const isOwnProfile = currentUser?.id === parseInt(id);
 
-        setWorkouts(workoutsResponse.results || []);
-        setStats({
-          totalWorkouts: statsResponse.total_workouts || 0,
-          weeklyWorkouts: statsResponse.workouts_this_week || 0,
-          currentStreak: statsResponse.current_streak || 0,
-          totalMinutes: statsResponse.total_duration || 0,
-          workoutTypes: statsResponse.workout_types || [],
-          monthlyStats: statsResponse.monthly_trends || []
-        });
-      } catch (err) {
-        toast.error('Failed to load dashboard data');
-      }
-    };
+  const fetchData = useCallback(async () => {
+    const profileId = id || currentUser?.profile?.id || null;
+  
+    if (!profileId) {
+      setError('Profile not found');
+      setLoading(false);
+      return;
+    }
+  
+    try {
+      setLoading(true);
+  
+      const [profileResponse, workoutsResponse, statsResponse] = await Promise.all([
+        profileService.getProfile(profileId),
+        workoutService.getWorkouts({ limit: 5, user: profileId }),
+        workoutService.getWorkoutStatistics(),
+      ]);
+  
+      setProfileData(profileResponse);
+      setWorkouts(workoutsResponse.results || []);
+      setStats({
+        totalWorkouts: statsResponse.total_workouts || 0,
+        weeklyWorkouts: statsResponse.workouts_this_week || 0,
+        currentStreak: statsResponse.current_streak || 0,
+        totalMinutes: statsResponse.total_duration || 0,
+        workoutTypes: statsResponse.workout_types || [],
+        monthlyStats: statsResponse.monthly_trends || [],
+      });
+    } catch (err) {
+      setError(err.message || 'Profile not found');
+      toast.error('Error fetching profile data');
+    } finally {
+      setLoading(false);
+    }
+  }, [id, currentUser]);
 
-    fetchWorkoutData();
-  }, []);
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData, currentUser]);
 
-  // Helper function to determine workout intensity color
+  // Helper function for workout intensity colors
   const intensityColor = (intensity) => {
     switch (intensity) {
       case 'high': return 'bg-red-500/20 text-red-400';
@@ -83,12 +83,33 @@ const ProfilePage = () => {
     }
   };
 
-  if (!profileData) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader className="h-8 w-8 text-green-500 animate-spin" />
+          <p className="text-gray-400">Loading profile...</p>
+        </div>
+      </div>
+    );
   }
 
-  const dateJoined = new Date(profileData.date_joined);
-  const formattedDate = dateJoined instanceof Date && !isNaN(dateJoined) ? format(dateJoined, 'MMMM yyyy') : 'Invalid Date';
+  if (error || !profileData) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center p-6">
+          <h2 className="text-xl font-bold text-white mb-2">Error</h2>
+          <p className="text-gray-400">{error || 'Profile not found'}</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-4 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -106,7 +127,12 @@ const ProfilePage = () => {
                   <h1 className="text-2xl font-bold text-white">
                     {profileData.username}'s Profile
                   </h1>
-                  <p className="text-gray-400 mt-1">Member since {formattedDate}</p>
+                  <p className="text-gray-400 mt-1">Member since {
+                    new Date(profileData.date_joined).toLocaleDateString('en-US', {
+                      month: 'long',
+                      year: 'numeric'
+                    })
+                  }</p>
                 </div>
                 {isOwnProfile && (
                   <button
@@ -118,11 +144,23 @@ const ProfilePage = () => {
                 )}
               </div>
               <div className="mt-4 text-gray-400">
-                <p><strong>Bio:</strong> {profileData.bio}</p>
-                <p><strong>Weight:</strong> {profileData.weight} kg</p>
-                <p><strong>Height:</strong> {profileData.height} cm</p>
-                <p><strong>Gender:</strong> {profileData.gender === 'M' ? 'Male' : profileData.gender === 'F' ? 'Female' : 'Other'}</p>
-                <p><strong>Date of Birth:</strong> {format(new Date(profileData.date_of_birth), 'MMMM dd, yyyy')}</p>
+                <p><strong>Bio:</strong> {profileData.bio || 'No bio provided'}</p>
+                <p><strong>Weight:</strong> {profileData.weight ? `${profileData.weight} kg` : 'Not specified'}</p>
+                <p><strong>Height:</strong> {profileData.height ? `${profileData.height} cm` : 'Not specified'}</p>
+                <p><strong>Gender:</strong> {
+                  profileData.gender === 'M' ? 'Male' : 
+                  profileData.gender === 'F' ? 'Female' : 
+                  'Not specified'
+                }</p>
+                <p><strong>Date of Birth:</strong> {
+                  profileData.date_of_birth ? 
+                  new Date(profileData.date_of_birth).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                  }) : 
+                  'Not specified'
+                }</p>
               </div>
             </div>
           </div>
@@ -168,14 +206,20 @@ const ProfilePage = () => {
                       <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
                         {workout.workout_type}
                       </span>
-                      <span className={`px-2 py-1 rounded-full text-sm ${intensityColor(workout.intensity)}`} >
+                      <span className={`px-2 py-1 rounded-full text-sm ${intensityColor(workout.intensity)}`}>
                         {workout.intensity}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-300">{workout.duration} mins</p>
-                    <p className="text-sm text-gray-400">{format(new Date(workout.date_logged), 'MMM d, yyyy')}</p>
+                    <p className="text-sm text-gray-400">
+                      {new Date(workout.date_logged).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -184,13 +228,15 @@ const ProfilePage = () => {
             <div className="text-center py-12">
               <DumbbellIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-400 mb-4">No workouts logged yet</p>
-              <button
-                onClick={() => navigate('/workouts/create')}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-              >
-                <PlusCircle className="h-5 w-5" />
-                Log Your First Workout
-              </button>
+              {isOwnProfile && (
+                <button
+                  onClick={() => navigate('/workouts/create')}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                >
+                  <PlusCircle className="h-5 w-5" />
+                  Log Your First Workout
+                </button>
+              )}
             </div>
           )}
         </div>
