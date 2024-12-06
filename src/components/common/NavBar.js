@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { useCurrentUser } from '../../contexts/CurrentUserContext';
+import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
   Menu, X, DumbbellIcon, LogOut, Users,
   LayoutDashboard, LogIn, UserPlus, 
@@ -11,8 +11,9 @@ import { authService } from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const NavBar = () => {
+  const { currentUser } = useCurrentUser();
+  const setCurrentUser = useSetCurrentUser();
   const [isOpen, setIsOpen] = useState(false);
-  const { currentUser, setCurrentUser } = useCurrentUser();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
