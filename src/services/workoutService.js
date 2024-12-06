@@ -1,3 +1,4 @@
+// src/services/workoutService.js
 import { axiosReq } from './axiosDefaults';
 import logger from './loggerService';
 
@@ -63,3 +64,4 @@ class WorkoutService {
 }
 
 export const workoutService = new WorkoutService();
+export default workoutService;

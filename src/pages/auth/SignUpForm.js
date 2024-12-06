@@ -24,12 +24,9 @@ const SignUpForm = () => {
       ...prev,
       [name]: value
     }));
-
+    
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
+      setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
@@ -54,7 +51,9 @@ const SignUpForm = () => {
       newErrors.password1 = 'Password must be at least 8 characters';
     }
 
-    if (formData.password1 !== formData.password2) {
+    if (!formData.password2) {
+      newErrors.password2 = 'Please confirm your password';
+    } else if (formData.password1 !== formData.password2) {
       newErrors.password2 = 'Passwords do not match';
     }
 
@@ -72,14 +71,37 @@ const SignUpForm = () => {
 
     setIsLoading(true);
     try {
-      await authService.register(formData);
+      const data = {
+        username: formData.username,
+        email: formData.email,
+        password1: formData.password1,
+        password2: formData.password2
+      };
+      
+      console.log('Registration payload:', data);
+      const response = await authService.register(data);
+      console.log('Registration response:', response);
+      
       toast.success('Account created successfully! Please sign in.');
       navigate('/signin');
     } catch (err) {
       console.error('Registration error:', err);
-      setErrors(err.response?.data || {
-        general: 'Registration failed. Please try again.'
-      });
+      console.log('Error details:', err.response?.data);
+      
+      // Handle different types of errors
+      if (err.response?.data) {
+        // Handle Django REST API error format
+        const serverErrors = {};
+        Object.entries(err.response.data).forEach(([key, value]) => {
+          serverErrors[key] = Array.isArray(value) ? value[0] : value;
+        });
+        setErrors(serverErrors);
+      } else {
+        setErrors({
+          general: 'Registration failed. Please try again later.'
+        });
+      }
+      
       toast.error('Failed to create account');
     } finally {
       setIsLoading(false);

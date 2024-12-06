@@ -8,35 +8,20 @@ import styles from "./App.module.css";
 import { NavBar, PrivateRoute, NotFound, Footer } from "../src/components/common/CommonIndex";
 
 // Lazy-loaded Components
-// Main Pages
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
 const About = lazy(() => import("./pages/About"));
-
-// Auth Components
 const SignUpForm = lazy(() => import("./pages/auth/SignUpForm"));
 const SignInForm = lazy(() => import("./pages/auth/SignInForm"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
-
-// Profile Components
 const ProfilePage = lazy(() => import("./components/profiles/ProfilePage"));
 const ProfileEditForm = lazy(() => import("./components/profiles/ProfileEditForm"));
-
-// Workout Components
 const WorkoutForm = lazy(() => import("./components/workouts/WorkoutForm"));
 const WorkoutList = lazy(() => import("./components/workouts/WorkoutList"));
-
-// Goals Components
-const Goals = lazy(() => import("./components/goals/Goals"));
-const GoalDetail = lazy(() => import("./components/goals/GoalDetail"));
-const GoalForm = lazy(() => import("./components/goals/GoalForm"));
-
-// Social Components
 const SocialFeed = lazy(() => import("./components/social/SocialFeed"));
 const FollowList = lazy(() => import("./components/social/FollowList"));
 
-// Fallback UI for Suspense
 const Loading = () => (
   <div className="flex justify-center items-center h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
@@ -49,138 +34,104 @@ function App() {
   return (
     <div className={styles.App}>
       <NavBar />
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            {/* Public Routes */}
-            <Route 
-              path="/" 
-              element={currentUser ? <Navigate to="/dashboard" /> : <Home />} 
-            />
-            <Route path="/about" element={<About />} />
-            
-            {/* Auth Routes */}
-            <Route path="/signin" element={<SignInForm />} />
-            <Route path="/signup" element={<SignUpForm />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route 
+            path="/" 
+            element={currentUser ? <Navigate to="/dashboard" /> : <Home />} 
+          />
+          <Route path="/about" element={<About />} />
+          
+          {/* Auth Routes */}
+          <Route path="/signin" element={<SignInForm />} />
+          <Route path="/signup" element={<SignUpForm />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Protected Routes */}
-            {/* Dashboard */}
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
 
-            {/* Workout Routes */}
-            <Route
-              path="/workouts"
-              element={
-                <PrivateRoute>
-                  <WorkoutList />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/workouts/create"
-              element={
-                <PrivateRoute>
-                  <WorkoutForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/workouts/:id/edit"
-              element={
-                <PrivateRoute>
-                  <WorkoutForm />
-                </PrivateRoute>
-              }
-            />
-            {/* Goals Routes */}
-            <Route
-              path="/goals"
-              element={
-                <PrivateRoute>
-                  <Goals />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/goals/create"
-              element={
-                <PrivateRoute>
-                  <GoalForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/goals/:id"
-              element={
-                <PrivateRoute>
-                  <GoalDetail />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/goals/:id/edit"
-              element={
-                <PrivateRoute>
-                  <GoalForm />
-                </PrivateRoute>
-              }
-            />
+          {/* Workout Routes */}
+          <Route
+            path="/workouts"
+            element={
+              <PrivateRoute>
+                <WorkoutList />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/workouts/create"
+            element={
+              <PrivateRoute>
+                <WorkoutForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/workouts/:id/edit"
+            element={
+              <PrivateRoute>
+                <WorkoutForm />
+              </PrivateRoute>
+            }
+          />
 
-            {/* Profile Routes */}
-            <Route
-              path="/profiles/:id"
-              element={
-                <PrivateRoute>
-                  <ProfilePage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profiles/:id/edit"
-              element={
-                <PrivateRoute>
-                  <ProfileEditForm />
-                </PrivateRoute>
-              }
-            />
+          {/* Profile Routes */}
+          <Route
+            path="/profiles/:id"
+            element={
+              <PrivateRoute>
+                <ProfilePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profiles/:id/edit"
+            element={
+              <PrivateRoute>
+                <ProfileEditForm />
+              </PrivateRoute>
+            }
+          />
 
-            {/* Social Routes */}
-            <Route
-              path="/feed"
-              element={
-                <PrivateRoute>
-                  <SocialFeed />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profiles/:id/followers"
-              element={
-                <PrivateRoute>
-                  <FollowList type="followers" />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profiles/:id/following"
-              element={
-                <PrivateRoute>
-                  <FollowList type="following" />
-                </PrivateRoute>
-              }
-            />
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+          {/* Social Routes */}
+          <Route
+            path="/feed"
+            element={
+              <PrivateRoute>
+                <SocialFeed />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profiles/:id/followers"
+            element={
+              <PrivateRoute>
+                <FollowList type="followers" />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profiles/:id/following"
+            element={
+              <PrivateRoute>
+                <FollowList type="following" />
+              </PrivateRoute>
+            }
+          />
+          {/* 404 Route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
       <Footer />
     </div>
   );

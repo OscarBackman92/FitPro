@@ -7,8 +7,21 @@ import { removeTokenTimestamp, shouldRefreshToken } from "../utils/utils";
 export const CurrentUserContext = createContext();
 export const SetCurrentUserContext = createContext();
 
-export const useCurrentUser = () => useContext(CurrentUserContext);
-export const useSetCurrentUser = () => useContext(SetCurrentUserContext);
+export const useCurrentUser = () => {
+  const context = useContext(CurrentUserContext);
+  if (context === undefined) {
+    throw new Error("useCurrentUser must be used within a CurrentUserProvider");
+  }
+  return context;
+};
+
+export const useSetCurrentUser = () => {
+  const context = useContext(SetCurrentUserContext);
+  if (context === undefined) {
+    throw new Error("useSetCurrentUser must be used within a CurrentUserProvider");
+  }
+  return context;
+};
 
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -18,7 +31,9 @@ export const CurrentUserProvider = ({ children }) => {
     try {
       const { data } = await axiosRes.get("dj-rest-auth/user/");
       setCurrentUser(data);
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {
@@ -72,7 +87,7 @@ export const CurrentUserProvider = ({ children }) => {
   }, [navigate]);
 
   return (
-    <CurrentUserContext.Provider value={currentUser}>
+    <CurrentUserContext.Provider value={{ currentUser }}>
       <SetCurrentUserContext.Provider value={setCurrentUser}>
         {children}
       </SetCurrentUserContext.Provider>
