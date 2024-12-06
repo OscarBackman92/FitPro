@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
-import authService from '../../services/authService';
+import  { authService } from '../../services/authService';
 import { User, Lock, Loader, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
