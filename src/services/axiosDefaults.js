@@ -8,18 +8,18 @@ axios.defaults.withCredentials = true;
 
 export const axiosReq = axios.create({
   baseURL,
-  withCredentials: true,
   headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
+    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true
 });
 
 export const axiosRes = axios.create({
   baseURL,
-  withCredentials: true,
   headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
+    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true
 });

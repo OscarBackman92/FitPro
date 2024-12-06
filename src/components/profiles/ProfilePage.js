@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
@@ -8,10 +8,10 @@ import {
   Clock,
   PlusCircle,
   Edit2,
-  Loader
+  Loader 
 } from 'lucide-react';
 import { profileService } from '../../services/profileService';
-import Avatar from '../../components/common/Avatar'; 
+import Avatar from '../../components/common/Avatar';
 import { workoutService } from '../../services/workoutService';
 import toast from 'react-hot-toast';
 
@@ -35,23 +35,21 @@ const ProfilePage = () => {
   const isOwnProfile = currentUser?.id === parseInt(id);
 
   const fetchData = useCallback(async () => {
-    const profileId = id || currentUser?.profile?.id || null;
-  
-    if (!profileId) {
-      setError('Profile not found');
-      setLoading(false);
-      return;
-    }
-  
     try {
       setLoading(true);
-  
+      const profileId = currentUser?.id;
+
+      if (!profileId) {
+        setError('Profile not found');
+        return;
+      }
+
       const [profileResponse, workoutsResponse, statsResponse] = await Promise.all([
         profileService.getProfile(profileId),
         workoutService.getWorkouts({ limit: 5, user: profileId }),
-        workoutService.getWorkoutStatistics(),
+        workoutService.getWorkoutStatistics()
       ]);
-  
+
       setProfileData(profileResponse);
       setWorkouts(workoutsResponse.results || []);
       setStats({
@@ -60,21 +58,23 @@ const ProfilePage = () => {
         currentStreak: statsResponse.current_streak || 0,
         totalMinutes: statsResponse.total_duration || 0,
         workoutTypes: statsResponse.workout_types || [],
-        monthlyStats: statsResponse.monthly_trends || [],
+        monthlyStats: statsResponse.monthly_trends || []
       });
     } catch (err) {
-      setError(err.message || 'Profile not found');
-      toast.error('Error fetching profile data');
+      console.error('API Error:', err);
+      setError('Failed to load profile');
+      toast.error('Failed to load profile');
     } finally {
       setLoading(false);
     }
-  }, [id, currentUser]);
+  }, [currentUser, id]);
 
-  React.useEffect(() => {
-    fetchData();
+  useEffect(() => {
+    if (currentUser) {
+      fetchData();
+    }
   }, [fetchData, currentUser]);
 
-  // Helper function for workout intensity colors
   const intensityColor = (intensity) => {
     switch (intensity) {
       case 'high': return 'bg-red-500/20 text-red-400';
@@ -82,7 +82,6 @@ const ProfilePage = () => {
       default: return 'bg-green-500/20 text-green-400';
     }
   };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
