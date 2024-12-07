@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
 import { authService } from '../../services/authService';
+import { setTokenTimestamp } from '../../utils/utils';
 import { User, Lock, Loader, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { setTokenTimestamp } from '../../utils/utils';
 
 export default function SignInForm() {
   const setCurrentUser = useSetCurrentUser();
@@ -34,16 +34,33 @@ export default function SignInForm() {
     setIsLoading(true);
     try {
       const data = await authService.login(signInData);
-      setCurrentUser(data.user);
-      setTokenTimestamp(data);
-      toast.success('Welcome back!');
-      navigate('/dashboard');
+      
+      // Only try to set token timestamp if we have valid data
+      if (data?.access) {
+        setTokenTimestamp(data);
+        // Set the current user if we have user data
+        if (data.user) {
+          setCurrentUser(data.user);
+        }
+        toast.success('Welcome back!');
+        navigate('/dashboard');
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (err) {
       console.error('Login error:', err);
-      setErrors(err.response?.data || {
-        non_field_errors: ['Invalid username or password']
-      });
-      toast.error('Failed to sign in');
+      // Handle different types of errors
+      if (err.response?.data) {
+        setErrors(err.response.data);
+        // Show specific error message if available
+        const errorMessage = err.response.data.non_field_errors?.[0] || 
+                           err.response.data.detail ||
+                           'Invalid username or password';
+        toast.error(errorMessage);
+      } else {
+        setErrors({ non_field_errors: ['An error occurred during sign in'] });
+        toast.error('Failed to sign in');
+      }
     } finally {
       setIsLoading(false);
     }

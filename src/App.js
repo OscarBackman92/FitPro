@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import "./services/axiosDefaults";
 import { useCurrentUser } from "./contexts/CurrentUserContext";
 import styles from "./App.module.css";
@@ -24,12 +24,12 @@ const FollowList = lazy(() => import("./components/social/FollowList"));
 
 const Loading = () => (
   <div className="flex justify-center items-center h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500" />
   </div>
 );
 
 function App() {
-  const { currentUser = null } = useCurrentUser() || {};
+  const { currentUser } = useCurrentUser() || {};
 
   return (
     <div className={styles.App}>
@@ -43,11 +43,23 @@ function App() {
           />
           <Route path="/about" element={<About />} />
           
-          {/* Auth Routes */}
-          <Route path="/signin" element={<SignInForm />} />
-          <Route path="/signup" element={<SignUpForm />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+          {/* Auth Routes - Redirect if already logged in */}
+          <Route 
+            path="/signin" 
+            element={currentUser ? <Navigate to="/dashboard" /> : <SignInForm />} 
+          />
+          <Route 
+            path="/signup" 
+            element={currentUser ? <Navigate to="/dashboard" /> : <SignUpForm />} 
+          />
+          <Route 
+            path="/forgot-password" 
+            element={currentUser ? <Navigate to="/dashboard" /> : <ForgotPassword />} 
+          />
+          <Route 
+            path="/reset-password" 
+            element={currentUser ? <Navigate to="/dashboard" /> : <ResetPassword />} 
+          />
 
           {/* Protected Routes */}
           <Route
@@ -58,8 +70,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Workout Routes */}
           <Route
             path="/workouts"
             element={
@@ -84,8 +94,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Profile Routes */}
           <Route
             path="/profiles/:id"
             element={
@@ -102,8 +110,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
-          {/* Social Routes */}
           <Route
             path="/feed"
             element={
@@ -128,6 +134,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          
           {/* 404 Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>

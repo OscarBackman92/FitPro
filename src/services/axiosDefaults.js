@@ -1,17 +1,17 @@
 import axios from 'axios';
 
-const baseURL = 'https://fitpro1-bc76e0450a19.herokuapp.com/';
-
-axios.defaults.baseURL = baseURL;
+axios.defaults.baseURL = 'https://fitpro1-bc76e0450a19.herokuapp.com/';
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.withCredentials = true;
 
-export const axiosReq = axios.create({
-  baseURL,
-  withCredentials: true
-});
+export const axiosReq = axios.create();
+export const axiosRes = axios.create();
 
-export const axiosRes = axios.create({
-  baseURL,
-  withCredentials: true
+// Add interceptor to add token to all requests
+axiosReq.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
