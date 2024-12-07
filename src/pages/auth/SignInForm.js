@@ -1,19 +1,21 @@
+// SignInForm.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
-import  { authService } from '../../services/authService';
+import { authService } from '../../services/authService';
 import { User, Lock, Loader, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { setTokenTimestamp } from '../../utils/utils';
 
-const SignInForm = () => {
+export default function SignInForm() {
   const setCurrentUser = useSetCurrentUser();
+  const navigate = useNavigate();
   const [signInData, setSignInData] = useState({
     username: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,12 +23,9 @@ const SignInForm = () => {
       ...prev,
       [name]: value
     }));
-    
+    // Clear error when field is modified
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
+      setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
@@ -36,6 +35,7 @@ const SignInForm = () => {
     try {
       const data = await authService.login(signInData);
       setCurrentUser(data.user);
+      setTokenTimestamp(data);
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (err) {
@@ -188,6 +188,4 @@ const SignInForm = () => {
       </div>
     </div>
   );
-};
-
-export default SignInForm;
+}

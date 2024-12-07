@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import  { authService } from '../../services/authService';
+import { authService } from '../../services/authService';
 import { 
   UserPlus, Loader, Mail, Lock, User, 
   AlertCircle, CheckCircle 
@@ -216,7 +216,7 @@ const SignUpForm = () => {
             {/* Password Input */}
             <div>
               <label 
-                htmlFor="password" 
+                htmlFor="password1" 
                 className="block text-sm font-medium text-gray-300"
               >
                 Password
@@ -304,34 +304,6 @@ const SignUpForm = () => {
                   {errors.password2}
                 </p>
               )}
-            </div>
-
-            {/* Terms and Conditions */}
-            <div className="flex items-start">
-              <input
-                id="terms"
-                name="terms"
-                type="checkbox"
-                required
-                className="h-4 w-4 bg-gray-700 border-gray-600 rounded text-green-500 
-                  focus:ring-green-500 focus:ring-offset-gray-800 mt-1"
-              />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-300">
-                I agree to the{' '}
-                <Link 
-                  to="/terms" 
-                  className="text-green-500 hover:text-green-400"
-                >
-                  Terms of Service
-                </Link>
-                {' '}and{' '}
-                <Link 
-                  to="/privacy" 
-                  className="text-green-500 hover:text-green-400"
-                >
-                  Privacy Policy
-                </Link>
-              </label>
             </div>
 
             {/* General Error Message */}
