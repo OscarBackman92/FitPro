@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { workoutService } from '../../services/workoutService';
 import toast from 'react-hot-toast';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,30 +29,49 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      if (!currentUser) {
+        navigate('/signin');
+        return;
+      }
+
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/signin');
+          return;
+        }
+
         const [workoutsResponse, statsResponse] = await Promise.all([
           workoutService.getWorkouts({ limit: 5 }),
           workoutService.getWorkoutStatistics()
         ]);
 
-        setWorkouts(workoutsResponse.results || []);
+        if (workoutsResponse?.results) {
+          setWorkouts(workoutsResponse.results);
+        }
+
         setStats({
-          totalWorkouts: statsResponse.total_workouts || 0,
-          weeklyWorkouts: statsResponse.workouts_this_week || 0,
-          currentStreak: statsResponse.current_streak || 0,
-          totalMinutes: statsResponse.total_duration || 0,
-          workoutTypes: statsResponse.workout_types || [],
-          monthlyStats: statsResponse.monthly_trends || []
+          totalWorkouts: statsResponse?.total_workouts || 0,
+          weeklyWorkouts: statsResponse?.workouts_this_week || 0,
+          currentStreak: statsResponse?.current_streak || 0,
+          totalMinutes: statsResponse?.total_duration || 0,
+          workoutTypes: statsResponse?.workout_types || [],
+          monthlyStats: statsResponse?.monthly_trends || []
         });
       } catch (err) {
-        toast.error('Failed to load dashboard data');
+        console.error('Dashboard data error:', err);
+        if (err.response?.status === 401) {
+          navigate('/signin');
+        } else {
+          toast.error('Failed to load dashboard data');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [currentUser, navigate]);
 
   const statCards = [
     {
@@ -85,11 +105,7 @@ const Dashboard = () => {
   ];
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500" />
-      </div>
-    );
+    return <LoadingSpinner centered fullScreen />;
   }
 
   return (
