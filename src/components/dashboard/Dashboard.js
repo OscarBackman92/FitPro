@@ -16,14 +16,16 @@ import LoadingSpinner from '../common/LoadingSpinner';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser();
-  const [workouts, setWorkouts] = useState([]);
-  const [stats, setStats] = useState({
-    totalWorkouts: 0,
-    weeklyWorkouts: 0,
-    currentStreak: 0,
-    totalMinutes: 0,
-    workoutTypes: [],
-    monthlyStats: []
+  const [dashboardData, setDashboardData] = useState({
+    workouts: [],
+    stats: {
+      totalWorkouts: 0,
+      weeklyWorkouts: 0,
+      currentStreak: 0,
+      totalMinutes: 0,
+      workoutTypes: [],
+      monthlyStats: []
+    }
   });
   const [loading, setLoading] = useState(true);
 
@@ -35,31 +37,9 @@ const Dashboard = () => {
       }
 
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/signin');
-          return;
-        }
-
-        const [workoutsResponse, statsResponse] = await Promise.all([
-          workoutService.getWorkouts({ limit: 5 }),
-          workoutService.getWorkoutStatistics()
-        ]);
-
-        if (workoutsResponse?.results) {
-          setWorkouts(workoutsResponse.results);
-        }
-
-        setStats({
-          totalWorkouts: statsResponse?.total_workouts || 0,
-          weeklyWorkouts: statsResponse?.workouts_this_week || 0,
-          currentStreak: statsResponse?.current_streak || 0,
-          totalMinutes: statsResponse?.total_duration || 0,
-          workoutTypes: statsResponse?.workout_types || [],
-          monthlyStats: statsResponse?.monthly_trends || []
-        });
+        const data = await workoutService.getDashboardData();
+        setDashboardData(data);
       } catch (err) {
-        console.error('Dashboard data error:', err);
         if (err.response?.status === 401) {
           navigate('/signin');
         } else {
@@ -78,28 +58,28 @@ const Dashboard = () => {
       id: 'total',
       icon: DumbbellIcon,
       label: 'Total Workouts',
-      value: stats.totalWorkouts,
+      value: dashboardData.stats.totalWorkouts,
       color: 'blue'
     },
     {
       id: 'weekly',
       icon: Calendar,
       label: 'This Week',
-      value: stats.weeklyWorkouts,
+      value: dashboardData.stats.weeklyWorkouts,
       color: 'green'
     },
     {
       id: 'streak',
       icon: Award,
       label: 'Current Streak',
-      value: `${stats.currentStreak} days`,
+      value: `${dashboardData.stats.currentStreak} days`,
       color: 'yellow'
     },
     {
       id: 'minutes',
       icon: Activity,
       label: 'Total Minutes',
-      value: stats.totalMinutes,
+      value: dashboardData.stats.totalMinutes,
       color: 'purple'
     }
   ];
@@ -158,7 +138,6 @@ const Dashboard = () => {
 
       {/* Recent Workouts Section */}
       <div className="max-w-4xl mx-auto w-full">
-        {/* Recent Workouts */}
         <div className="bg-gray-800 rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
@@ -167,12 +146,12 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {workouts.length > 0 ? (
+          {dashboardData.workouts.length > 0 ? (
             <div className="divide-y divide-gray-700">
-              {workouts.slice(0, 5).map(workout => (
+              {dashboardData.workouts.map(workout => (
                 <div
                   key={workout.id}
-                  onClick={() => navigate(`/workouts/${workout.id}/edit`)}  // Navigate to edit page for the workout
+                  onClick={() => navigate(`/workouts/${workout.id}/edit`)}
                   className="flex items-center py-4 cursor-pointer hover:bg-gray-700/50 
                     transition-colors rounded-lg px-3 -mx-3"
                 >

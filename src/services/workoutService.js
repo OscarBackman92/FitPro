@@ -1,4 +1,5 @@
 import { axiosReq } from './axiosDefaults';
+import { logger } from './loggerService';
 
 export const workoutService = {
   async getWorkouts(params = {}) {
@@ -6,108 +7,68 @@ export const workoutService = {
       const response = await axiosReq.get('api/workouts/', { params });
       return response.data;
     } catch (err) {
-      console.error('Error fetching workouts:', err);
+      logger.error('Error fetching workouts:', err);
       throw err;
     }
   },
 
-  async getWorkout(id) {
+  async getWorkoutStatistics() {
     try {
-      const response = await axiosReq.get(`api/workouts/${id}/`);
-      return response.data;
+      const response = await axiosReq.get('api/workouts/statistics/');
+      return {
+        total_workouts: response.data.total_workouts || 0,
+        workouts_this_week: response.data.workouts_this_week || 0,
+        current_streak: response.data.current_streak || 0,
+        total_duration: response.data.total_duration || 0,
+        workout_types: response.data.workout_types || [],
+        monthly_trends: response.data.monthly_trends || []
+      };
     } catch (err) {
-      console.error('Error fetching workout:', err);
-      throw err;
+      logger.error('Error fetching workout statistics:', err);
+      // Return default values if the endpoint fails
+      return {
+        total_workouts: 0,
+        workouts_this_week: 0,
+        current_streak: 0,
+        total_duration: 0,
+        workout_types: [],
+        monthly_trends: []
+      };
     }
   },
 
-  async createWorkout(data) {
+  async getDashboardData(limit = 5) {
     try {
-      // Fixed the endpoint URL to match the API structure
-      const response = await axiosReq.post('api/workouts/', data);
-      return response.data;
-    } catch (err) {
-      console.error('Error creating workout:', err);
-      throw err;
-    }
-  },
-
-  async updateWorkout(id, data) {
-    try {
-      const response = await axiosReq.put(`api/workouts/${id}/`, data);
-      return response.data;
-    } catch (err) {
-      console.error('Error updating workout:', err);
-      throw err;
-    }
-  },
-
-  async deleteWorkout(id) {
-    try {
-      await axiosReq.delete(`api/workouts/${id}/`);
-    } catch (err) {
-      console.error('Error deleting workout:', err);
-      throw err;
-    }
-  },
-
-  async getUserWorkouts(userId, params = {}) {
-    try {
-      if (!userId) {
-        throw new Error('User ID is required');
-      }
-      const response = await axiosReq.get('api/workouts/', {
-        params: {
-          ...params,
-          owner: userId,
-          ordering: params.ordering || '-date_logged'
-        }
-      });
-      return response.data;
-    } catch (err) {
-      console.error('Error fetching user workouts:', err);
-      throw err;
-    }
-  },
-
-  async getWorkoutStatistics(userId) {
-    try {
-      if (!userId) {
-        throw new Error('User ID is required');
-      }
-      const response = await axiosReq.get(`api/workouts/statistics/${userId}/`);
-      return response.data;
-    } catch (err) {
-      console.error('Error fetching workout statistics:', err);
-      throw err;
-    }
-  },
-
-  async getDashboardData(userId, limit = 5) {
-    try {
-      if (!userId) {
-        throw new Error('User ID is required');
-      }
-
       const [workoutsResponse, statsResponse] = await Promise.all([
-        this.getUserWorkouts(userId, { limit }),
-        this.getWorkoutStatistics(userId)
+        this.getWorkouts({ limit }),
+        this.getWorkoutStatistics()
       ]);
 
       return {
         workouts: workoutsResponse.results || [],
         stats: {
-          totalWorkouts: statsResponse.total_workouts || 0,
-          weeklyWorkouts: statsResponse.workouts_this_week || 0,
-          currentStreak: statsResponse.current_streak || 0,
-          totalMinutes: statsResponse.total_duration || 0,
-          workoutTypes: statsResponse.workout_types || [],
-          monthlyStats: statsResponse.monthly_trends || []
+          totalWorkouts: statsResponse.total_workouts,
+          weeklyWorkouts: statsResponse.workouts_this_week,
+          currentStreak: statsResponse.current_streak,
+          totalMinutes: statsResponse.total_duration,
+          workoutTypes: statsResponse.workout_types,
+          monthlyStats: statsResponse.monthly_trends
         }
       };
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      throw err;
+      logger.error('Error fetching dashboard data:', err);
+      // Return a safe default state
+      return {
+        workouts: [],
+        stats: {
+          totalWorkouts: 0,
+          weeklyWorkouts: 0,
+          currentStreak: 0,
+          totalMinutes: 0,
+          workoutTypes: [],
+          monthlyStats: []
+        }
+      };
     }
   }
 };
