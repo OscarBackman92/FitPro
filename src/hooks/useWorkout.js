@@ -1,17 +1,17 @@
 import { useState, useCallback } from 'react';
 import { workoutService } from '../services/workoutService';
-import { useCurrentUser } from '../contexts/CurrentUserContext';
+import { useWorkout as useWorkoutContext } from '../contexts/WorkoutContext';
 import toast from 'react-hot-toast';
 
 export const useWorkout = () => {
   const [loading, setLoading] = useState(false);
-  const { setWorkouts } = useCurrentUser();
-  
+  const { workouts, setWorkouts } = useWorkoutContext();
+
   const createWorkout = useCallback(async (workoutData) => {
     setLoading(true);
     try {
       const response = await workoutService.createWorkout(workoutData);
-      setWorkouts(prev => [response, ...prev]);
+      setWorkouts((prev) => [response, ...prev]);
       toast.success('Workout created successfully');
       return response;
     } catch (err) {
@@ -26,7 +26,9 @@ export const useWorkout = () => {
     setLoading(true);
     try {
       const response = await workoutService.updateWorkout(id, workoutData);
-      setWorkouts(prev => prev.map(w => w.id === id ? response : w));
+      setWorkouts((prev) =>
+        prev.map((w) => (w.id === id ? response : w))
+      ); // Update the workout in the context
       toast.success('Workout updated successfully');
       return response;
     } catch (err) {
@@ -41,7 +43,7 @@ export const useWorkout = () => {
     setLoading(true);
     try {
       await workoutService.deleteWorkout(id);
-      setWorkouts(prev => prev.filter(w => w.id !== id));
+      setWorkouts((prev) => prev.filter((w) => w.id !== id));
       toast.success('Workout deleted successfully');
     } catch (err) {
       toast.error('Failed to delete workout');
@@ -52,9 +54,10 @@ export const useWorkout = () => {
   }, [setWorkouts]);
 
   return {
+    workouts, // Expose the workouts from the context
     loading,
     createWorkout,
     updateWorkout,
-    deleteWorkout
+    deleteWorkout,
   };
 };

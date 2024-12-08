@@ -6,7 +6,6 @@ import {
   DumbbellIcon, 
   LineChart, 
   Users, 
-  Target, 
   CheckCircle 
 } from 'lucide-react';
 
@@ -37,11 +36,6 @@ const Home = () => {
       title: 'Community Support',
       description: 'Connect with like-minded fitness enthusiasts and share your achievements.'
     },
-    {
-      icon: <Target className="w-6 h-6" />,
-      title: 'Goal Setting',
-      description: 'Set and track your fitness goals with smart progress tracking.'
-    }
   ];
 
   const testimonials = [
@@ -151,7 +145,6 @@ const Home = () => {
                   'Detailed progress analytics and charts',
                   'Custom workout plan creation',
                   'Social sharing and community support',
-                  'Goal setting and achievement tracking',
                   'Mobile-friendly design for on-the-go access'
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center gap-3">

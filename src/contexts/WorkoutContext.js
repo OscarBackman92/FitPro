@@ -30,15 +30,8 @@ export const WorkoutProvider = ({ children }) => {
     }
   };
 
-  const value = {
-    workouts,
-    setWorkouts,
-    loading,
-    getWorkouts,
-  };
-
   return (
-    <WorkoutContext.Provider value={value}>
+    <WorkoutContext.Provider value={{ workouts, setWorkouts, loading, getWorkouts }}>
       {children}
     </WorkoutContext.Provider>
   );

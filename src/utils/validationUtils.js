@@ -34,38 +34,6 @@ export const workoutValidation = {
   }
 };
 
-export const goalValidation = {
-  validateGoalData: (data) => {
-    logger.debug('Validating goal data', { data });
-    const errors = {};
-
-    if (!data.type) {
-      errors.type = 'Goal type is required';
-    }
-
-    if (!data.description) {
-      errors.description = 'Description is required';
-    }
-
-    if (!data.target) {
-      errors.target = 'Target is required';
-    }
-
-    if (data.deadline) {
-      const deadlineDate = new Date(data.deadline);
-      const today = new Date();
-      if (deadlineDate < today) {
-        errors.deadline = 'Deadline cannot be in the past';
-      }
-    }
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors
-    };
-  }
-};
-
 export const profileValidation = {
   validateProfileData: (data) => {
     logger.debug('Validating profile data', { data });
