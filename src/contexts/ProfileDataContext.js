@@ -25,6 +25,17 @@ export const useSetProfileData = () => {
 export const ProfileDataProvider = ({ children }) => {
   const { currentUser } = useCurrentUser();
   const [profileData, setProfileData] = useState({
+    // Add workoutData to the context state
+    currentProfile: null,
+    workoutData: {
+      recentWorkouts: [],
+      stats: {
+        totalWorkouts: 0,
+        weeklyWorkouts: 0,
+        currentStreak: 0,
+        totalMinutes: 0
+      }
+    },
     pageProfile: { results: [] },
     popularProfiles: { results: [] },
   });
@@ -80,6 +91,26 @@ export const ProfileDataProvider = ({ children }) => {
     }
   };
 
+  const setWorkoutStats = (stats) => {
+    setProfileData(prev => ({
+      ...prev,
+      workoutData: {
+        ...prev.workoutData,
+        stats
+      }
+    }));
+  };
+
+  const setRecentWorkouts = (workouts) => {
+    setProfileData(prev => ({
+      ...prev,
+      workoutData: {
+        ...prev.workoutData,
+        recentWorkouts: workouts
+      }
+    }));
+  };
+
   useEffect(() => {
     const handleMount = async () => {
       try {
@@ -100,14 +131,16 @@ export const ProfileDataProvider = ({ children }) => {
   }, [currentUser]);
 
   const contextValue = {
-    pageProfile: profileData.pageProfile,
-    popularProfiles: profileData.popularProfiles,
+    ...profileData,
+    currentProfile: profileData.pageProfile.results[0],
   };
 
   const setContextValue = {
     setProfileData,
     handleFollow,
     handleUnfollow,
+    setWorkoutStats,
+    setRecentWorkouts
   };
 
   return (
@@ -119,7 +152,6 @@ export const ProfileDataProvider = ({ children }) => {
   );
 };
 
-// Helper functions
 const followHelper = (profile, clickedProfile, following_id) => {
   return profile.id === clickedProfile.id
     ? {

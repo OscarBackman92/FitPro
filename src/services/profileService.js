@@ -1,40 +1,41 @@
 import { axiosReq } from './axiosDefaults';
 
 class ProfileService {
- async getProfile(profileId) {
-   if (!profileId) {
-     throw new Error('Profile ID is required');
-   }
-   try {
-     const response = await axiosReq({
-       method: 'GET',
-       url: `api/profiles/${profileId}/`,
-       timeout: 10000,
-     }); 
-     return response.data;
-   } catch (err) {
-     console.error('Profile fetch error:', err);
-     throw err; 
-   }
- }
+  async getProfile(profileId) {
+    try {
+      if (!profileId) {
+        // If no profileId, fetch current user's profile from dj-rest-auth
+        const response = await axiosReq.get('dj-rest-auth/user/');
+        return response.data;
+      }
+      // Otherwise fetch specific profile
+      const response = await axiosReq.get(`/api/profiles/${profileId}/`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      throw error;
+    }
+  }
 
- async updateProfile(profileId, data) {
-   if (!profileId) {
-     throw new Error('Profile ID is required');
-   }
-   try {
-     const response = await axiosReq({
-       method: 'PUT',
-       url: `api/profiles/${profileId}/`,
-       data,
-       timeout: 10000,
-     });
-     return response.data;
-   } catch (err) {
-     console.error('Profile update error:', err);
-     throw err;
-   }
- }
+  async getCurrentUserProfile() {
+    try {
+      const response = await axiosReq.get('dj-rest-auth/user/');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching current user profile:', error);
+      throw error;
+    }
+  }
+
+  async updateProfile(profileId, data) {
+    try {
+      const response = await axiosReq.put(`/api/profiles/${profileId}/`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  }
 }
 
 export const profileService = new ProfileService();
