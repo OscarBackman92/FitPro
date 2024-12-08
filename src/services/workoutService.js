@@ -3,7 +3,6 @@ import { axiosReq } from './axiosDefaults';
 export const workoutService = {
   async getWorkouts(params = {}) {
     try {
-      // If currentUser is not provided in params, fetch all workouts (for social feed)
       const response = await axiosReq.get('api/workouts/', { params });
       return response.data;
     } catch (err) {
@@ -24,6 +23,7 @@ export const workoutService = {
 
   async createWorkout(data) {
     try {
+      // Fixed the endpoint URL to match the API structure
       const response = await axiosReq.post('api/workouts/', data);
       return response.data;
     } catch (err) {
@@ -60,7 +60,7 @@ export const workoutService = {
         params: {
           ...params,
           owner: userId,
-          ordering: params.ordering || '-date_logged' // Default to most recent
+          ordering: params.ordering || '-date_logged'
         }
       });
       return response.data;
@@ -83,7 +83,6 @@ export const workoutService = {
     }
   },
 
-  // Additional helper method for dashboard
   async getDashboardData(userId, limit = 5) {
     try {
       if (!userId) {
