@@ -1,16 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { useProfileData, useSetProfileData } from '../../contexts/ProfileDataContext';
-import { 
-  DumbbellIcon, 
-  Activity,
-  Award,
-  Clock,
-  Edit2, 
-  UserPlus,
-  UserMinus
-} from 'lucide-react';
+import { DumbbellIcon, Activity, Award, Clock, Edit2, UserPlus, UserMinus } from 'lucide-react';
 import { format } from 'date-fns';
 import { axiosReq } from '../../services/axiosDefaults';
 import Avatar from '../common/Avatar';
@@ -22,106 +14,112 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser();
   const { currentProfile, workoutData } = useProfileData();
-  const { setProfileData, handleFollow, handleUnfollow, setWorkoutStats, setRecentWorkouts } = useSetProfileData();
+  const { setProfileData, handleFollow: followUser, handleUnfollow: unfollowUser } = useSetProfileData();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      setError(null);
-
-      // Early return if no currentUser
-      if (!currentUser?.profile?.id) {
+    const loadProfile = async () => {
+      if (!currentUser) {
         setError('Authentication required');
         setLoading(false);
         return;
       }
 
       try {
+        setLoading(true);
+        setError(null);
+
         // Determine which profile to load
-        let targetId;
-        if (id) {
-          targetId = parseInt(id);
-        } else {
-          targetId = currentUser.profile.id;
-        }
+        const targetId = id || currentUser.profile?.id;
 
         if (!targetId) {
-          throw new Error('Invalid profile ID');
+          throw new Error('No profile ID available');
         }
 
-        let profileData;
-        try {
-          // Get profile data first
-          const profileResponse = await axiosReq.get(`/api/profiles/${targetId}/`);
-          profileData = profileResponse.data;
+        // Load profile and workouts using the correct URL
+        const [profileResponse, workoutsResponse] = await Promise.all([
+          axiosReq.get(`/api/profiles/profiles/${targetId}/`),
+          axiosReq.get('/api/workouts/', {
+            params: { owner: targetId, ordering: '-date_logged', limit: 5 }
+          })
+        ]);
 
-          // Update profile in context
-          setProfileData(prev => ({
-            ...prev,
-            pageProfile: { results: [profileData] }
-          }));
+        setProfileData(prev => ({
+          ...prev,
+          pageProfile: { results: [profileResponse.data] },
+          workoutData: {
+            ...prev.workoutData,
+            recentWorkouts: workoutsResponse.data.results || []
+          }
+        }));
 
-          // Only proceed if profile was loaded successfully
-          const workoutsResponse = await axiosReq.get('/api/workouts/', {
-            params: {
-              owner: targetId,
-              ordering: '-date_logged',
-              limit: 5
-            }
-          });
-
-          setRecentWorkouts(workoutsResponse.data.results);
-
-          // Load stats only for own profile
-          if (targetId === currentUser.profile.id) {
+        // Load stats if viewing own profile
+        if (targetId === currentUser.profile?.id) {
+          try {
             const statsResponse = await axiosReq.get('/api/workouts/statistics/');
-            setWorkoutStats({
-              totalWorkouts: statsResponse.data.total_workouts || 0,
-              weeklyWorkouts: statsResponse.data.workouts_this_week || 0,
-              currentStreak: statsResponse.data.current_streak || 0,
-              totalMinutes: statsResponse.data.total_duration || 0
-            });
+            setProfileData(prev => ({
+              ...prev,
+              workoutData: {
+                ...prev.workoutData,
+                stats: {
+                  totalWorkouts: statsResponse.data.total_workouts || 0,
+                  weeklyWorkouts: statsResponse.data.workouts_this_week || 0,
+                  currentStreak: statsResponse.data.current_streak || 0,
+                  totalMinutes: statsResponse.data.total_duration || 0
+                }
+              }
+            }));
+          } catch (statsErr) {
+            console.error('Failed to load stats:', statsErr);
+            toast.error('Failed to load workout statistics');
           }
-        } catch (err) {
-          if (err.response?.status === 404) {
-            throw new Error('Profile not found');
-          }
-          throw err;
         }
+
       } catch (err) {
-        console.error('Error:', err);
-        setError(err.message || 'Failed to load profile');
-        toast.error(err.message || 'Failed to load profile');
+        console.error('Error loading profile:', err);
+        if (err.response?.status === 404) {
+          setError('Profile not found');
+          toast.error('Profile not found');
+        } else if (err.response?.status === 401) {
+          navigate('/signin');
+        } else {
+          setError('Failed to load profile data');
+          toast.error('Failed to load profile data');
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
-  }, [id, currentUser, navigate, setProfileData, setWorkoutStats, setRecentWorkouts]);
+    loadProfile();
+  }, [id, currentUser, navigate, setProfileData]);
 
-  // Redirect if not authenticated
-  if (!currentUser) {
-    navigate('/signin');
-    return null;
-  }
+  const handleFollowClick = async () => {
+    if (!currentUser) {
+      navigate('/signin');
+      return;
+    }
 
-  // Show loading state
-  if (loading) {
-    return <LoadingSpinner fullScreen />;
-  }
+    try {
+      if (currentProfile.following_id) {
+        await unfollowUser(currentProfile);
+      } else {
+        await followUser(currentProfile);
+      }
+    } catch (err) {
+      toast.error('Failed to update follow status');
+    }
+  };
 
-  // Show error state
+  if (loading) return <LoadingSpinner fullScreen />;
+
   if (error || !currentProfile) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-white mb-2">
-            {error || 'Profile not found'}
-          </h2>
+          <h2 className="text-xl font-bold text-white mb-2">{error || 'Profile not found'}</h2>
           <button
             onClick={() => navigate(-1)}
             className="mt-4 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
@@ -133,26 +131,7 @@ const ProfilePage = () => {
     );
   }
 
-  const handleFollowClick = async () => {
-    try {
-      if (currentProfile.following_id) {
-        await handleUnfollow(currentProfile);
-      } else {
-        await handleFollow(currentProfile);
-      }
-    } catch (err) {
-      toast.error('Failed to update follow status');
-    }
-  };
-
   const isOwnProfile = !id || (currentUser?.profile?.id === parseInt(id));
-
-  const stats = [
-    { icon: DumbbellIcon, label: 'Total Workouts', value: workoutData.stats.totalWorkouts },
-    { icon: Activity, label: 'This Week', value: workoutData.stats.weeklyWorkouts },
-    { icon: Award, label: 'Current Streak', value: `${workoutData.stats.currentStreak} days` },
-    { icon: Clock, label: 'Total Minutes', value: workoutData.stats.totalMinutes }
-  ];
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -170,8 +149,11 @@ const ProfilePage = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-2xl font-bold text-white">{currentProfile.username}</h1>
-                  <p className="text-gray-400">Member since {format(new Date(currentProfile.created_at), 'MMMM yyyy')}</p>
+                  <p className="text-gray-400">
+                    Member since {format(new Date(currentProfile.created_at), 'MMMM yyyy')}
+                  </p>
                 </div>
+                
                 {!isOwnProfile ? (
                   <button
                     onClick={handleFollowClick}
@@ -179,7 +161,11 @@ const ProfilePage = () => {
                       currentProfile.following_id ? 'bg-gray-600' : 'bg-green-500'
                     } text-white`}
                   >
-                    {currentProfile.following_id ? <UserMinus className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+                    {currentProfile.following_id ? (
+                      <UserMinus className="h-5 w-5" />
+                    ) : (
+                      <UserPlus className="h-5 w-5" />
+                    )}
                     {currentProfile.following_id ? 'Unfollow' : 'Follow'}
                   </button>
                 ) : (
@@ -197,6 +183,7 @@ const ProfilePage = () => {
                   <strong className="text-gray-300">Name:</strong> {currentProfile.name}
                 </p>
               )}
+              
               <p className="text-gray-400">
                 <strong className="text-gray-300">Bio:</strong> {currentProfile.content || 'No bio provided'}
               </p>
@@ -222,13 +209,26 @@ const ProfilePage = () => {
         {/* Stats */}
         {isOwnProfile && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((stat, index) => (
-              <div key={index} className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                <stat.icon className="h-6 w-6 text-green-500 mb-2" />
-                <p className="text-xl font-bold text-white">{stat.value}</p>
-                <p className="text-sm text-gray-400">{stat.label}</p>
-              </div>
-            ))}
+            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+              <DumbbellIcon className="h-6 w-6 text-green-500 mb-2" />
+              <p className="text-xl font-bold text-white">{workoutData.stats.totalWorkouts}</p>
+              <p className="text-sm text-gray-400">Total Workouts</p>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+              <Activity className="h-6 w-6 text-green-500 mb-2" />
+              <p className="text-xl font-bold text-white">{workoutData.stats.weeklyWorkouts}</p>
+              <p className="text-sm text-gray-400">This Week</p>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+              <Award className="h-6 w-6 text-green-500 mb-2" />
+              <p className="text-xl font-bold text-white">{workoutData.stats.currentStreak} days</p>
+              <p className="text-sm text-gray-400">Current Streak</p>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+              <Clock className="h-6 w-6 text-green-500 mb-2" />
+              <p className="text-xl font-bold text-white">{workoutData.stats.totalMinutes}</p>
+              <p className="text-sm text-gray-400">Total Minutes</p>
+            </div>
           </div>
         )}
 
@@ -236,14 +236,14 @@ const ProfilePage = () => {
         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">Recent Workouts</h2>
-            {workoutData.recentWorkouts.length > 0 && (
+            {workoutData.recentWorkouts?.length > 0 && (
               <button onClick={() => navigate('/workouts')} className="text-sm text-gray-400">
                 View All
               </button>
             )}
           </div>
 
-          {workoutData.recentWorkouts.length > 0 ? (
+          {workoutData.recentWorkouts?.length > 0 ? (
             <div className="space-y-4">
               {workoutData.recentWorkouts.map(workout => (
                 <div key={workout.id} className="flex justify-between p-4 bg-gray-700/50 rounded-lg">

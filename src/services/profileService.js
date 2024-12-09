@@ -6,7 +6,7 @@ class ProfileService {
       if (!profileId) {
         throw new Error('Profile ID is required');
       }
-      const response = await axiosReq.get(`/api/profiles/${profileId}/`);
+      const response = await axiosReq.get(`/api/profiles/profiles/${profileId}/`);
       return response.data;
     } catch (error) {
       console.error('Profile fetch error:', error);
@@ -29,7 +29,7 @@ class ProfileService {
       if (!profileId) {
         throw new Error('Profile ID is required');
       }
-      const response = await axiosReq.put(`/api/profiles/${profileId}/`, data);
+      const response = await axiosReq.put(`/api/profiles/profiles/${profileId}/`, data);
       return response.data;
     } catch (error) {
       console.error('Profile update error:', error);

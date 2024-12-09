@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { axiosReq, axiosRes } from "../services/axiosDefaults";
 import { removeTokenTimestamp, shouldRefreshToken } from "../utils/utils";
+import toast from "react-hot-toast";
 
 export const CurrentUserContext = createContext();
 export const SetCurrentUserContext = createContext();
@@ -15,87 +16,119 @@ export const CurrentUserProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const handleMount = async () => {
+  const handleMount = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token) {
-        // Set token in axios defaults
-        axiosReq.defaults.headers.Authorization = `Bearer ${token}`;
-        axiosRes.defaults.headers.Authorization = `Bearer ${token}`;
-        
-        // Get current user data
-        const { data } = await axiosRes.get("dj-rest-auth/user/");
-        setCurrentUser(data);
+      console.log('TokenCheck:', { exists: !!token });
+  
+      if (!token) {
+        console.log('No token found in localStorage');
+        setCurrentUser(null);
+        setIsLoading(false);
+        return;
       }
+  
+      axiosReq.defaults.headers.Authorization = `Bearer ${token}`;
+      axiosRes.defaults.headers.Authorization = `Bearer ${token}`;
+      
+      // Get user data first
+      const userResponse = await axiosRes.get("dj-rest-auth/user/");
+      const userData = userResponse.data;
+      
+      // Then get profile using user's ID
+      try {
+        const profileResponse = await axiosReq.get(`/api/profiles/profiles/${userData.pk}/`);
+        userData.profile = profileResponse.data;
+      } catch (profileErr) {
+        console.warn('Could not load profile:', profileErr);
+        // Continue even if profile load fails
+      }
+      
+      setCurrentUser(userData);
     } catch (err) {
-      console.error('Error loading user:', err);
-      // Clear auth state if there's an error
+      console.error('Error in handleMount:', err);
       setCurrentUser(null);
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       removeTokenTimestamp();
+      toast.error('Session expired. Please sign in again.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    handleMount();
   }, []);
 
+  useEffect(() => {
+    console.log('CurrentUserProvider mounted');
+    handleMount();
+  }, [handleMount]);
+
   useMemo(() => {
-    // Interceptor for refreshing token
+    console.log('Setting up interceptors');
     axiosReq.interceptors.request.use(
       async (config) => {
         if (shouldRefreshToken()) {
+          console.log('Token refresh needed');
           try {
             await axios.post("/dj-rest-auth/token/refresh/");
+            console.log('Token refresh successful');
           } catch (err) {
-            setCurrentUser((prevCurrentUser) => {
-              if (prevCurrentUser) {
-                navigate("/signin");
-              }
-              return null;
-            });
+            console.error('Token refresh failed:', err);
+            if (currentUser) {
+              setCurrentUser(null);
+              navigate("/signin");
+            }
             removeTokenTimestamp();
-            return config;
           }
         }
         return config;
       },
       (err) => {
+        console.error('Request interceptor error:', err);
         return Promise.reject(err);
       }
     );
 
-    // Interceptor for handling 401 responses
     axiosRes.interceptors.response.use(
       (response) => response,
       async (err) => {
+        console.log('Response interceptor triggered:', {
+          status: err.response?.status,
+          url: err.config?.url
+        });
+
         if (err.response?.status === 401) {
+          console.log('Handling 401 error');
           try {
-            await axios.post("/dj-rest-auth/token/refresh/");
+            const refreshResponse = await axios.post("/dj-rest-auth/token/refresh/");
+            console.log('Token refresh in 401 handler successful');
+            if (refreshResponse.data?.access) {
+              return axios(err.config);
+            }
           } catch (refreshErr) {
-            setCurrentUser((prevCurrentUser) => {
-              if (prevCurrentUser) {
-                navigate("/signin");
-              }
-              return null;
-            });
-            removeTokenTimestamp();
+            console.error('Token refresh in 401 handler failed:', refreshErr);
+            setCurrentUser(null);
+            navigate("/signin");
           }
-          return axios(err.config);
         }
         return Promise.reject(err);
       }
     );
-  }, [navigate]);
+  }, [navigate, currentUser]);
+
+  const contextValue = {
+    currentUser,
+    isLoading,
+  };
+
+  console.log('CurrentUserProvider rendering with:', { currentUser, isLoading });
 
   return (
-    <CurrentUserContext.Provider value={{ currentUser, isLoading }}>
+    <CurrentUserContext.Provider value={contextValue}>
       <SetCurrentUserContext.Provider value={setCurrentUser}>
         {children}
       </SetCurrentUserContext.Provider>
     </CurrentUserContext.Provider>
   );
 };
+
+export default CurrentUserProvider;

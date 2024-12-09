@@ -38,7 +38,7 @@ const ProfileEditForm = () => {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const { data } = await axiosReq.get(`/api/profiles/${id}/`);
+        const { data } = await axiosReq.get(`/api/profiles/profiles/${id}/`);
         setProfileData({
           name: data.name || '',
           bio: data.bio || '',
@@ -98,7 +98,7 @@ const ProfileEditForm = () => {
     }
 
     try {
-      const { data } = await axiosReq.patch(`/api/profiles/${id}/`, formData);
+      const { data } = await axiosReq.patch(`/api/profiles/profiles/${id}/`, formData);
       setCurrentUser(prev => ({
         ...prev,
         profile: data
