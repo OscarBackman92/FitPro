@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { useProfileData, useSetProfileData } from '../../contexts/ProfileDataContext';
-import { DumbbellIcon, Activity, Award, Clock, Edit2, UserPlus, UserMinus } from 'lucide-react';
 import { format } from 'date-fns';
-import { axiosReq } from '../../services/axiosDefaults';
+import { 
+  DumbbellIcon, Activity, Award, PlusCircle,
+  Clock, Edit2, UserPlus, UserMinus, Calendar,
+  Scale, RulerIcon 
+} from 'lucide-react';
 import Avatar from '../common/Avatar';
 import LoadingSpinner from '../common/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -13,88 +16,29 @@ const ProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser();
-  const { currentProfile, workoutData } = useProfileData();
-  const { setProfileData, handleFollow: followUser, handleUnfollow: unfollowUser } = useSetProfileData();
+  const { profileData } = useProfileData();
+  const { handleFollow, handleUnfollow, fetchProfileData } = useSetProfileData();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const loadProfileData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await fetchProfileData(id);
+    } catch (err) {
+      console.error('Error loading profile:', err);
+      setError('Failed to load profile data');
+      toast.error('Error loading profile');
+    } finally {
+      setLoading(false);
+    }
+  }, [id, fetchProfileData]);
+
   useEffect(() => {
-    const loadProfile = async () => {
-      if (!currentUser) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Determine which profile to load
-        const targetId = id || currentUser.profile?.id;
-
-        if (!targetId) {
-          throw new Error('No profile ID available');
-        }
-
-        // Load profile and workouts using the correct URL
-        const [profileResponse, workoutsResponse] = await Promise.all([
-          axiosReq.get(`/api/profiles/profiles/${targetId}/`),
-          axiosReq.get('/api/workouts/', {
-            params: { owner: targetId, ordering: '-date_logged', limit: 5 }
-          })
-        ]);
-
-        setProfileData(prev => ({
-          ...prev,
-          pageProfile: { results: [profileResponse.data] },
-          workoutData: {
-            ...prev.workoutData,
-            recentWorkouts: workoutsResponse.data.results || []
-          }
-        }));
-
-        // Load stats if viewing own profile
-        if (targetId === currentUser.profile?.id) {
-          try {
-            const statsResponse = await axiosReq.get('/api/workouts/statistics/');
-            setProfileData(prev => ({
-              ...prev,
-              workoutData: {
-                ...prev.workoutData,
-                stats: {
-                  totalWorkouts: statsResponse.data.total_workouts || 0,
-                  weeklyWorkouts: statsResponse.data.workouts_this_week || 0,
-                  currentStreak: statsResponse.data.current_streak || 0,
-                  totalMinutes: statsResponse.data.total_duration || 0
-                }
-              }
-            }));
-          } catch (statsErr) {
-            console.error('Failed to load stats:', statsErr);
-            toast.error('Failed to load workout statistics');
-          }
-        }
-
-      } catch (err) {
-        console.error('Error loading profile:', err);
-        if (err.response?.status === 404) {
-          setError('Profile not found');
-          toast.error('Profile not found');
-        } else if (err.response?.status === 401) {
-          navigate('/signin');
-        } else {
-          setError('Failed to load profile data');
-          toast.error('Failed to load profile data');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfile();
-  }, [id, currentUser, navigate, setProfileData]);
+    loadProfileData();
+  }, [loadProfileData]);
 
   const handleFollowClick = async () => {
     if (!currentUser) {
@@ -102,24 +46,29 @@ const ProfilePage = () => {
       return;
     }
 
+    const profile = profileData.pageProfile.results[0];
     try {
-      if (currentProfile.following_id) {
-        await unfollowUser(currentProfile);
+      if (profile.following_id) {
+        await handleUnfollow(profile);
       } else {
-        await followUser(currentProfile);
+        await handleFollow(profile);
       }
     } catch (err) {
       toast.error('Failed to update follow status');
     }
   };
 
-  if (loading) return <LoadingSpinner fullScreen />;
+  if (loading) {
+    return <LoadingSpinner centered fullScreen />;
+  }
 
-  if (error || !currentProfile) {
+  if (error || !profileData.pageProfile.results[0]) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-white mb-2">{error || 'Profile not found'}</h2>
+          <h2 className="text-xl font-bold text-white mb-2">
+            {error || 'Profile not found'}
+          </h2>
           <button
             onClick={() => navigate(-1)}
             className="mt-4 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
@@ -131,129 +80,188 @@ const ProfilePage = () => {
     );
   }
 
-  const isOwnProfile = !id || (currentUser?.profile?.id === parseInt(id));
+  const profile = profileData.pageProfile.results[0];
+  const isOwnProfile = currentUser?.profile?.id === parseInt(id);
+  const stats = profileData.stats;
+  const recentWorkouts = profileData.workouts.results;
+
+  const StatCard = ({ icon: Icon, label, value }) => (
+    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <Icon className="h-6 w-6 text-green-500 mb-2" />
+      <p className="text-xl font-bold text-white">{value}</p>
+      <p className="text-sm text-gray-400">{label}</p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Profile Header */}
         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
           <div className="flex items-center gap-6">
             <Avatar
-              src={currentProfile.image}
-              text={currentProfile.username}
+              src={profile.image}
+              text={profile.name || profile.owner}
               size="xl"
+              showStatus
+              status={profile.is_private ? 'busy' : 'online'}
             />
             
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-2xl font-bold text-white">{currentProfile.username}</h1>
+                  <h1 className="text-2xl font-bold text-white">
+                    {profile.name || profile.owner}
+                  </h1>
                   <p className="text-gray-400">
-                    Member since {format(new Date(currentProfile.created_at), 'MMMM yyyy')}
+                    Member since {format(new Date(profile.created_at), 'MMMM yyyy')}
                   </p>
                 </div>
                 
                 {!isOwnProfile ? (
                   <button
                     onClick={handleFollowClick}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-                      currentProfile.following_id ? 'bg-gray-600' : 'bg-green-500'
-                    } text-white`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg 
+                      ${profile.following_id 
+                        ? 'bg-gray-700 hover:bg-gray-600' 
+                        : 'bg-green-500 hover:bg-green-600'
+                      } text-white transition-colors`}
                   >
-                    {currentProfile.following_id ? (
-                      <UserMinus className="h-5 w-5" />
+                    {profile.following_id ? (
+                      <>
+                        <UserMinus className="h-5 w-5" />
+                        Unfollow
+                      </>
                     ) : (
-                      <UserPlus className="h-5 w-5" />
+                      <>
+                        <UserPlus className="h-5 w-5" />
+                        Follow
+                      </>
                     )}
-                    {currentProfile.following_id ? 'Unfollow' : 'Follow'}
                   </button>
                 ) : (
                   <button
                     onClick={() => navigate(`/profiles/${currentUser.profile.id}/edit`)}
-                    className="p-2 text-gray-300 hover:text-white bg-gray-700 rounded-lg"
+                    className="p-2 text-gray-300 hover:text-white bg-gray-700 
+                      hover:bg-gray-600 rounded-lg transition-colors"
                   >
                     <Edit2 className="h-5 w-5" />
                   </button>
                 )}
               </div>
 
-              {currentProfile.name && (
-                <p className="mt-4 text-gray-400">
-                  <strong className="text-gray-300">Name:</strong> {currentProfile.name}
-                </p>
+              {profile.bio && (
+                <p className="mt-4 text-gray-300">{profile.bio}</p>
               )}
-              
-              <p className="text-gray-400">
-                <strong className="text-gray-300">Bio:</strong> {currentProfile.content || 'No bio provided'}
-              </p>
 
-              <div className="mt-4 flex gap-4">
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                {profile.weight && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Scale className="h-4 w-4" />
+                    <span>{profile.weight} kg</span>
+                  </div>
+                )}
+                {profile.height && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <RulerIcon className="h-4 w-4" />
+                    <span>{profile.height} cm</span>
+                  </div>
+                )}
+                {profile.date_of_birth && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Calendar className="h-4 w-4" />
+                    <span>{format(new Date(profile.date_of_birth), 'PP')}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex gap-4 border-t border-gray-700 pt-4">
                 <div className="text-center">
                   <div className="text-lg font-semibold text-white">
-                    {currentProfile.followers_count || 0}
+                    {profile.followers_count}
                   </div>
                   <div className="text-sm text-gray-400">Followers</div>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-white">
-                    {currentProfile.following_count || 0}
+                    {profile.following_count}
                   </div>
                   <div className="text-sm text-gray-400">Following</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-white">
+                    {stats.total_workouts}
+                  </div>
+                  <div className="text-sm text-gray-400">Workouts</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats */}
-        {isOwnProfile && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-              <DumbbellIcon className="h-6 w-6 text-green-500 mb-2" />
-              <p className="text-xl font-bold text-white">{workoutData.stats.totalWorkouts}</p>
-              <p className="text-sm text-gray-400">Total Workouts</p>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-              <Activity className="h-6 w-6 text-green-500 mb-2" />
-              <p className="text-xl font-bold text-white">{workoutData.stats.weeklyWorkouts}</p>
-              <p className="text-sm text-gray-400">This Week</p>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-              <Award className="h-6 w-6 text-green-500 mb-2" />
-              <p className="text-xl font-bold text-white">{workoutData.stats.currentStreak} days</p>
-              <p className="text-sm text-gray-400">Current Streak</p>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-              <Clock className="h-6 w-6 text-green-500 mb-2" />
-              <p className="text-xl font-bold text-white">{workoutData.stats.totalMinutes}</p>
-              <p className="text-sm text-gray-400">Total Minutes</p>
-            </div>
-          </div>
-        )}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard 
+            icon={DumbbellIcon} 
+            label="Total Workouts" 
+            value={stats.total_workouts} 
+          />
+          <StatCard 
+            icon={Activity} 
+            label="This Week" 
+            value={stats.workouts_this_week} 
+          />
+          <StatCard 
+            icon={Award} 
+            label="Current Streak" 
+            value={`${stats.current_streak} days`} 
+          />
+          <StatCard 
+            icon={Clock} 
+            label="Total Minutes" 
+            value={stats.total_duration} 
+          />
+        </div>
 
         {/* Recent Workouts */}
         <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">Recent Workouts</h2>
-            {workoutData.recentWorkouts?.length > 0 && (
-              <button onClick={() => navigate('/workouts')} className="text-sm text-gray-400">
-                View All
+            {isOwnProfile && (
+              <button
+                onClick={() => navigate('/workouts/create')}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 
+                  text-white rounded-lg hover:bg-green-600 transition-colors"
+              >
+                <PlusCircle className="h-5 w-5" />
+                Log Workout
               </button>
             )}
           </div>
 
-          {workoutData.recentWorkouts?.length > 0 ? (
+          {recentWorkouts.length > 0 ? (
             <div className="space-y-4">
-              {workoutData.recentWorkouts.map(workout => (
-                <div key={workout.id} className="flex justify-between p-4 bg-gray-700/50 rounded-lg">
+              {recentWorkouts.map(workout => (
+                <div 
+                  key={workout.id}
+                  className="flex justify-between p-4 bg-gray-700/50 rounded-lg 
+                    hover:bg-gray-700 transition-colors cursor-pointer"
+                  onClick={() => navigate(`/workouts/${workout.id}`)}
+                >
                   <div>
                     <h3 className="font-medium text-white">{workout.title}</h3>
                     <div className="flex gap-2 mt-1">
-                      <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                      <span className="px-2 py-1 bg-green-500/20 text-green-400 
+                        rounded-full text-sm">
                         {workout.workout_type}
                       </span>
-                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
+                      <span className={`px-2 py-1 rounded-full text-sm
+                        ${workout.intensity === 'high'
+                          ? 'bg-red-500/20 text-red-400'
+                          : workout.intensity === 'moderate'
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-green-500/20 text-green-400'
+                        }`}>
                         {workout.intensity}
                       </span>
                     </div>
@@ -274,7 +282,8 @@ const ProfilePage = () => {
               {isOwnProfile && (
                 <button
                   onClick={() => navigate('/workouts/create')}
-                  className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg"
+                  className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg 
+                    hover:bg-green-600 transition-colors"
                 >
                   Log Your First Workout
                 </button>

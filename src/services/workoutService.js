@@ -5,13 +5,14 @@ const workoutService = {
   async listWorkouts(params = {}) {
     try {
       const response = await axiosReq.get('/workouts/', { params });
-      return response.data;
+      console.log('API Response for Workouts:', response.data); // Debugging API response
+      return response.data; // Ensure this is returning the expected structure
     } catch (err) {
-      logger.error('Error listing workouts:', err);
+      console.error('Error listing workouts:', err);
       throw err;
     }
   },
-
+  
   async getWorkout(id) {
     try {
       const response = await axiosReq.get(`/workouts/${id}/`);
@@ -44,8 +45,8 @@ const workoutService = {
 
   async deleteWorkout(id) {
     try {
-      const response = await axiosReq.delete(`/workouts/${id}/`);
-      return response.data;
+      await axiosReq.delete(`/workouts/${id}/`);
+      return { success: true };
     } catch (err) {
       logger.error(`Error deleting workout with ID ${id}:`, err);
       throw err;

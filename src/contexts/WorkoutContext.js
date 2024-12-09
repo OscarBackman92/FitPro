@@ -17,20 +17,17 @@ export const WorkoutProvider = ({ children }) => {
     const loadWorkouts = async () => {
       try {
         setLoading(true);
-        const [workoutList, statistics] = await Promise.all([
-          workoutService.listWorkouts(),
-          workoutService.getStatistics(),
-        ]);
-        setWorkouts(workoutList.results);
-        setStats(statistics);
+        const workoutList = await workoutService.listWorkouts();
+        console.log('Fetched Workouts:', workoutList.results || workoutList); // Debugging fetched workouts
+        setWorkouts(workoutList.results || workoutList); // Use `results` if pagination is used
       } catch (err) {
         toast.error('Failed to load workouts');
-        console.error(err);
+        console.error('Error loading workouts:', err); // Debugging error
       } finally {
         setLoading(false);
       }
     };
-
+  
     loadWorkouts();
   }, []);
 

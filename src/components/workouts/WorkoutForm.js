@@ -20,17 +20,9 @@ const WorkoutForm = () => {
 
   const loadWorkout = useCallback(async () => {
     if (!id) return;
-
     try {
       const data = await workoutService.getWorkout(id);
-      setWorkoutData({
-        title: data.title || '',
-        workout_type: data.workout_type || '',
-        duration: data.duration || '',
-        intensity: data.intensity || 'moderate',
-        notes: data.notes || '',
-        date_logged: data.date_logged || new Date().toISOString().split('T')[0],
-      });
+      setWorkoutData(data);
     } catch (err) {
       toast.error('Failed to load workout');
       navigate('/workouts');
@@ -47,45 +39,27 @@ const WorkoutForm = () => {
       ...prev,
       [name]: value,
     }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!workoutData.title) {
-      newErrors.title = 'Title is required';
-    }
-
-    if (!workoutData.workout_type) {
-      newErrors.workout_type = 'Workout type is required';
-    }
-
-    if (!workoutData.duration) {
-      newErrors.duration = 'Duration is required';
-    } else if (workoutData.duration <= 0 || workoutData.duration > 1440) {
+    if (!workoutData.title) newErrors.title = 'Title is required';
+    if (!workoutData.workout_type) newErrors.workout_type = 'Workout type is required';
+    if (!workoutData.duration || workoutData.duration <= 0 || workoutData.duration > 1440) {
       newErrors.duration = 'Duration must be between 1 and 1440 minutes';
     }
-
-    if (!workoutData.date_logged) {
-      newErrors.date_logged = 'Date is required';
-    }
-
+    if (!workoutData.date_logged) newErrors.date_logged = 'Date is required';
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-
     setIsSubmitting(true);
     try {
       if (id) {
@@ -97,9 +71,7 @@ const WorkoutForm = () => {
       }
       navigate('/workouts');
     } catch (err) {
-      const serverErrors = err.response?.data || {};
-      setErrors(serverErrors);
-      toast.error(err.message || 'Failed to save workout');
+      toast.error('Failed to save workout');
     } finally {
       setIsSubmitting(false);
     }

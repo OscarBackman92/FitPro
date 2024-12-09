@@ -1,28 +1,14 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { axiosReq } from '../services/axiosDefaults';
+import { profileService } from '../services/profileService';
 import toast from 'react-hot-toast';
 
-// Initial state for profile data
-const initialState = {
-  currentProfile: null,
-  workoutData: {
-    recentWorkouts: [],
-    stats: {
-      totalWorkouts: 0,
-      weeklyWorkouts: 0,
-      currentStreak: 0,
-      totalMinutes: 0
-    }
-  },
-  pageProfile: { results: [] }
-};
-
-export const ProfileDataContext = createContext(initialState);
-export const SetProfileDataContext = createContext(() => {});
+export const ProfileDataContext = createContext();
+export const SetProfileDataContext = createContext();
 
 export const useProfileData = () => {
   const context = useContext(ProfileDataContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useProfileData must be used within a ProfileDataProvider');
   }
   return context;
@@ -30,18 +16,34 @@ export const useProfileData = () => {
 
 export const useSetProfileData = () => {
   const context = useContext(SetProfileDataContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useSetProfileData must be used within a ProfileDataProvider');
   }
   return context;
 };
 
 export const ProfileDataProvider = ({ children }) => {
-  const [profileData, setProfileData] = useState(initialState);
+  const [profileData, setProfileData] = useState({
+    // Profile data
+    pageProfile: { results: [] },
+    // Workout data
+    workouts: {
+      results: [],
+      count: 0,
+      next: null
+    },
+    // Social stats
+    stats: {
+      followers_count: 0,
+      following_count: 0,
+      total_workouts: 0,
+      total_duration: 0
+    }
+  });
 
   const handleFollow = async (clickedProfile) => {
     try {
-      const { data } = await axiosReq.post('/api/followers/followers/', {
+      const { data } = await axiosReq.post('/followers/', {
         followed: clickedProfile.id
       });
 
@@ -53,7 +55,9 @@ export const ProfileDataProvider = ({ children }) => {
             followers_count: profile.id === clickedProfile.id 
               ? profile.followers_count + 1 
               : profile.followers_count,
-            following_id: profile.id === clickedProfile.id ? data.id : profile.following_id
+            following_id: profile.id === clickedProfile.id 
+              ? data.id 
+              : profile.following_id
           }))
         }
       }));
@@ -61,13 +65,12 @@ export const ProfileDataProvider = ({ children }) => {
       toast.success(`Following ${clickedProfile.owner}`);
     } catch (err) {
       toast.error('Failed to follow user');
-      console.error('Follow error:', err);
     }
   };
 
   const handleUnfollow = async (clickedProfile) => {
     try {
-      await axiosReq.delete(`/api/followers/followers/${clickedProfile.following_id}/`);
+      await axiosReq.delete(`/followers/${clickedProfile.following_id}/`);
 
       setProfileData(prevState => ({
         ...prevState,
@@ -77,7 +80,9 @@ export const ProfileDataProvider = ({ children }) => {
             followers_count: profile.id === clickedProfile.id 
               ? profile.followers_count - 1 
               : profile.followers_count,
-            following_id: profile.id === clickedProfile.id ? null : profile.following_id
+            following_id: profile.id === clickedProfile.id 
+              ? null 
+              : profile.following_id
           }))
         }
       }));
@@ -85,31 +90,60 @@ export const ProfileDataProvider = ({ children }) => {
       toast.success(`Unfollowed ${clickedProfile.owner}`);
     } catch (err) {
       toast.error('Failed to unfollow user');
-      console.error('Unfollow error:', err);
     }
   };
 
-  const setWorkoutData = (workouts, stats) => {
-    setProfileData(prev => ({
-      ...prev,
-      workoutData: {
-        recentWorkouts: workouts || prev.workoutData.recentWorkouts,
-        stats: stats || prev.workoutData.stats
-      }
-    }));
-  };
+  const fetchProfileData = useCallback(async (profileId) => {
+    try {
+      const [profileResponse, workoutsResponse, statsResponse] = await Promise.all([
+        profileService.getProfile(profileId),
+        profileService.getProfileWorkouts(profileId),
+        profileService.getProfileStats(profileId)
+      ]);
 
-  const contextValue = {
-    ...profileData,
-    setProfileData,
+      setProfileData({
+        pageProfile: { results: [profileResponse] },
+        workouts: workoutsResponse,
+        stats: statsResponse
+      });
+    } catch (err) {
+      toast.error('Error loading profile data');
+    }
+  }, []);
+
+  const updateProfileData = useCallback(async (profileId, newData) => {
+    try {
+      const response = await profileService.updateProfile(profileId, newData);
+      
+      setProfileData(prevState => ({
+        ...prevState,
+        pageProfile: {
+          ...prevState.pageProfile,
+          results: prevState.pageProfile.results.map(profile =>
+            profile.id === profileId ? { ...profile, ...response } : profile
+          )
+        }
+      }));
+
+      toast.success('Profile updated successfully');
+      return response;
+    } catch (err) {
+      toast.error('Failed to update profile');
+      throw err;
+    }
+  }, []);
+
+  const value = {
+    profileData,
     handleFollow,
     handleUnfollow,
-    setWorkoutData
+    fetchProfileData,
+    updateProfileData
   };
 
   return (
     <ProfileDataContext.Provider value={profileData}>
-      <SetProfileDataContext.Provider value={contextValue}>
+      <SetProfileDataContext.Provider value={value}>
         {children}
       </SetProfileDataContext.Provider>
     </ProfileDataContext.Provider>
