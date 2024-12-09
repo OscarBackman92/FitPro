@@ -4,7 +4,7 @@ import { DumbbellIcon, PlusCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { format } from 'date-fns';
-import { workoutService } from '../../services/workoutService';
+import workoutService from '../../services/workoutService';
 import toast from 'react-hot-toast';
 
 const WorkoutList = () => {

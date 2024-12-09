@@ -1,38 +1,44 @@
-import { createContext, useContext, useState } from 'react';
-import { useCurrentUser } from './CurrentUserContext';
-import { workoutService } from '../services/workoutService';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import workoutService from '../services/workoutService';
+import toast from 'react-hot-toast';
 
-export const WorkoutContext = createContext();
+const WorkoutContext = createContext();
+const SetWorkoutContext = createContext();
 
-export const useWorkout = () => {
-  const context = useContext(WorkoutContext);
-  if (!context) {
-    throw new Error('useWorkout must be used within a WorkoutProvider');
-  }
-  return context;
-};
+export const useWorkouts = () => useContext(WorkoutContext);
+export const useSetWorkouts = () => useContext(SetWorkoutContext);
 
 export const WorkoutProvider = ({ children }) => {
-  const { currentUser } = useCurrentUser();
   const [workouts, setWorkouts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const getWorkouts = async () => {
-    if (!currentUser) return;
-    setLoading(true);
-    try {
-      const response = await workoutService.getWorkouts();
-      setWorkouts(response.results);
-    } catch (err) {
-      console.error('Failed to fetch workouts:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const loadWorkouts = async () => {
+      try {
+        setLoading(true);
+        const [workoutList, statistics] = await Promise.all([
+          workoutService.listWorkouts(),
+          workoutService.getStatistics(),
+        ]);
+        setWorkouts(workoutList.results);
+        setStats(statistics);
+      } catch (err) {
+        toast.error('Failed to load workouts');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadWorkouts();
+  }, []);
 
   return (
-    <WorkoutContext.Provider value={{ workouts, setWorkouts, loading, getWorkouts }}>
-      {children}
+    <WorkoutContext.Provider value={{ workouts, stats, loading }}>
+      <SetWorkoutContext.Provider value={{ setWorkouts, setStats }}>
+        {children}
+      </SetWorkoutContext.Provider>
     </WorkoutContext.Provider>
   );
 };

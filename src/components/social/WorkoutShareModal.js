@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Share2 } from 'lucide-react';
-import { workoutService } from '../../services/workoutService';
+import workoutService from '../../services/workoutService';
 import { socialService } from '../../services/socialService';
 import toast from 'react-hot-toast';
 

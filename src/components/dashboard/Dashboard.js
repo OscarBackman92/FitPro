@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
-import { workoutService } from '../../services/workoutService';
+import workoutService from '../../services/workoutService';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../common/LoadingSpinner';
 

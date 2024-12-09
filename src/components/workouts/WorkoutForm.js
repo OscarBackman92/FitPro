@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { workoutService } from '../../services/workoutService';
+import workoutService from '../../services/workoutService';
 import { DumbbellIcon, Save, X, AlertCircle, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -15,16 +15,12 @@ const WorkoutForm = () => {
     duration: '',
     intensity: 'moderate',
     notes: '',
-    date_logged: new Date().toISOString().split('T')[0]
+    date_logged: new Date().toISOString().split('T')[0],
   });
 
-  useEffect(() => {
-    if (id) {
-      loadWorkout();
-    }
-  }, [id]);
+  const loadWorkout = useCallback(async () => {
+    if (!id) return;
 
-  const loadWorkout = async () => {
     try {
       const data = await workoutService.getWorkout(id);
       setWorkoutData({
@@ -33,43 +29,47 @@ const WorkoutForm = () => {
         duration: data.duration || '',
         intensity: data.intensity || 'moderate',
         notes: data.notes || '',
-        date_logged: data.date_logged || new Date().toISOString().split('T')[0]
+        date_logged: data.date_logged || new Date().toISOString().split('T')[0],
       });
     } catch (err) {
       toast.error('Failed to load workout');
       navigate('/workouts');
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    loadWorkout();
+  }, [loadWorkout]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setWorkoutData(prev => ({
+    setWorkoutData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!workoutData.title) {
       newErrors.title = 'Title is required';
     }
-    
+
     if (!workoutData.workout_type) {
       newErrors.workout_type = 'Workout type is required';
     }
-    
+
     if (!workoutData.duration) {
       newErrors.duration = 'Duration is required';
     } else if (workoutData.duration <= 0 || workoutData.duration > 1440) {
       newErrors.duration = 'Duration must be between 1 and 1440 minutes';
     }
-    
+
     if (!workoutData.date_logged) {
       newErrors.date_logged = 'Date is required';
     }
@@ -79,7 +79,7 @@ const WorkoutForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -110,7 +110,7 @@ const WorkoutForm = () => {
     { value: 'strength', label: 'Strength Training' },
     { value: 'flexibility', label: 'Flexibility' },
     { value: 'sports', label: 'Sports' },
-    { value: 'other', label: 'Other' }
+    { value: 'other', label: 'Other' },
   ];
 
   return (
