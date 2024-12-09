@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { axiosReq } from '../services/axiosDefaults';
-import { useCurrentUser } from './CurrentUserContext';
 import toast from 'react-hot-toast';
 
 export const ProfileDataContext = createContext();
@@ -23,9 +22,8 @@ export const useSetProfileData = () => {
 };
 
 export const ProfileDataProvider = ({ children }) => {
-  const { currentUser } = useCurrentUser();
+  const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState({
-    // Add workoutData to the context state
     currentProfile: null,
     workoutData: {
       recentWorkouts: [],
@@ -36,12 +34,16 @@ export const ProfileDataProvider = ({ children }) => {
         totalMinutes: 0
       }
     },
-    pageProfile: { results: [] },
-    popularProfiles: { results: [] },
+    pageProfile: { results: [] }
   });
 
   const handleFollow = async (clickedProfile) => {
     try {
+      setLoading(true);
+      if (!clickedProfile?.id) {
+        throw new Error('Profile ID is required');
+      }
+
       const { data } = await axiosReq.post('/api/followers/followers/', {
         followed: clickedProfile.id,
       });
@@ -52,56 +54,69 @@ export const ProfileDataProvider = ({ children }) => {
           results: prevState.pageProfile.results.map(profile =>
             followHelper(profile, clickedProfile, data.id)
           ),
-        },
-        popularProfiles: {
-          ...prevState.popularProfiles,
-          results: prevState.popularProfiles.results.map(profile =>
-            followHelper(profile, clickedProfile, data.id)
-          ),
-        },
+        }
       }));
       toast.success(`Following ${clickedProfile.owner}`);
     } catch (err) {
-      toast.error('Failed to follow user');
+      toast.error(err.message || 'Failed to follow user');
       console.error('Follow error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUnfollow = async (clickedProfile) => {
     try {
+      setLoading(true);
+      if (!clickedProfile?.following_id) {
+        throw new Error('Following ID is required');
+      }
+
       await axiosReq.delete(`/api/followers/followers/${clickedProfile.following_id}/`);
+      
       setProfileData(prevState => ({
         ...prevState,
         pageProfile: {
           results: prevState.pageProfile.results.map(profile =>
             unfollowHelper(profile, clickedProfile)
           ),
-        },
-        popularProfiles: {
-          ...prevState.popularProfiles,
-          results: prevState.popularProfiles.results.map(profile =>
-            unfollowHelper(profile, clickedProfile)
-          ),
-        },
+        }
       }));
       toast.success(`Unfollowed ${clickedProfile.owner}`);
     } catch (err) {
-      toast.error('Failed to unfollow user');
+      toast.error(err.message || 'Failed to unfollow user');
       console.error('Unfollow error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const setWorkoutStats = (stats) => {
+    if (!stats || typeof stats !== 'object') {
+      console.error('Invalid stats object');
+      return;
+    }
+
     setProfileData(prev => ({
       ...prev,
       workoutData: {
         ...prev.workoutData,
-        stats
+        stats: {
+          totalWorkouts: stats.totalWorkouts || 0,
+          weeklyWorkouts: stats.weeklyWorkouts || 0,
+          currentStreak: stats.currentStreak || 0,
+          totalMinutes: stats.totalMinutes || 0
+        }
       }
     }));
   };
 
   const setRecentWorkouts = (workouts) => {
+    if (!Array.isArray(workouts)) {
+      console.error('Workouts must be an array');
+      return;
+    }
+
     setProfileData(prev => ({
       ...prev,
       workoutData: {
@@ -111,28 +126,10 @@ export const ProfileDataProvider = ({ children }) => {
     }));
   };
 
-  useEffect(() => {
-    const handleMount = async () => {
-      try {
-        const { data } = await axiosReq.get(
-          "/api/profiles/?ordering=-followers_count"
-        );
-        setProfileData(prevState => ({
-          ...prevState,
-          popularProfiles: data,
-        }));
-      } catch (err) {
-        console.error('Error loading popular profiles:', err);
-        toast.error('Failed to load popular profiles');
-      }
-    };
-
-    handleMount();
-  }, [currentUser]);
-
   const contextValue = {
     ...profileData,
     currentProfile: profileData.pageProfile.results[0],
+    loading
   };
 
   const setContextValue = {
@@ -140,7 +137,8 @@ export const ProfileDataProvider = ({ children }) => {
     handleFollow,
     handleUnfollow,
     setWorkoutStats,
-    setRecentWorkouts
+    setRecentWorkouts,
+    setLoading
   };
 
   return (
@@ -153,25 +151,27 @@ export const ProfileDataProvider = ({ children }) => {
 };
 
 const followHelper = (profile, clickedProfile, following_id) => {
+  if (!profile || !clickedProfile) return profile;
+  
   return profile.id === clickedProfile.id
     ? {
         ...profile,
-        followers_count: profile.followers_count + 1,
+        followers_count: (profile.followers_count || 0) + 1,
         following_id,
       }
-    : profile.is_owner
-    ? { ...profile, following_count: profile.following_count + 1 }
     : profile;
 };
 
 const unfollowHelper = (profile, clickedProfile) => {
+  if (!profile || !clickedProfile) return profile;
+
   return profile.id === clickedProfile.id
     ? {
         ...profile,
-        followers_count: profile.followers_count - 1,
+        followers_count: Math.max((profile.followers_count || 1) - 1, 0),
         following_id: null,
       }
-    : profile.is_owner
-    ? { ...profile, following_count: profile.following_count - 1 }
     : profile;
 };
+
+export default ProfileDataProvider;

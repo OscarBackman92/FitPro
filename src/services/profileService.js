@@ -4,15 +4,12 @@ class ProfileService {
   async getProfile(profileId) {
     try {
       if (!profileId) {
-        // If no profileId, fetch current user's profile from dj-rest-auth
-        const response = await axiosReq.get('dj-rest-auth/user/');
-        return response.data;
+        throw new Error('Profile ID is required');
       }
-      // Otherwise fetch specific profile
       const response = await axiosReq.get(`/api/profiles/${profileId}/`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Profile fetch error:', error);
       throw error;
     }
   }
@@ -22,17 +19,20 @@ class ProfileService {
       const response = await axiosReq.get('dj-rest-auth/user/');
       return response.data;
     } catch (error) {
-      console.error('Error fetching current user profile:', error);
+      console.error('Current user profile fetch error:', error);
       throw error;
     }
   }
 
   async updateProfile(profileId, data) {
     try {
+      if (!profileId) {
+        throw new Error('Profile ID is required');
+      }
       const response = await axiosReq.put(`/api/profiles/${profileId}/`, data);
       return response.data;
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Profile update error:', error);
       throw error;
     }
   }
