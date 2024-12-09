@@ -12,7 +12,7 @@ const workoutService = {
       throw err;
     }
   },
-  
+
   async getWorkout(id) {
     try {
       const response = await axiosReq.get(`/workouts/${id}/`);
@@ -59,6 +59,16 @@ const workoutService = {
       return response.data;
     } catch (err) {
       logger.error('Error fetching workout statistics:', err);
+      throw err;
+    }
+  },
+
+  async getDashboardData() {
+    try {
+      const response = await axiosReq.get('/workouts/dashboard/');
+      return response.data;
+    } catch (err) {
+      logger.error('Error fetching dashboard data:', err);
       throw err;
     }
   },
