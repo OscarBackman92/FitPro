@@ -125,21 +125,21 @@ export const ProfileDataProvider = ({ children }) => {
       console.error('ProfileDataProvider: Invalid profile ID', { profileId });
       throw new Error('Valid Profile ID is required');
     }
-
+  
     try {
-      console.log('ProfileDataProvider: Making API calls');
+      console.log('ProfileDataProvider: Making API calls for profileId:', profileId);
       const [profileResponse, workoutsResponse, statsResponse] = await Promise.all([
         profileService.getProfile(profileId),
         profileService.getProfileWorkouts(profileId),
         profileService.getProfileStats(profileId)
       ]);
-
-      console.log('ProfileDataProvider: API calls successful', {
+  
+      console.log('ProfileDataProvider: API responses received', {
         profile: profileResponse,
         workouts: workoutsResponse,
         stats: statsResponse
       });
-
+  
       setProfileData({
         pageProfile: { results: [profileResponse] },
         workouts: workoutsResponse || { results: [], count: 0, next: null },

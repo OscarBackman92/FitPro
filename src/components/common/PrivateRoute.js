@@ -8,9 +8,12 @@ const PrivateRoute = ({ children }) => {
   const navigate = useNavigate();
   const { currentUser, isLoading } = useCurrentUser();
 
+  console.log('PrivateRoute: Rendering', { currentUser, isLoading });
+
   useEffect(() => {
     // If not loading and no user, redirect to sign in
     if (!isLoading && !currentUser) {
+      console.log('PrivateRoute: No authenticated user, redirecting to signin');
       navigate('/signin', { 
         replace: true,
         state: { from: location }
@@ -18,7 +21,9 @@ const PrivateRoute = ({ children }) => {
     }
   }, [currentUser, isLoading, navigate, location]);
 
+  // Show loading spinner while checking auth status
   if (isLoading) {
+    console.log('PrivateRoute: Showing loading spinner');
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <LoadingSpinner size="lg" color="green" centered />
@@ -26,6 +31,7 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
+  console.log('PrivateRoute: Rendering protected content');
   return children;
 };
 
