@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { useProfileData, useSetProfileData } from '../../contexts/ProfileDataContext';
@@ -10,59 +10,125 @@ import {
 } from 'lucide-react';
 import Avatar from '../common/Avatar';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { logger } from '../../services/loggerService';
 import toast from 'react-hot-toast';
 
+const StatCard = ({ icon: Icon, label, value }) => (
+  <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+    <Icon className="h-6 w-6 text-green-500 mb-2" />
+    <p className="text-xl font-bold text-white">{value}</p>
+    <p className="text-sm text-gray-400">{label}</p>
+  </div>
+);
+
 const ProfilePage = () => {
+  console.log('ProfilePage: Component rendering');
   const { id } = useParams();
+  console.log('ProfilePage: Profile ID from params:', { id });
+  
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser();
   const { profileData } = useProfileData();
   const { handleFollow, handleUnfollow, fetchProfileData } = useSetProfileData();
   
+  console.log('ProfilePage: Initial context data:', {
+    currentUser,
+    profileData,
+    hasHandleFollow: !!handleFollow,
+    hasHandleUnfollow: !!handleUnfollow,
+    hasFetchProfileData: !!fetchProfileData
+  });
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadProfileData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      await fetchProfileData(id);
-    } catch (err) {
-      console.error('Error loading profile:', err);
-      setError('Failed to load profile data');
-      toast.error('Error loading profile');
-    } finally {
-      setLoading(false);
-    }
-  }, [id, fetchProfileData]);
-
-  useEffect(() => {
-    loadProfileData();
-  }, [loadProfileData]);
-
-  const handleFollowClick = async () => {
+  const handleFollowClick = async (profileToUpdate) => {
+    console.log('ProfilePage: Handle follow click', { profileToUpdate });
     if (!currentUser) {
+      console.log('ProfilePage: No current user, redirecting to signin');
       navigate('/signin');
       return;
     }
 
-    const profile = profileData.pageProfile.results[0];
     try {
-      if (profile.following_id) {
-        await handleUnfollow(profile);
+      if (profileToUpdate.following_id) {
+        console.log('ProfilePage: Unfollowing user', { following_id: profileToUpdate.following_id });
+        await handleUnfollow(profileToUpdate);
       } else {
-        await handleFollow(profile);
+        console.log('ProfilePage: Following user', { profile_id: profileToUpdate.id });
+        await handleFollow(profileToUpdate);
       }
     } catch (err) {
+      console.error('ProfilePage: Follow action error:', err);
       toast.error('Failed to update follow status');
     }
   };
 
+  useEffect(() => {
+    console.log('ProfilePage: useEffect running', { id });
+    
+    if (!id || id === 'undefined') {
+      console.error('ProfilePage: Invalid profile ID detected');
+      setError('Invalid profile ID');
+      setLoading(false);
+      return;
+    }
+
+    const loadData = async () => {
+      console.log('ProfilePage: Loading profile data');
+      try {
+        setLoading(true);
+        setError(null);
+        await fetchProfileData(id);
+        console.log('ProfilePage: Profile data loaded successfully');
+      } catch (err) {
+        console.error('ProfilePage: Error loading profile:', err);
+        setError('Failed to load profile data');
+        toast.error('Error loading profile');
+        logger.error('Profile loading error:', err);
+      } finally {
+        console.log('ProfilePage: Finished loading attempt');
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [id, fetchProfileData]);
+
+  console.log('ProfilePage: Current state', {
+    loading,
+    error,
+    hasProfileData: !!profileData?.pageProfile?.results?.[0],
+    currentUserId: currentUser?.profile?.id,
+    profileId: id
+  });
+
+  if (!id || id === 'undefined') {
+    console.log('ProfilePage: Rendering invalid ID state');
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-white mb-2">
+            Invalid Profile ID
+          </h2>
+          <button
+            onClick={() => navigate('/')}
+            className="mt-4 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
+          >
+            Return Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
+    console.log('ProfilePage: Rendering loading state');
     return <LoadingSpinner centered fullScreen />;
   }
 
-  if (error || !profileData.pageProfile.results[0]) {
+  if (error || !profileData?.pageProfile?.results?.[0]) {
+    console.log('ProfilePage: Rendering error state', { error });
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
@@ -82,16 +148,21 @@ const ProfilePage = () => {
 
   const profile = profileData.pageProfile.results[0];
   const isOwnProfile = currentUser?.profile?.id === parseInt(id);
-  const stats = profileData.stats;
-  const recentWorkouts = profileData.workouts.results;
+  const stats = profileData.stats || {
+    total_workouts: 0,
+    workouts_this_week: 0,
+    current_streak: 0,
+    total_duration: 0
+  };
+  const recentWorkouts = profileData.workouts?.results || [];
 
-  const StatCard = ({ icon: Icon, label, value }) => (
-    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-      <Icon className="h-6 w-6 text-green-500 mb-2" />
-      <p className="text-xl font-bold text-white">{value}</p>
-      <p className="text-sm text-gray-400">{label}</p>
-    </div>
-  );
+  console.log('ProfilePage: Processed profile data', {
+    profile,
+    isOwnProfile,
+    stats,
+    workoutCount: recentWorkouts.length
+  });
+
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -296,4 +367,5 @@ const ProfilePage = () => {
   );
 };
 
+console.log('ProfilePage: Component defined');
 export default ProfilePage;
