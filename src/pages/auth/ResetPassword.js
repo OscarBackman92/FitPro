@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import  { authService } from '../../services/authService';
+import  authService from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const ResetPassword = () => {

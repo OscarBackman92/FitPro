@@ -7,7 +7,7 @@ import {
   Home, PlusSquare, HelpCircle
 } from 'lucide-react';
 import Avatar from './Avatar';
-import  { authService } from '../../services/authService';
+import  authService from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const NavBar = () => {

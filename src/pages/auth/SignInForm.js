@@ -1,9 +1,7 @@
-// SignInForm.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
-import { authService } from '../../services/authService';
-import { setTokenTimestamp } from '../../utils/utils';
+import authService from '../../services/authService';
 import { User, Lock, Loader, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -32,32 +30,51 @@ export default function SignInForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrors({});
+
     try {
-      const data = await authService.login(signInData);
-      
-      // Only try to set token timestamp if we have valid data
-      if (data?.access) {
-        setTokenTimestamp(data);
-        // Set the current user if we have user data
-        if (data.user) {
-          setCurrentUser(data.user);
+      const response = await authService.login(signInData);
+      console.log('Login response:', response); // Debugging line
+
+      if (response?.key) {
+        // Store the authentication token
+        localStorage.setItem('token', response.key);
+        
+        // Get user details using the token
+        try {
+          const userResponse = await authService.getCurrentUser();
+          setCurrentUser(userResponse);
+          toast.success('Welcome back!');
+          navigate('/dashboard');
+        } catch (userError) {
+          console.error('Error fetching user details:', userError);
+          throw new Error('Failed to get user details');
         }
-        toast.success('Welcome back!');
-        navigate('/dashboard');
       } else {
-        throw new Error('Invalid response from server');
+        throw new Error('No authentication token received');
       }
     } catch (err) {
       console.error('Login error:', err);
-      // Handle different types of errors
+      
       if (err.response?.data) {
-        setErrors(err.response.data);
-        // Show specific error message if available
-        const errorMessage = err.response.data.non_field_errors?.[0] || 
-                           err.response.data.detail ||
-                           'Invalid username or password';
+        // Handle specific error messages from the API
+        const errorData = err.response.data;
+        
+        if (typeof errorData === 'string') {
+          setErrors({ non_field_errors: [errorData] });
+        } else if (typeof errorData === 'object') {
+          setErrors(errorData);
+        }
+
+        // Show the most relevant error message
+        const errorMessage = 
+          errorData.non_field_errors?.[0] || 
+          errorData.detail || 
+          'Invalid username or password';
+        
         toast.error(errorMessage);
       } else {
+        // Handle generic error
         setErrors({ non_field_errors: ['An error occurred during sign in'] });
         toast.error('Failed to sign in');
       }
@@ -86,6 +103,7 @@ export default function SignInForm() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-gray-800 py-8 px-4 shadow-xl sm:rounded-xl sm:px-10 border border-gray-700">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Username Input */}
             <div>
               <label 
                 htmlFor="username" 
@@ -118,6 +136,7 @@ export default function SignInForm() {
               ))}
             </div>
 
+            {/* Password Input */}
             <div>
               <label 
                 htmlFor="password" 
@@ -150,6 +169,7 @@ export default function SignInForm() {
               ))}
             </div>
 
+            {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -174,6 +194,7 @@ export default function SignInForm() {
               </div>
             </div>
 
+            {/* Error Messages */}
             {errors.non_field_errors?.map((message, idx) => (
               <div key={idx} className="bg-red-500/10 text-red-500 p-3 rounded-lg flex items-center gap-2">
                 <AlertCircle className="h-5 w-5" />
@@ -181,6 +202,7 @@ export default function SignInForm() {
               </div>
             ))}
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}

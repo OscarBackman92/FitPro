@@ -1,68 +1,57 @@
+// src/services/authService.js
 import axios from 'axios';
 
-const API_URL = 'https://fitpro1-bc76e0450a19.herokuapp.com/';
-
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
-});
+const API_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com';
 
 export const authService = {
-  async register(userData) {
+  async login(credentials) {
     try {
-      const response = await api.post('dj-rest-auth/registration/', {
-        username: userData.username,
-        email: userData.email,
-        password1: userData.password1,
-        password2: userData.password2
+      const response = await axios.post(`${API_URL}/api/auth/login/`, credentials, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
       });
 
-      // If you need to automatically log in after registration
-      if (response.data.access) {
-        localStorage.setItem('token', response.data.access);
-      }
-
       return response.data;
-    } catch (error) {
-      console.error('Registration error:', error.response?.data);
-      throw error;
+    } catch (err) {
+      console.error('Login API error:', err.response?.data);
+      throw err;
     }
   },
 
-  async login(credentials) {
+  async getCurrentUser() {
     try {
-      const response = await api.post('dj-rest-auth/login/', credentials);
-      const data = response.data;
-      
-      // Store the token
-      if (data.access) {
-        localStorage.setItem('token', data.access);
-        // Store refresh token if available
-        if (data.refresh) {
-          localStorage.setItem('refreshToken', data.refresh);
-        }
-      }
-      
-      return data;
-    } catch (error) {
-      console.error('Login API error:', error.response?.data);
-      throw error;
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/auth/user/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (err) {
+      console.error('Get user error:', err.response?.data);
+      throw err;
     }
   },
 
   async logout() {
     try {
-      await api.post('dj-rest-auth/logout/');
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_URL}/api/auth/logout/`, {}, {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+        withCredentials: true,
+      });
       localStorage.removeItem('token');
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Still remove the token even if the request fails
+    } catch (err) {
+      console.error('Logout error:', err);
       localStorage.removeItem('token');
-      throw error;
+      throw err;
     }
-  }
+  },
 };
+
+export default authService;

@@ -1,3 +1,4 @@
+// src/components/profiles/ProfilePage.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
@@ -6,7 +7,6 @@ import ProfileHeader from './ProfileHeader';
 import ProfileStats from './ProfileStats';
 import ProfileWorkouts from './ProfileWorkouts';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { logger } from '../../services/loggerService';
 
 const ProfilePage = () => {
   const { id } = useParams();
@@ -16,7 +16,7 @@ const ProfilePage = () => {
   const { fetchProfileData } = useSetProfileData();
   
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [setError] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -32,44 +32,51 @@ const ProfilePage = () => {
         }
 
         await fetchProfileData(profileId);
+        setLoading(false);
       } catch (err) {
         console.error('ProfilePage: Error loading profile:', err);
-        logger.error('Profile loading error:', err);
         setError('Failed to load profile data');
-      } finally {
         setLoading(false);
       }
     };
 
-    if (currentUser) {
-      loadData();
-    }
-  }, [id, currentUser, fetchProfileData]);
+    loadData();
+  }, [id, currentUser, fetchProfileData, setError]);
 
   if (loading) {
-    return <LoadingSpinner centered fullScreen />;
-  }
-
-  if (error || !profileData?.pageProfile?.results?.[0]) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-white mb-2">
-            {error || 'Profile not found'}
-          </h2>
-          <button
-            onClick={() => navigate(-1)}
-            className="mt-4 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
-          >
-            Go Back
-          </button>
-        </div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <LoadingSpinner color="green" />
       </div>
     );
   }
 
-  const profile = profileData.pageProfile.results[0];
+  // Get the profile data
+  const profile = profileData?.pageProfile?.results?.[0];
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
+        <h2 className="text-2xl font-bold text-white mb-4">Profile not found</h2>
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 bg-gray-800 text-white rounded-lg 
+            hover:bg-gray-700 transition-colors"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
   const isOwnProfile = currentUser?.profile?.id === parseInt(id || currentUser?.profile?.id);
+
+  // Prepare the stats data
+  const stats = {
+    total_workouts: profileData.stats?.total_workouts || 0,
+    workouts_this_week: profileData.stats?.workouts_this_week || 0,
+    total_duration: profileData.stats?.total_workout_time || 0,
+    current_streak: profileData.stats?.current_streak || 0
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -79,10 +86,10 @@ const ProfilePage = () => {
           isOwnProfile={isOwnProfile} 
         />
         <ProfileStats 
-          stats={profileData.stats} 
+          stats={stats} 
         />
         <ProfileWorkouts 
-          workouts={profileData.workouts.results} 
+          workouts={profileData.workouts?.results || []} 
           isOwnProfile={isOwnProfile}
         />
       </div>

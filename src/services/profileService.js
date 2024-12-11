@@ -1,153 +1,138 @@
+// src/services/profileService.js
 import { axiosReq } from './axiosDefaults';
-import { logger } from './loggerService';
 
 class ProfileService {
   async getProfile(profileId) {
-    logger.debug('Getting profile', { profileId });
+    console.log('ProfileService: getProfile called with ID:', profileId);
     
     if (!profileId) {
-      logger.error('No profile ID provided');
+      console.error('ProfileService: No profile ID provided');
       throw new Error('Profile ID is required');
     }
 
     try {
-      const response = await axiosReq.get(`/profiles/${profileId}/`);
-      logger.debug('Got profile data', { data: response.data });
+      console.log('ProfileService: Making GET request to:', `/api/profiles/${profileId}/`);
+      const response = await axiosReq.get(`/api/profiles/${profileId}/`);
+      console.log('ProfileService: Profile data received:', response.data);
       return response.data;
-    } catch (error) {
-      logger.error('Error fetching profile:', error);
-      throw error;
+    } catch (err) {
+      console.error('ProfileService: Error fetching profile:', {
+        error: err,
+        status: err.response?.status,
+        data: err.response?.data,
+        url: err.config?.url
+      });
+      throw err;
     }
   }
 
   async updateProfile(profileId, data) {
-    logger.debug('Updating profile', { profileId, data });
+    console.log('ProfileService: updateProfile called', { profileId, data });
     
     if (!profileId) {
-      logger.error('No profile ID provided for update');
+      console.error('ProfileService: No profile ID provided for update');
       throw new Error('Profile ID is required');
     }
 
     try {
+      console.log('ProfileService: Preparing form data for update');
       const formData = new FormData();
       
-      // Handle file and other data separately
-      Object.keys(data).forEach(key => {
-        if (data[key] !== null && data[key] !== undefined) {
-          if (key === 'image' && data[key] instanceof File) {
-            formData.append('image', data[key]);
-          } else {
-            formData.append(key, String(data[key]));
-          }
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          console.log('ProfileService: Adding form data field:', { key, value });
+          formData.append(key, value);
         }
       });
 
-      const response = await axiosReq.put(
-        `/profiles/${profileId}/`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+      console.log('ProfileService: Making PATCH request');
+      const response = await axiosReq.patch(
+        `/api/profiles/${profileId}/`,
+        formData
       );
       
-      logger.debug('Profile updated', { data: response.data });
+      console.log('ProfileService: Profile updated successfully:', response.data);
       return response.data;
-    } catch (error) {
-      logger.error('Error updating profile:', error);
-      throw error;
+    } catch (err) {
+      console.error('ProfileService: Error updating profile:', {
+        error: err,
+        status: err.response?.status,
+        data: err.response?.data
+      });
+      throw err;
     }
   }
 
   async getProfileWorkouts(profileId, page = 1) {
-    logger.debug('Getting profile workouts', { profileId, page });
-    
-    if (!profileId) {
-      logger.error('No profile ID provided for workouts');
-      throw new Error('Profile ID is required');
-    }
+    console.log('ProfileService: getProfileWorkouts called', { profileId, page });
 
     try {
-      const response = await axiosReq.get('/workouts/', {
+      console.log('ProfileService: Making GET request for workouts');
+      const response = await axiosReq.get('/api/workouts/', {
         params: { owner: profileId, page }
       });
-      logger.debug('Got workouts', { data: response.data });
+      console.log('ProfileService: Workouts received:', response.data);
       return response.data;
-    } catch (error) {
-      logger.error('Error fetching workouts:', error);
-      throw error;
+    } catch (err) {
+      console.error('ProfileService: Error fetching workouts:', {
+        error: err,
+        status: err.response?.status,
+        data: err.response?.data
+      });
+      throw err;
     }
   }
 
   async getProfileStats(profileId) {
-    logger.debug('Getting profile stats', { profileId });
-    
-    if (!profileId) {
-      logger.error('No profile ID provided for stats');
-      throw new Error('Profile ID is required');
-    }
+    console.log('ProfileService: getProfileStats called', { profileId });
 
     try {
-      const response = await axiosReq.get(`/profiles/${profileId}/statistics/`);
-      logger.debug('Got stats', { data: response.data });
+      console.log('ProfileService: Making GET request for stats');
+      const response = await axiosReq.get(`/api/profiles/${profileId}/stats/`);
+      console.log('ProfileService: Stats received:', response.data);
       return response.data;
-    } catch (error) {
-      logger.error('Error fetching stats:', error);
-      throw error;
+    } catch (err) {
+      console.error('ProfileService: Error fetching stats:', {
+        error: err,
+        status: err.response?.status,
+        data: err.response?.data
+      });
+      throw err;
     }
   }
 
   async followUser(userId) {
-    logger.debug('Following user', { userId });
+    console.log('ProfileService: followUser called', { userId });
+
     try {
-      const response = await axiosReq.post('/followers/', {
+      const response = await axiosReq.post('/api/social/follow/', {
         followed: userId
       });
-      logger.debug('Follow successful', { data: response.data });
+      console.log('ProfileService: Follow successful:', response.data);
       return response.data;
-    } catch (error) {
-      logger.error('Error following user:', error);
-      throw error;
+    } catch (err) {
+      console.error('ProfileService: Error following user:', {
+        error: err,
+        status: err.response?.status,
+        data: err.response?.data
+      });
+      throw err;
     }
   }
 
   async unfollowUser(followId) {
-    logger.debug('Unfollowing user', { followId });
-    try {
-      await axiosReq.delete(`/followers/${followId}/`);
-      logger.debug('Unfollow successful');
-    } catch (error) {
-      logger.error('Error unfollowing user:', error);
-      throw error;
-    }
-  }
+    console.log('ProfileService: unfollowUser called', { followId });
 
-  async getCurrentUserProfile() {
-    logger.debug('Getting current user profile');
     try {
-      const response = await axiosReq.get('/profiles/current/');
-      logger.debug('Got current user profile', { data: response.data });
-      return response.data;
-    } catch (error) {
-      logger.error('Error fetching current user profile:', error);
-      throw error;
-    }
-  }
-
-  async searchProfiles(query) {
-    logger.debug('Searching profiles', { query });
-    if (!query) return { results: [] };
-    
-    try {
-      const response = await axiosReq.get('/profiles/', {
-        params: { search: query }
+      await axiosReq.delete(`/api/social/follow/${followId}/`);
+      console.log('ProfileService: Unfollow successful');
+    } catch (err) {
+      console.error('ProfileService: Error unfollowing user:', {
+        error: err,
+        status: err.response?.status,
+        data: err.response?.data
       });
-      logger.debug('Search results', { data: response.data });
-      return response.data;
-    } catch (error) {
-      logger.error('Error searching profiles:', error);
-      throw error;
+      throw err;
     }
   }
 }

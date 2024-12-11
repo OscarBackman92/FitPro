@@ -1,64 +1,34 @@
+// src/components/common/LoadingSpinner.js
 import React from 'react';
 
-const LoadingSpinner = ({ 
-  size = 'md',
-  color = 'green',
-  centered = false,
-  fullScreen = false,
-  text = 'Loading...'
-}) => {
+const LoadingSpinner = ({ color = 'green', size = 'md' }) => {
   const sizeClasses = {
-    sm: 'h-4 w-4 border-2',
-    md: 'h-8 w-8 border-3',
-    lg: 'h-12 w-12 border-4',
-    xl: 'h-16 w-16 border-4'
+    sm: 'h-6 w-6 border-2',
+    md: 'h-10 w-10 border-3',
+    lg: 'h-16 w-16 border-4'
   };
 
   const colorClasses = {
     green: 'border-green-500',
-    blue: 'border-blue-500',
-    red: 'border-red-500',
-    yellow: 'border-yellow-500',
-    gray: 'border-gray-500',
-    white: 'border-white'
+    white: 'border-white',
+    blue: 'border-blue-500'
   };
 
-  const Spinner = () => (
-    <div className={`flex flex-col items-center justify-center gap-3`}>
-      <div className={`
-        animate-spin rounded-full
-        border-t-transparent
-        ${sizeClasses[size]}
-        ${colorClasses[color]}
-      `} />
-      {text && (
-        <span className={`
-          text-sm font-medium
-          ${color === 'white' ? 'text-white' : 'text-gray-500'}
-        `}>
-          {text}
-        </span>
-      )}
+  return (
+    <div className="flex items-center justify-center">
+      <div
+        className={`
+          animate-spin rounded-full
+          border-t-transparent
+          ${sizeClasses[size]}
+          ${colorClasses[color]}
+        `}
+        role="status"
+      >
+        <span className="sr-only">Loading...</span>
+      </div>
     </div>
   );
-
-  if (fullScreen) {
-    return (
-      <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (centered) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <Spinner />
-      </div>
-    );
-  }
-
-  return <Spinner />;
 };
 
 export default LoadingSpinner;
