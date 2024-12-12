@@ -62,15 +62,15 @@ const ProfileEditForm = () => {
   }, [id, navigate, currentUser]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+    
+    // For number inputs, convert to number type
+    const finalValue = type === 'number' ? parseFloat(value) : value;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: finalValue
     }));
-    
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
-    }
   };
 
   const validateForm = () => {

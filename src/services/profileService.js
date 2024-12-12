@@ -63,6 +63,24 @@ class ProfileService {
     }
   }
 
+  async updateProfileImage(profileId, formData) {
+    try {
+      const response = await axiosReq.patch(
+        `/api/profiles/${profileId}/`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      console.error('Error updating profile image:', err);
+      throw err;
+    }
+  }
+
   async getProfileWorkouts(profileId, page = 1) {
     console.log('ProfileService: getProfileWorkouts called', { profileId, page });
 
@@ -99,42 +117,7 @@ class ProfileService {
       });
       throw err;
     }
-  }
-
-  async followUser(userId) {
-    console.log('ProfileService: followUser called', { userId });
-
-    try {
-      const response = await axiosReq.post('/api/social/follow/', {
-        followed: userId
-      });
-      console.log('ProfileService: Follow successful:', response.data);
-      return response.data;
-    } catch (err) {
-      console.error('ProfileService: Error following user:', {
-        error: err,
-        status: err.response?.status,
-        data: err.response?.data
-      });
-      throw err;
-    }
-  }
-
-  async unfollowUser(followId) {
-    console.log('ProfileService: unfollowUser called', { followId });
-
-    try {
-      await axiosReq.delete(`/api/social/follow/${followId}/`);
-      console.log('ProfileService: Unfollow successful');
-    } catch (err) {
-      console.error('ProfileService: Error unfollowing user:', {
-        error: err,
-        status: err.response?.status,
-        data: err.response?.data
-      });
-      throw err;
-    }
-  }
+  }  
 }
 
 export const profileService = new ProfileService();

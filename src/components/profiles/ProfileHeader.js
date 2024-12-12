@@ -29,8 +29,11 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
 
         {/* Profile Details */}
         <div className="flex-1 space-y-4">
+          {/* Bio Section */}
           {profile.bio && (
-            <p className="text-gray-300">{profile.bio}</p>
+            <div className="bg-gray-700/50 p-4 rounded-lg">
+              <p className="text-gray-300 whitespace-pre-wrap">{profile.bio}</p>
+            </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">

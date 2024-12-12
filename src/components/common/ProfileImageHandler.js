@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, User, Loader } from 'lucide-react';
 import { profileService } from '../../services/profileService';
+import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import toast from 'react-hot-toast';
 
 const ProfileImageHandler = ({ 
@@ -10,32 +11,36 @@ const ProfileImageHandler = ({
   onImageUpdate = () => {},
   className = ''
 }) => {
+  const { currentUser } = useCurrentUser();
   const [uploading, setUploading] = useState(false);
 
   const handleImageChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
+  
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
     }
-
+  
     if (file.size > 2 * 1024 * 1024) {
       toast.error('Image must be less than 2MB');
       return;
     }
-
+  
     try {
       setUploading(true);
       const formData = new FormData();
       formData.append('profile_image', file);
-
-      // Assuming profileService.updateProfileImage makes the API call
-      const response = await profileService.updateProfileImage(formData);
-      
-      // Assuming the API returns the new image URL in 'profile_image'
-      onImageUpdate(response.profile_image); 
+  
+      // Use the current user's profile ID
+      const profileId = currentUser?.profile?.id;
+      if (!profileId) {
+        throw new Error('No profile ID available');
+      }
+  
+      const response = await profileService.updateProfileImage(profileId, formData);
+      onImageUpdate(response.profile_image);
       toast.success('Profile image updated successfully');
     } catch (err) {
       console.error('Error uploading image:', err);
