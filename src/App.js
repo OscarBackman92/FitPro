@@ -7,6 +7,13 @@ import styles from "./App.module.css";
 // Common Components
 import { NavBar, PrivateRoute, NotFound, Footer } from "../src/components/common/CommonIndex";
 
+// Loading Component
+const Loading = () => (
+  <div className="flex justify-center items-center h-screen bg-gray-900">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500" />
+  </div>
+);
+
 // Lazy-loaded Components
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
@@ -21,12 +28,6 @@ const WorkoutForm = lazy(() => import("./components/workouts/WorkoutForm"));
 const WorkoutList = lazy(() => import("./components/workouts/WorkoutList"));
 const SocialFeed = lazy(() => import("./components/social/SocialFeed"));
 
-const Loading = () => (
-  <div className="flex justify-center items-center h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500" />
-  </div>
-);
-
 function App() {
   const { currentUser } = useCurrentUser() || {};
 
@@ -40,7 +41,10 @@ function App() {
             path="/" 
             element={currentUser ? <Navigate to="/dashboard" /> : <Home />} 
           />
-          <Route path="/about" element={<About />} />
+          <Route 
+            path="/about" 
+            element={<About />} 
+          />
           
           {/* Auth Routes - Redirect if already logged in */}
           <Route 
@@ -63,35 +67,73 @@ function App() {
           {/* Protected Routes */}
           <Route
             path="/dashboard"
-            element={<PrivateRoute><Dashboard /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
           />
+          
+          {/* Workout Routes */}
           <Route
             path="/workouts"
-            element={<PrivateRoute><WorkoutList /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <WorkoutList />
+              </PrivateRoute>
+            }
           />
           <Route
             path="/workouts/create"
-            element={<PrivateRoute><WorkoutForm /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <WorkoutForm />
+              </PrivateRoute>
+            }
           />
           <Route
             path="/workouts/:id/edit"
-            element={<PrivateRoute><WorkoutForm /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <WorkoutForm />
+              </PrivateRoute>
+            }
           />
+          
+          {/* Profile Routes */}
           <Route
             path="/profiles"
-            element={<PrivateRoute><ProfilePage /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <ProfilePage />
+              </PrivateRoute>
+            }
           />
           <Route
             path="/profiles/:id"
-            element={<PrivateRoute><ProfilePage /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <ProfilePage />
+              </PrivateRoute>
+            }
           />
           <Route
             path="/profiles/:id/edit"
-            element={<PrivateRoute><ProfileEditForm /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <ProfileEditForm />
+              </PrivateRoute>
+            }
           />
+          
+          {/* Social Routes */}
           <Route
             path="/feed"
-            element={<PrivateRoute><SocialFeed /></PrivateRoute>}
+            element={
+              <PrivateRoute>
+                <SocialFeed />
+              </PrivateRoute>
+            }
           />
           
           {/* 404 Route */}
