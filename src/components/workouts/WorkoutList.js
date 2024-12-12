@@ -6,8 +6,8 @@ import toast from 'react-hot-toast';
 
 const WorkoutList = () => {
   const navigate = useNavigate();
-  const [workoutsList, setWorkoutsList] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [workouts, setWorkouts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -16,8 +16,10 @@ const WorkoutList = () => {
       setError(null);
       try {
         const response = await workoutService.listWorkouts();
-        setWorkoutsList(response || []);
+        console.log('Workouts response:', response); // Debug log
+        setWorkouts(response.results || []); // Handle paginated response
       } catch (err) {
+        console.error('Error fetching workouts:', err);
         setError('Failed to fetch workouts');
         toast.error('Error fetching workouts. Please try again later.');
       } finally {
@@ -32,7 +34,7 @@ const WorkoutList = () => {
     if (!window.confirm('Are you sure you want to delete this workout?')) return;
     try {
       await workoutService.deleteWorkout(id);
-      setWorkoutsList((prevWorkouts) =>
+      setWorkouts((prevWorkouts) =>
         prevWorkouts.filter((workout) => workout.id !== id)
       );
       toast.success('Workout deleted successfully');
@@ -40,6 +42,28 @@ const WorkoutList = () => {
       toast.error('Error deleting workout. Please try again.');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 p-6 flex flex-col items-center justify-center">
+        <h2 className="text-2xl font-bold text-white mb-4">{error}</h2>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -55,11 +79,7 @@ const WorkoutList = () => {
         </div>
 
         <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-          {loading ? (
-            <div className="text-center py-12 text-gray-400">Loading...</div>
-          ) : error ? (
-            <div className="text-center py-12 text-red-400">{error}</div>
-          ) : workoutsList.length === 0 ? (
+          {workouts.length === 0 ? (
             <div className="text-center py-12">
               <DumbbellIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-400">No workouts found</p>
@@ -76,7 +96,7 @@ const WorkoutList = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {workoutsList.map((workout) => (
+                {workouts.map((workout) => (
                   <tr key={workout.id} className="hover:bg-gray-700/50">
                     <td className="p-4 text-white font-medium">{workout.title}</td>
                     <td className="p-4 text-gray-300">{workout.date_logged}</td>
