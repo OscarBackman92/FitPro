@@ -1,10 +1,10 @@
-// src/contexts/ProfileDataContext.js
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { profileService } from '../services/profileService';
 import toast from 'react-hot-toast';
 
-export const ProfileDataContext = createContext();
-export const SetProfileDataContext = createContext();
+// Create contexts for data and actions
+const ProfileDataContext = createContext(null);
+const SetProfileDataContext = createContext(null);
 
 export const useProfileData = () => {
   const context = useContext(ProfileDataContext);
@@ -63,112 +63,97 @@ export const ProfileDataProvider = ({ children }) => {
         stats
       });
 
-      setProfileData({
+      const newState = {
         pageProfile: { results: [profile] },
         workouts: workouts,
         stats: stats
+      };
+
+      console.log('ProfileDataProvider: State update details', {
+        newProfile: profile,
+        newWorkouts: workouts,
+        newStats: stats,
+        fullState: newState
       });
+
+      setProfileData(newState);
       
       console.log('ProfileDataProvider: State updated with new data');
       
     } catch (err) {
-      console.error('ProfileDataProvider: Error in fetchProfileData:', {
-        error: err,
-        status: err.response?.status,
-        data: err.response?.data
-      });
+      console.error('ProfileDataProvider: Error in fetchProfileData:', err);
       throw err;
     }
   }, []);
 
   const handleFollow = async (profileToFollow) => {
-    console.log('ProfileDataProvider: handleFollow called for profile:', profileToFollow);
-    
     if (!profileToFollow?.id) {
-      console.error('ProfileDataProvider: Invalid profile for follow', { profileToFollow });
       toast.error('Invalid profile');
       return;
     }
 
     try {
       const response = await profileService.followUser(profileToFollow.id);
-      console.log('ProfileDataProvider: Follow response received:', response);
-      
-      setProfileData(prev => {
-        console.log('ProfileDataProvider: Updating state after follow');
-        return {
-          ...prev,
-          pageProfile: {
-            results: prev.pageProfile.results.map(profile => ({
-              ...profile,
-              followers_count: profile.id === profileToFollow.id 
-                ? profile.followers_count + 1 
-                : profile.followers_count,
-              following_id: profile.id === profileToFollow.id 
-                ? response.id 
-                : profile.following_id
-            }))
-          }
-        };
-      });
-
-      toast.success(`Following ${profileToFollow.owner}`);
+      setProfileData(prev => ({
+        ...prev,
+        pageProfile: {
+          results: prev.pageProfile.results.map(profile => ({
+            ...profile,
+            followers_count: profile.id === profileToFollow.id 
+              ? profile.followers_count + 1 
+              : profile.followers_count,
+            following_id: profile.id === profileToFollow.id 
+              ? response.id 
+              : profile.following_id
+          }))
+        }
+      }));
+      toast.success(`Following ${profileToFollow.username}`);
     } catch (err) {
-      console.error('ProfileDataProvider: Follow error:', err);
       toast.error('Failed to follow user');
     }
   };
 
   const handleUnfollow = async (profileToUnfollow) => {
-    console.log('ProfileDataProvider: handleUnfollow called for profile:', profileToUnfollow);
-    
     if (!profileToUnfollow?.following_id) {
-      console.error('ProfileDataProvider: Invalid follow relationship', { profileToUnfollow });
       toast.error('Invalid follow relationship');
       return;
     }
 
     try {
       await profileService.unfollowUser(profileToUnfollow.following_id);
-      console.log('ProfileDataProvider: Unfollow successful');
-      
-      setProfileData(prev => {
-        console.log('ProfileDataProvider: Updating state after unfollow');
-        return {
-          ...prev,
-          pageProfile: {
-            results: prev.pageProfile.results.map(profile => ({
-              ...profile,
-              followers_count: profile.id === profileToUnfollow.id 
-                ? profile.followers_count - 1 
-                : profile.followers_count,
-              following_id: profile.id === profileToUnfollow.id 
-                ? null 
-                : profile.following_id
-            }))
-          }
-        };
-      });
-
-      toast.success(`Unfollowed ${profileToUnfollow.owner}`);
+      setProfileData(prev => ({
+        ...prev,
+        pageProfile: {
+          results: prev.pageProfile.results.map(profile => ({
+            ...profile,
+            followers_count: profile.id === profileToUnfollow.id 
+              ? profile.followers_count - 1 
+              : profile.followers_count,
+            following_id: profile.id === profileToUnfollow.id 
+              ? null 
+              : profile.following_id
+          }))
+        }
+      }));
+      toast.success(`Unfollowed ${profileToUnfollow.username}`);
     } catch (err) {
-      console.error('ProfileDataProvider: Unfollow error:', err);
       toast.error('Failed to unfollow user');
     }
   };
 
-  const value = {
-    profileData,
+  const setContextValue = {
     fetchProfileData,
     handleFollow,
-    handleUnfollow
+    handleUnfollow,
+    updateProfileData: setProfileData
   };
 
-  console.log('ProfileDataProvider: Rendering with context:', { value });
+  console.log('ProfileDataProvider: Current context value:', { profileData, setContextValue });
 
   return (
     <ProfileDataContext.Provider value={profileData}>
-      <SetProfileDataContext.Provider value={value}>
+      <SetProfileDataContext.Provider value={setContextValue}>
         {children}
       </SetProfileDataContext.Provider>
     </ProfileDataContext.Provider>
