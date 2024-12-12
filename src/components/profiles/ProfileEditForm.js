@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Loader, User, Calendar, Scale, RulerIcon } from 'lucide-react';
+import { Save, User, Calendar, Scale, RulerIcon, X, Loader, AlertCircle } from 'lucide-react';
 import ProfileImageHandler from '../common/ProfileImageHandler';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { profileService } from '../../services/profileService';
@@ -21,6 +21,7 @@ const ProfileEditForm = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
@@ -48,31 +49,78 @@ const ProfileEditForm = () => {
   }, [id, navigate]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    const { name, value } = e.target;
+  
+    // Allow empty or numeric input for weight/height
+    if (name === 'weight' || name === 'height') {
+      if (value === '' || /^\d+$/.test(value)) {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
 
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setSaving(true);
     try {
-      const updatedData = { ...formData };
+      const dataToSubmit = {
+        ...formData,
+        weight: formData.weight ? parseInt(formData.weight, 10) : null,
+        height: formData.height ? parseInt(formData.height, 10) : null,
+      };
+
       if (imageFile) {
-        updatedData.image = imageFile;
+        dataToSubmit.image = imageFile;
       }
 
-      await profileService.updateProfile(id, updatedData);
+      await profileService.updateProfile(id, dataToSubmit);
       toast.success('Profile updated successfully');
       navigate(`/profiles/${id}`);
     } catch (err) {
-      toast.error('Failed to update profile');
+      if (err.response?.data) {
+        setErrors(err.response.data);
+      } else {
+        toast.error('Failed to update profile');
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (formData.weight && (parseInt(formData.weight, 10) < 20 || parseInt(formData.weight, 10) > 500)) {
+      errors.weight = 'Weight must be between 20 and 500 kg';
+    }
+
+    if (formData.height && (parseInt(formData.height, 10) < 100 || parseInt(formData.height, 10) > 300)) {
+      errors.height = 'Height must be between 100 and 300 cm';
+    }
+
+    const today = new Date();
+    const birthDate = new Date(formData.date_of_birth);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    if (formData.date_of_birth && (age < 13 || age > 120)) {
+      errors.date_of_birth = 'Age must be between 13 and 120 years';
+    }
+
+    return errors;
   };
 
   if (loading) {
@@ -91,10 +139,18 @@ const ProfileEditForm = () => {
           name={name}
           value={value}
           onChange={onChange}
-          className="block w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className={`block w-full pl-10 pr-3 py-2 bg-gray-700 border 
+            ${errors[name] ? 'border-red-500' : 'border-gray-600'} 
+            rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent`}
           {...props}
         />
       </div>
+      {errors[name] && (
+        <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+          <AlertCircle className="h-4 w-4" />
+          {errors[name]}
+        </p>
+      )}
     </div>
   );
 
@@ -111,14 +167,87 @@ const ProfileEditForm = () => {
           />
         </div>
         <div className="space-y-6">
-          <FormField label="Name" icon={User} name="name" value={formData.name} onChange={handleChange} />
-          <FormField label="Weight (kg)" icon={Scale} name="weight" value={formData.weight} onChange={handleChange} />
-          <FormField label="Height (cm)" icon={RulerIcon} name="height" value={formData.height} onChange={handleChange} />
-          <FormField label="Date of Birth" icon={Calendar} name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} type="date" />
+          <FormField
+            label="Name"
+            icon={User}
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Your full name"
+          />
+          <div>
+            <label className="block text-sm font-medium text-gray-300">Bio</label>
+            <textarea
+              name="bio"
+              value={formData.bio}
+              onChange={handleChange}
+              rows={4}
+              className={`mt-1 block w-full px-3 py-2 bg-gray-700 border 
+                ${errors.bio ? 'border-red-500' : 'border-gray-600'} 
+                rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent`}
+              placeholder="Tell us about yourself..."
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              label="Weight (kg)"
+              icon={Scale}
+              name="weight"
+              value={formData.weight}
+              onChange={handleChange}
+              type="number"
+              step="1"
+              placeholder="Weight in kg"
+            />
+            <FormField
+              label="Height (cm)"
+              icon={RulerIcon}
+              name="height"
+              value={formData.height}
+              onChange={handleChange}
+              type="number"
+              step="1"
+              placeholder="Height in cm"
+            />
+          </div>
+          <FormField
+            label="Date of Birth"
+            icon={Calendar}
+            name="date_of_birth"
+            value={formData.date_of_birth}
+            onChange={handleChange}
+            type="date"
+          />
         </div>
-        <button type="submit" disabled={saving} className="btn btn-primary">
-          {saving ? <Loader className="animate-spin" /> : 'Save'}
-        </button>
+        <div className="flex justify-end gap-4 pt-4 border-t border-gray-700">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 text-gray-400 hover:text-gray-300 flex items-center gap-2"
+          >
+            <X className="h-5 w-5" />
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 
+              disabled:opacity-50 disabled:cursor-not-allowed transition-colors 
+              flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <Loader className="h-5 w-5 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-5 w-5" />
+                Save Changes
+              </>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
