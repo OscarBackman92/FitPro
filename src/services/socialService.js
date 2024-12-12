@@ -1,4 +1,3 @@
-// src/services/socialService.js
 import { axiosReq } from './axiosDefaults';
 import { logger } from './loggerService';
 

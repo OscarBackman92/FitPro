@@ -1,4 +1,3 @@
-// src/components/progress/Progress.js
 import React from 'react';
 import { Activity, Award, Dumbbell, TrendingUp } from 'lucide-react';
 

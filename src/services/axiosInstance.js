@@ -1,4 +1,3 @@
-// src/services/axiosInstance.js
 import axios from 'axios';
 import logger from './loggerService';
 import errorHandler from './errorHandlerService';

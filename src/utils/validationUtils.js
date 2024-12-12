@@ -1,4 +1,3 @@
-// src/utils/validationUtils.js
 import logger from '../services/loggerService';
 
 export const workoutValidation = {

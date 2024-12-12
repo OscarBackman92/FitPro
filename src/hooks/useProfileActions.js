@@ -6,25 +6,7 @@ import toast from 'react-hot-toast';
 
 const useProfileActions = () => {
   const navigate = useNavigate();
-  const { handleFollow, handleUnfollow, updateProfileData } = useSetProfileData();
-
-  const followProfile = useCallback(async (profile) => {
-    try {
-      await handleFollow(profile);
-    } catch (err) {
-      logger.error('Error following profile:', err);
-      toast.error('Failed to follow profile');
-    }
-  }, [handleFollow]);
-
-  const unfollowProfile = useCallback(async (profile) => {
-    try {
-      await handleUnfollow(profile);
-    } catch (err) {
-      logger.error('Error unfollowing profile:', err);
-      toast.error('Failed to unfollow profile');
-    }
-  }, [handleUnfollow]);
+  const { updateProfileData } = useSetProfileData();
 
   const editProfile = useCallback((profileId) => {
     navigate(`/profiles/${profileId}/edit`);
@@ -46,8 +28,6 @@ const useProfileActions = () => {
   }, [navigate]);
 
   return {
-    followProfile,
-    unfollowProfile,
     editProfile,
     updateProfile,
     viewProfile

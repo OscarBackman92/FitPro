@@ -1,5 +1,3 @@
-// src/services/workoutService.js
-
 import { axiosReq } from './axiosDefaults';
 import { logger } from './loggerService';
 

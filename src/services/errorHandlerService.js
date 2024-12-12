@@ -1,4 +1,3 @@
-// src/services/errorHandlerService.js
 import logger from './loggerService';
 
 class ErrorHandlerService {

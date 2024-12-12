@@ -1,4 +1,3 @@
-// src/services/axiosDefaults.js
 import axios from 'axios';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com';

@@ -90,7 +90,7 @@ const Home = () => {
             </div>
             <div className="flex-1">
               <img 
-                src="/public/images/dashboard_hero_image.png" 
+                src="/public/images/dashboard.png" 
                 alt="App Dashboard Preview" 
                 className="rounded-lg shadow-2xl"
               />
@@ -153,13 +153,6 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            </div>
-            <div className="flex-1">
-              <img 
-                src="/api/placeholder/600/400" 
-                alt="App Features" 
-                className="rounded-lg shadow-xl"
-              />
             </div>
           </div>
         </div>

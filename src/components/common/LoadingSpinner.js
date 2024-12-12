@@ -1,4 +1,3 @@
-// src/components/common/LoadingSpinner.js
 import React from 'react';
 
 const LoadingSpinner = ({ color = 'green', size = 'md' }) => {

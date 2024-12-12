@@ -1,4 +1,3 @@
-// src/services/loggerService.js
 const DEBUG = process.env.NODE_ENV === 'development';
 
 class Logger {

@@ -1,4 +1,3 @@
-// src/contexts/SocialContext.js
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { socialService } from '../services/socialService';
 import logger from '../services/loggerService';

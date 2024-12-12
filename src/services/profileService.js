@@ -1,4 +1,3 @@
-// src/services/profileService.js
 import { axiosReq } from './axiosDefaults';
 
 class ProfileService {

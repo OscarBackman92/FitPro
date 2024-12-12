@@ -1,4 +1,3 @@
-// src/components/profiles/ProfileWorkouts.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';

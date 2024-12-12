@@ -1,4 +1,3 @@
-// src/components/social/WorkoutShareModal.js
 import React, { useState, useEffect } from 'react';
 import { X, Share2, Loader } from 'lucide-react';
 import workoutService from '../../services/workoutService';
