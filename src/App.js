@@ -20,7 +20,6 @@ const ProfileEditForm = lazy(() => import("./components/profiles/ProfileEditForm
 const WorkoutForm = lazy(() => import("./components/workouts/WorkoutForm"));
 const WorkoutList = lazy(() => import("./components/workouts/WorkoutList"));
 const SocialFeed = lazy(() => import("./components/social/SocialFeed"));
-const FollowList = lazy(() => import("./components/social/FollowList"));
 
 const Loading = () => (
   <div className="flex justify-center items-center h-screen">
@@ -64,83 +63,35 @@ function App() {
           {/* Protected Routes */}
           <Route
             path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
+            element={<PrivateRoute><Dashboard /></PrivateRoute>}
           />
           <Route
             path="/workouts"
-            element={
-              <PrivateRoute>
-                <WorkoutList />
-              </PrivateRoute>
-            }
+            element={<PrivateRoute><WorkoutList /></PrivateRoute>}
           />
           <Route
             path="/workouts/create"
-            element={
-              <PrivateRoute>
-                <WorkoutForm />
-              </PrivateRoute>
-            }
+            element={<PrivateRoute><WorkoutForm /></PrivateRoute>}
           />
           <Route
             path="/workouts/:id/edit"
-            element={
-              <PrivateRoute>
-                <WorkoutForm />
-              </PrivateRoute>
-            }
+            element={<PrivateRoute><WorkoutForm /></PrivateRoute>}
           />
           <Route
             path="/profiles"
-            element={
-              <PrivateRoute>
-                <ProfilePage />
-              </PrivateRoute>
-            }
+            element={<PrivateRoute><ProfilePage /></PrivateRoute>}
           />
           <Route
             path="/profiles/:id"
-            element={
-              <PrivateRoute>
-                <ProfilePage />
-              </PrivateRoute>
-            }
+            element={<PrivateRoute><ProfilePage /></PrivateRoute>}
           />
           <Route
             path="/profiles/:id/edit"
-            element={
-              <PrivateRoute>
-                <ProfileEditForm />
-              </PrivateRoute>
-            }
+            element={<PrivateRoute><ProfileEditForm /></PrivateRoute>}
           />
           <Route
             path="/feed"
-            element={
-              <PrivateRoute>
-                <SocialFeed />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profiles/:id/followers"
-            element={
-              <PrivateRoute>
-                <FollowList type="followers" />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profiles/:id/following"
-            element={
-              <PrivateRoute>
-                <FollowList type="following" />
-              </PrivateRoute>
-            }
+            element={<PrivateRoute><SocialFeed /></PrivateRoute>}
           />
           
           {/* 404 Route */}

@@ -14,9 +14,6 @@ const ACTIONS = {
   ADD_COMMENT: 'ADD_COMMENT',
   DELETE_COMMENT: 'DELETE_COMMENT',
   TOGGLE_LIKE: 'TOGGLE_LIKE',
-  TOGGLE_FOLLOW: 'TOGGLE_FOLLOW',
-  SET_FOLLOWERS: 'SET_FOLLOWERS',
-  SET_FOLLOWING: 'SET_FOLLOWING',
   SET_PAGINATION: 'SET_PAGINATION',
   CLEAR_ERROR: 'CLEAR_ERROR'
 };
@@ -25,9 +22,6 @@ const initialState = {
   feed: [],
   comments: {},
   likes: new Set(),
-  follows: new Set(),
-  followers: [],
-  following: [],
   loading: false,
   error: null,
   pagination: {
@@ -101,22 +95,6 @@ function socialReducer(state, action) {
         likes.add(action.payload);
       }
       return { ...state, likes };
-
-    case ACTIONS.TOGGLE_FOLLOW:
-      const follows = new Set(state.follows);
-      if (follows.has(action.payload)) {
-        follows.delete(action.payload);
-      } else {
-        follows.add(action.payload);
-      }
-      return { ...state, follows };
-
-    case ACTIONS.SET_FOLLOWERS:
-      return { ...state, followers: action.payload };
-
-    case ACTIONS.SET_FOLLOWING:
-      return { ...state, following: action.payload };
-
     case ACTIONS.SET_PAGINATION:
       return {
         ...state,
@@ -163,15 +141,6 @@ export function SocialProvider({ children }) {
       try {
         await socialService.toggleLike(workoutId);
         dispatch({ type: ACTIONS.TOGGLE_LIKE, payload: workoutId });
-      } catch (error) {
-        dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
-      }
-    },
-
-    async toggleFollow(userId) {
-      try {
-        await socialService.followUser(userId);
-        dispatch({ type: ACTIONS.TOGGLE_FOLLOW, payload: userId });
       } catch (error) {
         dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
       }

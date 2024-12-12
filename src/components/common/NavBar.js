@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserContext';
 import { 
-  Menu, X, DumbbellIcon, LogOut, Users,
+  Menu, X, DumbbellIcon, LogOut,
   LayoutDashboard, LogIn, UserPlus, 
   Home, PlusSquare, HelpCircle
 } from 'lucide-react';
@@ -46,7 +46,7 @@ const NavBar = () => {
 
   const mainNavLinks = currentUser ? [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/feed', icon: Users, label: 'Community' },
+    { to: '/workouts', icon: DumbbellIcon, label: 'Workouts' },
   ] : [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/about', icon: HelpCircle, label: 'About' },

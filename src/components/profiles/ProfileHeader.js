@@ -1,10 +1,8 @@
-// src/components/profiles/ProfileHeader.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { 
-  Edit2, Scale, RulerIcon, Calendar, 
-  Users
+  Edit2, Scale, RulerIcon, Calendar
 } from 'lucide-react';
 import Avatar from '../common/Avatar';
 
@@ -56,7 +54,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
             )}
           </div>
 
-          {/* Social Stats */}
+          {/* Workout Stats */}
           <div className="flex gap-8 mt-6 pt-6 border-t border-gray-700">
             <div className="text-center">
               <div className="text-lg font-semibold text-white">
@@ -64,37 +62,17 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
               </div>
               <div className="text-sm text-gray-400">Workouts</div>
             </div>
-            <div className="text-center">
-              <div className="text-lg font-semibold text-white">
-                {profile.followers_count || 0}
-              </div>
-              <div className="text-sm text-gray-400">Followers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-semibold text-white">
-                {profile.following_count || 0}
-              </div>
-              <div className="text-sm text-gray-400">Following</div>
-            </div>
           </div>
         </div>
 
         {/* Actions */}
-        {isOwnProfile ? (
+        {isOwnProfile && (
           <button
             onClick={() => navigate(`/profiles/${profile.id}/edit`)}
             className="p-2 text-gray-300 hover:text-white bg-gray-700 
               hover:bg-gray-600 rounded-lg transition-colors"
           >
             <Edit2 className="h-5 w-5" />
-          </button>
-        ) : (
-          <button
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 
-              text-white rounded-lg hover:bg-green-600 transition-colors"
-          >
-            <Users className="h-5 w-5" />
-            Follow
           </button>
         )}
       </div>
