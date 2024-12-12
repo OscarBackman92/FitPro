@@ -1,9 +1,24 @@
-// src/services/authService.js
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com';
 
-export const authService = {
+const authService = {
+  async register(credentials) {
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/registration/`, credentials, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
+
+      return response.data;
+    } catch (err) {
+      console.error('Registration API error:', err.response?.data);
+      throw err;
+    }
+  },
+
   async login(credentials) {
     try {
       const response = await axios.post(`${API_URL}/api/auth/login/`, credentials, {
@@ -12,6 +27,10 @@ export const authService = {
         },
         withCredentials: true,
       });
+
+      if (response.data?.key) {
+        localStorage.setItem('token', response.data.key);
+      }
 
       return response.data;
     } catch (err) {
@@ -52,6 +71,29 @@ export const authService = {
       throw err;
     }
   },
+
+  async forgotPassword(email) {
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/password/reset/`, { email });
+      return response.data;
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      throw err;
+    }
+  },
+
+  async resetPassword(token, password) {
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/password/reset/confirm/`, {
+        token,
+        new_password: password,
+      });
+      return response.data;
+    } catch (err) {
+      console.error('Reset password error:', err);
+      throw err;
+    }
+  }
 };
 
 export default authService;

@@ -79,8 +79,7 @@ const SignUpForm = () => {
       };
       
       console.log('Registration payload:', data);
-      const response = await authService.register(data);
-      console.log('Registration response:', response);
+      await authService.register(data);
       
       toast.success('Account created successfully! Please sign in.');
       navigate('/signin');
