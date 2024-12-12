@@ -1,18 +1,64 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import workoutService from '../../services/workoutService';
 import { 
   Save, 
   X, 
   Loader, 
   AlertCircle, 
-  DumbbellIcon 
+  DumbbellIcon,
+  Trash2 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const WorkoutForm = () => {
+const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, isDeleting }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full space-y-4 border border-gray-700">
+        <h3 className="text-xl font-semibold text-white">Delete Workout</h3>
+        <p className="text-gray-300">
+          Are you sure you want to delete this workout? This action cannot be undone.
+        </p>
+        <div className="flex justify-end gap-4 pt-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-400 hover:text-gray-300"
+            disabled={isDeleting}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 
+              disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isDeleting ? (
+              <>
+                <Loader className="h-5 w-5 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-5 w-5" />
+                Delete
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const WorkoutEdit = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [errors, setErrors] = useState({});
   const [workoutData, setWorkoutData] = useState({
     title: '',
@@ -22,6 +68,20 @@ const WorkoutForm = () => {
     notes: '',
     date_logged: new Date().toISOString().split('T')[0],
   });
+
+  useEffect(() => {
+    const loadWorkout = async () => {
+      try {
+        const data = await workoutService.getWorkout(id);
+        setWorkoutData(data);
+      } catch (err) {
+        toast.error('Failed to load workout');
+        navigate('/workouts');
+      }
+    };
+
+    loadWorkout();
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,13 +113,26 @@ const WorkoutForm = () => {
 
     setIsSubmitting(true);
     try {
-      await workoutService.createWorkout(workoutData);
-      toast.success('Workout created successfully');
+      await workoutService.updateWorkout(id, workoutData);
+      toast.success('Workout updated successfully');
       navigate('/workouts');
     } catch (err) {
-      toast.error('Failed to create workout');
+      toast.error('Failed to update workout');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await workoutService.deleteWorkout(id);
+      toast.success('Workout deleted successfully');
+      navigate('/workouts');
+    } catch (err) {
+      toast.error('Failed to delete workout');
+      setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -69,11 +142,17 @@ const WorkoutForm = () => {
         <div className="flex items-center justify-between border-b border-gray-700 pb-4">
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <DumbbellIcon className="h-6 w-6 text-green-500" />
-            New Workout
+            Edit Workout
           </h2>
+          <button
+            type="button"
+            onClick={() => setShowDeleteModal(true)}
+            className="p-2 text-red-500 hover:text-red-400 transition-colors"
+          >
+            <Trash2 className="h-5 w-5" />
+          </button>
         </div>
 
-        {/* Form Fields */}
         <div className="space-y-6">
           {/* Title Field */}
           <div>
@@ -217,15 +296,23 @@ const WorkoutForm = () => {
               ) : (
                 <>
                   <Save className="h-5 w-5" />
-                  Create
+                  Update
                 </>
               )}
             </button>
           </div>
         </div>
       </form>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal 
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };
 
-export default WorkoutForm;
+export default WorkoutEdit;

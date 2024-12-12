@@ -26,6 +26,7 @@ const ProfilePage = lazy(() => import("./components/profiles/ProfilePage"));
 const ProfileEditForm = lazy(() => import("./components/profiles/ProfileEditForm"));
 const WorkoutForm = lazy(() => import("./components/workouts/WorkoutForm"));
 const WorkoutList = lazy(() => import("./components/workouts/WorkoutList"));
+const WorkoutEdit = lazy(() => import("./components/workouts/WorkoutEdit"));
 const SocialFeed = lazy(() => import("./components/social/SocialFeed"));
 
 function App() {
@@ -95,7 +96,7 @@ function App() {
             path="/workouts/:id/edit"
             element={
               <PrivateRoute>
-                <WorkoutForm />
+                <WorkoutEdit />
               </PrivateRoute>
             }
           />
