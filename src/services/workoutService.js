@@ -1,3 +1,5 @@
+// src/services/workoutService.js
+
 import { axiosReq } from './axiosDefaults';
 import { logger } from './loggerService';
 
@@ -5,7 +7,7 @@ const workoutService = {
   async listWorkouts(params = {}) {
     try {
       const response = await axiosReq.get('/api/workouts/', { params });
-      console.log('API Response for Workouts:', response.data);
+      logger.debug('Workouts fetched:', response.data);
       return response.data;
     } catch (err) {
       logger.error('Error listing workouts:', err);
@@ -56,6 +58,7 @@ const workoutService = {
   async getStatistics() {
     try {
       const response = await axiosReq.get('/api/workouts/statistics/');
+      logger.debug('Statistics fetched:', response.data);
       return response.data;
     } catch (err) {
       logger.error('Error fetching workout statistics:', err);
@@ -65,13 +68,27 @@ const workoutService = {
 
   async getDashboardData() {
     try {
-      const response = await axiosReq.get('/api/workouts/dashboard/');
-      return response.data;
+      const [stats, workouts] = await Promise.all([
+        this.getStatistics(),
+        this.listWorkouts({ limit: 5, ordering: '-date_logged' })
+      ]);
+
+      return {
+        stats: {
+          total_workouts: stats.total_workouts || 0,
+          workouts_this_week: stats.workouts_this_week || 0,
+          current_streak: stats.current_streak || 0,
+          total_duration: stats.total_duration || 0,
+          workout_types: stats.workout_types || [],
+          intensity_distribution: stats.intensity_distribution || []
+        },
+        workouts: workouts.results || []
+      };
     } catch (err) {
       logger.error('Error fetching dashboard data:', err);
       throw err;
     }
-  },
+  }
 };
 
 export default workoutService;

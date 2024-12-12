@@ -20,10 +20,11 @@ const Dashboard = () => {
       current_streak: 0,
       total_duration: 0,
       workout_types: [],
-      monthly_stats: [],
+      intensity_distribution: [],
     },
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -33,21 +34,13 @@ const Dashboard = () => {
       }
 
       try {
-        const statsResponse = await workoutService.getStatistics();
-        const workoutsResponse = await workoutService.listWorkouts();
-
-        setDashboardData({
-          stats: {
-            total_workouts: statsResponse?.total_workouts || 0,
-            workouts_this_week: statsResponse?.workouts_this_week || 0,
-            current_streak: statsResponse?.current_streak || 0,
-            total_duration: statsResponse?.total_duration || 0,
-            workout_types: statsResponse?.workout_types || [],
-            monthly_stats: statsResponse?.monthly_stats || [],
-          },
-          workouts: Array.isArray(workoutsResponse?.results) ? workoutsResponse.results : [],
-        });
+        setError(null);
+        const data = await workoutService.getDashboardData();
+        setDashboardData(data);
       } catch (err) {
+        console.error('Dashboard data fetch error:', err);
+        setError('Failed to load dashboard data');
+        
         if (err.response?.status === 401) {
           navigate('/signin');
         } else {
@@ -65,6 +58,22 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <LoadingSpinner color="green" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <p className="text-xl mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-green-500 rounded-lg hover:bg-green-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }

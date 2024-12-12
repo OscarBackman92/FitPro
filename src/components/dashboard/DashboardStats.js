@@ -25,7 +25,7 @@ const DashboardStats = ({ stats }) => {
       formatter: value => `${value} days`,
     },
     {
-      id: 'minutes',
+      id: 'duration',
       icon: <Activity className="h-6 w-6 text-purple-500" />,
       label: 'Total Minutes',
       value: stats.total_duration || 0,
