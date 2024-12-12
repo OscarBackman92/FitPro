@@ -56,16 +56,6 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
               </div>
             )}
           </div>
-
-          {/* Workout Stats */}
-          <div className="flex gap-8 mt-6 pt-6 border-t border-gray-700">
-            <div className="text-center">
-              <div className="text-lg font-semibold text-white">
-                {profile.workouts_count}
-              </div>
-              <div className="text-sm text-gray-400">Workouts</div>
-            </div>
-          </div>
         </div>
 
         {/* Actions */}
