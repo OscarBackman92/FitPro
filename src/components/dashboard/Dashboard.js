@@ -17,7 +17,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { currentUser } = useCurrentUser();
   const [dashboardData, setDashboardData] = useState({
-    workouts: [], // Ensure workouts is always an array
+    workouts: [],
     stats: {
       total_workouts: 0,
       workouts_this_week: 0,
@@ -38,16 +38,29 @@ const Dashboard = () => {
       }
 
       try {
-        const stats = await workoutService.getStatistics();
-        const workouts = await workoutService.listWorkouts();
-        console.log('Statistics fetched:', stats);
-        console.log('Workouts fetched:', workouts.results);
+        // First fetch statistics
+        const statsResponse = await workoutService.getStatistics();
+        console.log('Statistics fetched:', statsResponse);
 
+        // Then fetch recent workouts
+        const workoutsResponse = await workoutService.listWorkouts();
+        console.log('Workouts fetched:', workoutsResponse);
+
+        // Update dashboard data with proper structuring
         setDashboardData({
-          stats: stats || {},
-          workouts: workouts.results || [], // Ensure workouts is set to an array
+          stats: {
+            total_workouts: statsResponse?.total_workouts || 0,
+            workouts_this_week: statsResponse?.workouts_this_week || 0,
+            current_streak: statsResponse?.current_streak || 0,
+            total_duration: statsResponse?.total_duration || 0,
+            workout_types: statsResponse?.workout_types || [],
+            monthly_stats: statsResponse?.monthly_stats || [],
+          },
+          workouts: Array.isArray(workoutsResponse?.results) ? workoutsResponse.results : [],
         });
+
       } catch (err) {
+        console.error('Dashboard data fetch error:', err);
         if (err.response?.status === 401) {
           navigate('/signin');
         } else {
@@ -67,29 +80,37 @@ const Dashboard = () => {
       icon: <DumbbellIcon className="h-6 w-6 text-blue-500" />,
       label: 'Total Workouts',
       value: dashboardData.stats.total_workouts || 0,
+      formatter: value => value.toString(),
     },
     {
       id: 'weekly',
       icon: <Calendar className="h-6 w-6 text-green-500" />,
       label: 'This Week',
       value: dashboardData.stats.workouts_this_week || 0,
+      formatter: value => value.toString(),
     },
     {
       id: 'streak',
       icon: <Award className="h-6 w-6 text-yellow-500" />,
       label: 'Current Streak',
-      value: `${dashboardData.stats.current_streak || 0} days`,
+      value: dashboardData.stats.current_streak || 0,
+      formatter: value => `${value} days`,
     },
     {
       id: 'minutes',
       icon: <Activity className="h-6 w-6 text-purple-500" />,
       label: 'Total Minutes',
       value: dashboardData.stats.total_duration || 0,
+      formatter: value => value.toString(),
     },
   ];
 
   if (loading) {
-    return <LoadingSpinner centered fullScreen />;
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <LoadingSpinner color="green" />
+      </div>
+    );
   }
 
   return (
@@ -112,7 +133,9 @@ const Dashboard = () => {
             <div className="inline-flex p-3 rounded-lg bg-gray-700/50 mb-4">
               {card.icon}
             </div>
-            <p className="text-2xl font-bold text-white mb-1">{card.value}</p>
+            <p className="text-2xl font-bold text-white mb-1">
+              {card.formatter(card.value)}
+            </p>
             <p className="text-sm text-gray-400">{card.label}</p>
           </div>
         ))}
