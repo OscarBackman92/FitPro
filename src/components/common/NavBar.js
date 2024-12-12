@@ -4,10 +4,11 @@ import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserCon
 import { 
   Menu, X, DumbbellIcon, LogOut,
   LayoutDashboard, LogIn, UserPlus, 
-  Home, PlusSquare, HelpCircle
+  Home, PlusSquare, HelpCircle,
+  Users
 } from 'lucide-react';
 import Avatar from './Avatar';
-import  authService from '../../services/authService';
+import authService from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const NavBar = () => {
@@ -47,6 +48,7 @@ const NavBar = () => {
   const mainNavLinks = currentUser ? [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/workouts', icon: DumbbellIcon, label: 'Workouts' },
+    { to: '/feed', icon: Users, label: 'Social Feed' },
   ] : [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/about', icon: HelpCircle, label: 'About' },
@@ -156,7 +158,9 @@ const NavBar = () => {
 
       {/* Mobile menu */}
       <div
-        className={`md:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`md:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
         <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
         
@@ -173,7 +177,10 @@ const NavBar = () => {
                 <div>
                   <h3 className="font-semibold text-white">{currentUser?.username}</h3>
                   <p className="text-sm text-gray-400">
-                    <NavLink to={`/profiles/${currentUser?.profile?.id}`} onClick={() => setIsOpen(false)}>
+                    <NavLink 
+                      to={`/profiles/${currentUser?.profile?.id}`} 
+                      onClick={() => setIsOpen(false)}
+                    >
                       View Profile
                     </NavLink>
                   </p>
@@ -207,6 +214,7 @@ const NavBar = () => {
                   </NavLink>
                 ))}
               </div>
+
               {/* Sign Out */}
               <button
                 onClick={handleSignOut}
