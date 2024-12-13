@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, User, Calendar, Scale, RulerIcon, X, Loader, AlertCircle } from 'lucide-react';
+import { 
+  Save, 
+  X, 
+  Loader
+} from 'lucide-react';
 import ProfileImageHandler from '../common/ProfileImageHandler';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { profileService } from '../../services/profileService';
@@ -17,27 +21,28 @@ const ProfileEditForm = () => {
     height: '',
     gender: '',
     date_of_birth: '',
-    is_private: false,
   });
+
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
+        setLoading(true);
         const data = await profileService.getProfile(id);
         setFormData({
           name: data.name || '',
           bio: data.bio || '',
-          weight: data.weight || '',
-          height: data.height || '',
+          weight: data.weight?.toString() || '',
+          height: data.height?.toString() || '',
           gender: data.gender || '',
           date_of_birth: data.date_of_birth || '',
-          is_private: data.is_private || false,
         });
       } catch (err) {
+        console.error('Failed to load profile:', err);
         toast.error('Failed to load profile');
         navigate(-1);
       } finally {
@@ -50,109 +55,97 @@ const ProfileEditForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
-    // Allow empty or numeric input for weight/height
-    if (name === 'weight' || name === 'height') {
-      if (value === '' || /^\d+$/.test(value)) {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: value,
-        }));
-      }
-    } else {
-      setFormData((prev) => ({
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Clear any existing error for the field being changed
+    if (errors[name]) {
+      setErrors(prev => ({
         ...prev,
-        [name]: value,
+        [name]: null
       }));
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (formData.weight) {
+      const weight = parseFloat(formData.weight);
+      if (isNaN(weight) || weight < 0 || weight > 500) {
+        newErrors.weight = 'Weight must be between 0 and 500 kg';
+      }
+    }
+
+    if (formData.height) {
+      const height = parseFloat(formData.height);
+      if (isNaN(height) || height < 0 || height > 300) {
+        newErrors.height = 'Height must be between 0 and 300 cm';
+      }
+    }
+
+    if (formData.date_of_birth) {
+      const birthDate = new Date(formData.date_of_birth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      
+      if (age < 13 || age > 120) {
+        newErrors.date_of_birth = 'Age must be between 13 and 120 years';
+      }
+    }
+
+    return newErrors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    setSaving(true);
+    setIsSubmitting(true);
     try {
-      const dataToSubmit = {
+      // Prepare data for submission
+      const submissionData = {
         ...formData,
-        weight: formData.weight ? parseInt(formData.weight, 10) : null,
-        height: formData.height ? parseInt(formData.height, 10) : null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        height: formData.height ? parseFloat(formData.height) : null,
       };
 
+      await profileService.updateProfile(id, submissionData);
+      
       if (imageFile) {
-        dataToSubmit.image = imageFile;
+        const formData = new FormData();
+        formData.append('profile_image', imageFile);
+        await profileService.updateProfileImage(id, formData);
       }
-
-      await profileService.updateProfile(id, dataToSubmit);
+      
       toast.success('Profile updated successfully');
       navigate(`/profiles/${id}`);
     } catch (err) {
+      console.error('Failed to update profile:', err);
+      toast.error('Failed to update profile');
+      
       if (err.response?.data) {
         setErrors(err.response.data);
-      } else {
-        toast.error('Failed to update profile');
       }
     } finally {
-      setSaving(false);
+      setIsSubmitting(false);
     }
-  };
-
-  const validateForm = () => {
-    const errors = {};
-
-    if (formData.weight && (parseInt(formData.weight, 10) < 20 || parseInt(formData.weight, 10) > 500)) {
-      errors.weight = 'Weight must be between 20 and 500 kg';
-    }
-
-    if (formData.height && (parseInt(formData.height, 10) < 100 || parseInt(formData.height, 10) > 300)) {
-      errors.height = 'Height must be between 100 and 300 cm';
-    }
-
-    const today = new Date();
-    const birthDate = new Date(formData.date_of_birth);
-    const age = today.getFullYear() - birthDate.getFullYear();
-    if (formData.date_of_birth && (age < 13 || age > 120)) {
-      errors.date_of_birth = 'Age must be between 13 and 120 years';
-    }
-
-    return errors;
   };
 
   if (loading) {
-    return <LoadingSpinner fullScreen />;
-  }
-
-  const FormField = ({ label, icon: Icon, name, value, onChange, type = 'text', ...props }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-300">{label}</label>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Icon className="h-5 w-5 text-gray-400" />
-        </div>
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          className={`block w-full pl-10 pr-3 py-2 bg-gray-700 border 
-            ${errors[name] ? 'border-red-500' : 'border-gray-600'} 
-            rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent`}
-          {...props}
-        />
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <LoadingSpinner />
       </div>
-      {errors[name] && (
-        <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-          <AlertCircle className="h-4 w-4" />
-          {errors[name]}
-        </p>
-      )}
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
@@ -166,59 +159,110 @@ const ProfileEditForm = () => {
             editable
           />
         </div>
+
         <div className="space-y-6">
-          <FormField
-            label="Name"
-            icon={User}
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Your full name"
-          />
+          {/* Name Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-300">Bio</label>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
+                text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Your name"
+            />
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+            )}
+          </div>
+
+          {/* Bio Input */}
+          <div>
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-300">
+              Bio
+            </label>
             <textarea
+              id="bio"
               name="bio"
+              rows={4}
               value={formData.bio}
               onChange={handleChange}
-              rows={4}
-              className={`mt-1 block w-full px-3 py-2 bg-gray-700 border 
-                ${errors.bio ? 'border-red-500' : 'border-gray-600'} 
-                rounded-lg text-white focus:ring-2 focus:ring-green-500 focus:border-transparent`}
-              placeholder="Tell us about yourself..."
+              className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
+                text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Tell us about yourself"
             />
+            {errors.bio && (
+              <p className="mt-1 text-sm text-red-500">{errors.bio}</p>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              label="Weight (kg)"
-              icon={Scale}
-              name="weight"
-              value={formData.weight}
-              onChange={handleChange}
-              type="number"
-              step="1"
-              placeholder="Weight in kg"
-            />
-            <FormField
-              label="Height (cm)"
-              icon={RulerIcon}
-              name="height"
-              value={formData.height}
-              onChange={handleChange}
-              type="number"
-              step="1"
-              placeholder="Height in cm"
-            />
+
+          {/* Weight and Height Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="weight" className="block text-sm font-medium text-gray-300">
+                Weight (kg)
+              </label>
+              <input
+                type="text"
+                id="weight"
+                name="weight"
+                value={formData.weight}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
+                  text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Weight in kg"
+              />
+              {errors.weight && (
+                <p className="mt-1 text-sm text-red-500">{errors.weight}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="height" className="block text-sm font-medium text-gray-300">
+                Height (cm)
+              </label>
+              <input
+                type="text"
+                id="height"
+                name="height"
+                value={formData.height}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
+                  text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Height in cm"
+              />
+              {errors.height && (
+                <p className="mt-1 text-sm text-red-500">{errors.height}</p>
+              )}
+            </div>
           </div>
-          <FormField
-            label="Date of Birth"
-            icon={Calendar}
-            name="date_of_birth"
-            value={formData.date_of_birth}
-            onChange={handleChange}
-            type="date"
-          />
+
+          {/* Date of Birth Input */}
+          <div>
+            <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-300">
+              Date of Birth
+            </label>
+            <input
+              type="date"
+              id="date_of_birth"
+              name="date_of_birth"
+              value={formData.date_of_birth}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
+                text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+            {errors.date_of_birth && (
+              <p className="mt-1 text-sm text-red-500">{errors.date_of_birth}</p>
+            )}
+          </div>
         </div>
+
+        {/* Form Actions */}
         <div className="flex justify-end gap-4 pt-4 border-t border-gray-700">
           <button
             type="button"
@@ -228,14 +272,15 @@ const ProfileEditForm = () => {
             <X className="h-5 w-5" />
             Cancel
           </button>
+          
           <button
             type="submit"
-            disabled={saving}
+            disabled={isSubmitting}
             className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 
               disabled:opacity-50 disabled:cursor-not-allowed transition-colors 
               flex items-center gap-2"
           >
-            {saving ? (
+            {isSubmitting ? (
               <>
                 <Loader className="h-5 w-5 animate-spin" />
                 Saving...
