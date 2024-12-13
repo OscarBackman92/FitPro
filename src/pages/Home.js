@@ -88,13 +88,6 @@ const Home = () => {
                 </button>
               </div>
             </div>
-            <div className="flex-1">
-              <img 
-                src="/public/images/dashboard.png" 
-                alt="App Dashboard Preview" 
-                className="rounded-lg shadow-2xl"
-              />
-            </div>
           </div>
         </div>
       </section>
