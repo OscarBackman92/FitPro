@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  Save, 
-  X, 
-  Loader
-} from 'lucide-react';
+import { Save, X, Loader } from 'lucide-react';
 import ProfileImageHandler from '../common/ProfileImageHandler';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { profileService } from '../../services/profileService';
@@ -42,7 +38,6 @@ const ProfileEditForm = () => {
           date_of_birth: data.date_of_birth || '',
         });
       } catch (err) {
-        console.error('Failed to load profile:', err);
         toast.error('Failed to load profile');
         navigate(-1);
       } finally {
@@ -60,7 +55,6 @@ const ProfileEditForm = () => {
       [name]: value
     }));
 
-    // Clear any existing error for the field being changed
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -86,16 +80,6 @@ const ProfileEditForm = () => {
       }
     }
 
-    if (formData.date_of_birth) {
-      const birthDate = new Date(formData.date_of_birth);
-      const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
-      
-      if (age < 13 || age > 120) {
-        newErrors.date_of_birth = 'Age must be between 13 and 120 years';
-      }
-    }
-
     return newErrors;
   };
 
@@ -110,21 +94,15 @@ const ProfileEditForm = () => {
 
     setIsSubmitting(true);
     try {
-      // Prepare data for submission
+      // Create submission data including any image file
       const submissionData = {
         ...formData,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         height: formData.height ? parseFloat(formData.height) : null,
+        profile_image: imageFile
       };
 
       await profileService.updateProfile(id, submissionData);
-      
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append('profile_image', imageFile);
-        await profileService.updateProfileImage(id, formData);
-      }
-      
       toast.success('Profile updated successfully');
       navigate(`/profiles/${id}`);
     } catch (err) {
@@ -174,11 +152,7 @@ const ProfileEditForm = () => {
               onChange={handleChange}
               className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                 text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Your name"
             />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-            )}
           </div>
 
           {/* Bio Input */}
@@ -189,16 +163,12 @@ const ProfileEditForm = () => {
             <textarea
               id="bio"
               name="bio"
-              rows={4}
               value={formData.bio}
               onChange={handleChange}
+              rows={4}
               className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                 text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Tell us about yourself"
             />
-            {errors.bio && (
-              <p className="mt-1 text-sm text-red-500">{errors.bio}</p>
-            )}
           </div>
 
           {/* Weight and Height Grid */}
@@ -215,7 +185,6 @@ const ProfileEditForm = () => {
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                   text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Weight in kg"
               />
               {errors.weight && (
                 <p className="mt-1 text-sm text-red-500">{errors.weight}</p>
@@ -234,7 +203,6 @@ const ProfileEditForm = () => {
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                   text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Height in cm"
               />
               {errors.height && (
                 <p className="mt-1 text-sm text-red-500">{errors.height}</p>
@@ -242,7 +210,7 @@ const ProfileEditForm = () => {
             </div>
           </div>
 
-          {/* Date of Birth Input */}
+          {/* Date of Birth */}
           <div>
             <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-300">
               Date of Birth
@@ -256,9 +224,6 @@ const ProfileEditForm = () => {
               className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                 text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
-            {errors.date_of_birth && (
-              <p className="mt-1 text-sm text-red-500">{errors.date_of_birth}</p>
-            )}
           </div>
         </div>
 

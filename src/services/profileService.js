@@ -10,17 +10,11 @@ class ProfileService {
     }
 
     try {
-      console.log('ProfileService: Making GET request to:', `/api/profiles/${profileId}/`);
       const response = await axiosReq.get(`/api/profiles/${profileId}/`);
       console.log('ProfileService: Profile data received:', response.data);
       return response.data;
     } catch (err) {
-      console.error('ProfileService: Error fetching profile:', {
-        error: err,
-        status: err.response?.status,
-        data: err.response?.data,
-        url: err.config?.url
-      });
+      console.error('ProfileService: Error fetching profile:', err);
       throw err;
     }
   }
@@ -29,25 +23,47 @@ class ProfileService {
     console.log('ProfileService: updateProfile called', { profileId, data });
     
     if (!profileId) {
-      console.error('ProfileService: No profile ID provided for update');
       throw new Error('Profile ID is required');
     }
 
     try {
-      console.log('ProfileService: Preparing form data for update');
       const formData = new FormData();
       
+      // Handle profile image - must be added first and with correct field name
+      if (data.profile_image instanceof File) {
+        console.log('ProfileService: Adding profile image to form data');
+        // Use the field name that matches your Django model field
+        formData.append('profile_image', data.profile_image, data.profile_image.name);
+      }
+      
+      // Add all other non-file fields to FormData
       Object.entries(data).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
+        if (value !== null && value !== undefined && key !== 'profile_image') {
           console.log('ProfileService: Adding form data field:', { key, value });
           formData.append(key, value);
         }
       });
 
-      console.log('ProfileService: Making PATCH request');
+      // Log FormData contents for debugging
+      for (let pair of formData.entries()) {
+        console.log('ProfileService: FormData contains:', pair[0], pair[1]);
+      }
+
       const response = await axiosReq.patch(
         `/api/profiles/${profileId}/`,
-        formData
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            // Remove any content-type headers that might be auto-set
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          transformRequest: (data, headers) => {
+            // Delete any content-type header that axios might add
+            delete headers['Content-Type'];
+            return data;
+          },
+        }
       );
       
       console.log('ProfileService: Profile updated successfully:', response.data);
@@ -62,40 +78,18 @@ class ProfileService {
     }
   }
 
-  async updateProfileImage(profileId, formData) {
-    try {
-      const response = await axiosReq.patch(
-        `/api/profiles/${profileId}/`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-      return response.data;
-    } catch (err) {
-      console.error('Error updating profile image:', err);
-      throw err;
-    }
-  }
 
   async getProfileWorkouts(profileId, page = 1) {
     console.log('ProfileService: getProfileWorkouts called', { profileId, page });
 
     try {
-      console.log('ProfileService: Making GET request for workouts');
       const response = await axiosReq.get('/api/workouts/', {
         params: { owner: profileId, page }
       });
       console.log('ProfileService: Workouts received:', response.data);
       return response.data;
     } catch (err) {
-      console.error('ProfileService: Error fetching workouts:', {
-        error: err,
-        status: err.response?.status,
-        data: err.response?.data
-      });
+      console.error('ProfileService: Error fetching workouts:', err);
       throw err;
     }
   }
@@ -104,19 +98,14 @@ class ProfileService {
     console.log('ProfileService: getProfileStats called', { profileId });
 
     try {
-      console.log('ProfileService: Making GET request for stats');
       const response = await axiosReq.get(`/api/profiles/${profileId}/stats/`);
       console.log('ProfileService: Stats received:', response.data);
       return response.data;
     } catch (err) {
-      console.error('ProfileService: Error fetching stats:', {
-        error: err,
-        status: err.response?.status,
-        data: err.response?.data
-      });
+      console.error('ProfileService: Error fetching stats:', err);
       throw err;
     }
-  }  
+  }
 }
 
 export const profileService = new ProfileService();

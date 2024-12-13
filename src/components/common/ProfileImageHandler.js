@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, User, Loader } from 'lucide-react';
 import { profileService } from '../../services/profileService';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
@@ -13,6 +13,12 @@ const ProfileImageHandler = ({
 }) => {
   const { currentUser } = useCurrentUser();
   const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState(src);
+
+  // Update imageUrl when src prop changes
+  useEffect(() => {
+    setImageUrl(src);
+  }, [src]);
 
   const handleImageChange = async (event) => {
     const file = event.target.files?.[0];
@@ -30,17 +36,21 @@ const ProfileImageHandler = ({
   
     try {
       setUploading(true);
-      const formData = new FormData();
-      formData.append('profile_image', file);
-  
-      // Use the current user's profile ID
+      
       const profileId = currentUser?.profile?.id;
       if (!profileId) {
         throw new Error('No profile ID available');
       }
   
-      const response = await profileService.updateProfileImage(profileId, formData);
-      onImageUpdate(response.profile_image);
+      const response = await profileService.updateProfile(profileId, {
+        profile_image: file
+      });
+
+      // Update the image URL with the new image from response
+      const newImageUrl = response.profile_image;
+      setImageUrl(newImageUrl);
+      onImageUpdate(newImageUrl);
+      
       toast.success('Profile image updated successfully');
     } catch (err) {
       console.error('Error uploading image:', err);
@@ -50,9 +60,10 @@ const ProfileImageHandler = ({
     }
   };
 
+  const displayImage = imageUrl || src;
+
   return (
     <div className="relative">
-      {/* Profile Image */}
       <div 
         className={`
           relative overflow-hidden rounded-full
@@ -60,9 +71,9 @@ const ProfileImageHandler = ({
         `}
         style={{ width: size, height: size }}
       >
-        {src ? (
+        {displayImage ? (
           <img
-            src={src}
+            src={displayImage}
             alt="Profile"
             className="w-full h-full object-cover"
           />
@@ -72,7 +83,6 @@ const ProfileImageHandler = ({
           </div>
         )}
 
-        {/* Upload Overlay */}
         {editable && !uploading && (
           <label 
             className="
@@ -91,7 +101,6 @@ const ProfileImageHandler = ({
           </label>
         )}
 
-        {/* Loading Overlay */}
         {uploading && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <Loader className="w-1/4 h-1/4 text-white animate-spin" />

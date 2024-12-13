@@ -2,26 +2,16 @@ import axios from 'axios';
 
 const BASE_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com';
 
-console.log('axiosDefaults: Initializing with BASE_URL:', BASE_URL);
-
-// Create axios instances
 export const axiosReq = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   withCredentials: true,
 });
 
 export const axiosRes = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   withCredentials: true,
 });
 
-// Request interceptor
 axiosReq.interceptors.request.use(
   async (config) => {
     console.log('axiosDefaults: Request interceptor called', {
@@ -33,8 +23,12 @@ axiosReq.interceptors.request.use(
 
     const token = localStorage.getItem('token');
     if (token) {
-      console.log('axiosDefaults: Adding token to request');
       config.headers.Authorization = `Token ${token}`;
+    }
+
+    // Don't modify content-type for FormData
+    if (!(config.data instanceof FormData)) {
+      config.headers['Content-Type'] = 'application/json';
     }
 
     return config;
@@ -45,7 +39,6 @@ axiosReq.interceptors.request.use(
   }
 );
 
-// Response interceptor
 axiosRes.interceptors.response.use(
   (response) => {
     console.log('axiosDefaults: Response received', {
