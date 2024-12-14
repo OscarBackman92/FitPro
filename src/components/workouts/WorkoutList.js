@@ -85,29 +85,51 @@ const WorkoutList = () => {
               <p className="text-gray-400">No workouts found</p>
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-900/50">
-                <tr>
-                  <th className="p-4 text-left text-gray-300">Title</th>
-                  <th className="p-4 text-left text-gray-300">Date</th>
-                  <th className="p-4 text-left text-gray-300">Type</th>
-                  <th className="p-4 text-left text-gray-300">Duration</th>
-                  <th className="p-4 text-left text-gray-300">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-700">
-                {workouts.map((workout) => (
-                  <tr key={workout.id} className="hover:bg-gray-700/50">
-                    <td className="p-4 text-white font-medium">{workout.title}</td>
-                    <td className="p-4 text-gray-300">{workout.date_logged}</td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
-                        {workout.workout_type}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-300">{workout.duration} mins</td>
-                    <td className="p-4">
-                      <div className="flex gap-2">
+            <div className="overflow-x-auto">
+              <table className="table-auto w-full text-sm md:text-base">
+                <thead className="bg-gray-900/50 hidden md:table-header-group">
+                  <tr>
+                    <th className="p-4 text-left text-gray-300">Title</th>
+                    <th className="p-4 text-left text-gray-300">Date</th>
+                    <th className="p-4 text-left text-gray-300">Type</th>
+                    <th className="p-4 text-left text-gray-300">Duration</th>
+                    <th className="p-4 text-left text-gray-300">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {workouts.map((workout) => (
+                    <tr
+                      key={workout.id}
+                      className="hover:bg-gray-700/50 md:table-row flex flex-col md:flex-row md:items-center md:gap-0 md:py-0"
+                    >
+                      {/* Mobile-friendly stacked rows */}
+                      <td className="p-4 text-white font-medium md:whitespace-nowrap flex md:table-cell">
+                        <span className="md:hidden font-bold text-gray-300 mr-2">
+                          Title:
+                        </span>
+                        {workout.title}
+                      </td>
+                      <td className="p-4 text-gray-300 md:whitespace-nowrap flex md:table-cell">
+                        <span className="md:hidden font-bold text-gray-300 mr-2">
+                          Date:
+                        </span>
+                        {workout.date_logged}
+                      </td>
+                      <td className="p-4 flex md:table-cell">
+                        <span className="md:hidden font-bold text-gray-300 mr-2">
+                          Type:
+                        </span>
+                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-sm md:inline">
+                          {workout.workout_type}
+                        </span>
+                      </td>
+                      <td className="p-4 text-gray-300 md:whitespace-nowrap flex md:table-cell">
+                        <span className="md:hidden font-bold text-gray-300 mr-2">
+                          Duration:
+                        </span>
+                        {workout.duration} mins
+                      </td>
+                      <td className="p-4 flex gap-2 md:table-cell md:justify-center">
                         <button
                           onClick={() => navigate(`/workouts/${workout.id}/edit`)}
                           className="text-sm px-2 py-1 text-blue-400 hover:text-blue-300"
@@ -120,12 +142,12 @@ const WorkoutList = () => {
                         >
                           Delete
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
