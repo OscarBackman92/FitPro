@@ -13,23 +13,23 @@ const Avatar = ({
   status = 'offline',
   className = '' 
 }) => {
-  // Map size names to pixel values
+  // Map size names to larger pixel values
   const sizeMap = {
-    xs: 24,
-    sm: 32,
-    md: 40,
-    lg: 48,
-    xl: 64
+    xs: 32,  // Increased from 24
+    sm: 40,  // Increased from 32
+    md: 48,  // Increased from 40
+    lg: 56,  // Increased from 48
+    xl: 72   // Increased from 64
   };
 
-  const pixelSize = sizeMap[size] || 40;
+  const pixelSize = sizeMap[size] || sizeMap.md; // Default to 'md'
 
   const sizeClasses = {
-    xs: 'h-6 w-6 text-xs',
-    sm: 'h-8 w-8 text-sm',
-    md: 'h-10 w-10 text-base',
-    lg: 'h-12 w-12 text-lg',
-    xl: 'h-16 w-16 text-xl'
+    xs: 'h-8 w-8 text-xs',  // Increased height/width
+    sm: 'h-10 w-10 text-sm',
+    md: 'h-12 w-12 text-base',
+    lg: 'h-14 w-14 text-lg',
+    xl: 'h-18 w-18 text-xl'  // Larger dimensions for 'xl'
   };
 
   const statusClasses = {
@@ -39,18 +39,19 @@ const Avatar = ({
     busy: 'bg-red-500'
   };
 
+  const resolvedStatusClass = statusClasses[status] || statusClasses.offline;
+
   const AvatarContent = () => (
     <div className="relative inline-flex items-center justify-center">
       {src ? (
         <ProfileImageHandler
           src={src}
-          alt={text || 'Avatar'}
           size={pixelSize}
           className={className}
         />
       ) : (
         <div className={`
-          ${sizeClasses[size]}
+          ${sizeClasses[size] || sizeClasses.md}
           rounded-full bg-gray-100
           flex items-center justify-center
           ${className}
@@ -64,13 +65,13 @@ const Avatar = ({
           )}
         </div>
       )}
-      
+
       {showStatus && (
         <span className={`
           absolute bottom-0 right-0
-          block h-2.5 w-2.5 rounded-full
+          block h-3 w-3 rounded-full
           ring-2 ring-white
-          ${statusClasses[status]}
+          ${resolvedStatusClass}
         `} />
       )}
     </div>

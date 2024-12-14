@@ -8,44 +8,29 @@ import ProfileWorkouts from './ProfileWorkouts';
 import LoadingSpinner from '../common/LoadingSpinner';
 
 const ProfilePage = () => {
-  console.log('ProfilePage: Component rendering');
-  
-  const { id } = useParams();
+  const { id } = useParams(); // ID from the URL
   const navigate = useNavigate();
-  const { currentUser } = useCurrentUser();
-  const profileData = useProfileData();
-  const { fetchProfileData } = useSetProfileData();
-  
-  console.log('ProfilePage: Initial props/context', { 
-    id, 
-    currentUser, 
-    profileData 
-  });
+  const { currentUser } = useCurrentUser(); // Current logged-in user context
+  const profileData = useProfileData(); // Profile data from context
+  const { fetchProfileData } = useSetProfileData(); // Fetch method from context
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    console.log('ProfilePage: Effect triggered', { id, currentUser });
-    
     const loadData = async () => {
       try {
-        console.log('ProfilePage: Starting data load');
         setLoading(true);
         setError(null);
-        
-        const profileId = id || currentUser?.profile?.id;
-        console.log('ProfilePage: Loading data for profile:', { profileId, currentUser });
-        
+
+        const profileId = id; // Always use the URL ID for the viewed profile
         if (!profileId) {
           throw new Error('No profile ID available');
         }
 
-        await fetchProfileData(profileId);
-        console.log('ProfilePage: Data load complete');
+        await fetchProfileData(profileId); // Fetch data for the specific profile
       } catch (err) {
-        console.error('ProfilePage: Error loading profile:', err);
+        console.error('Error loading profile data:', err);
         setError('Failed to load profile data');
       } finally {
         setLoading(false);
@@ -53,10 +38,9 @@ const ProfilePage = () => {
     };
 
     loadData();
-  }, [id, currentUser, fetchProfileData]);
+  }, [id, fetchProfileData]);
 
   if (loading) {
-    console.log('ProfilePage: Rendering loading state');
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <LoadingSpinner color="green" />
@@ -65,7 +49,6 @@ const ProfilePage = () => {
   }
 
   if (error) {
-    console.log('ProfilePage: Rendering error state', { error });
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
         <h2 className="text-2xl font-bold text-white mb-4">{error}</h2>
@@ -79,11 +62,9 @@ const ProfilePage = () => {
     );
   }
 
-  const profile = profileData?.pageProfile?.results?.[0];
-  console.log('ProfilePage: Profile data extracted', { profile });
+  const profile = profileData?.pageProfile?.results?.[0]; // Extract the profile being viewed
 
   if (!profile) {
-    console.log('ProfilePage: No profile found');
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
         <h2 className="text-2xl font-bold text-white mb-4">Profile not found</h2>
@@ -97,7 +78,7 @@ const ProfilePage = () => {
     );
   }
 
-  const isOwnProfile = currentUser?.profile?.id === parseInt(id || currentUser?.profile?.id);
+  const isOwnProfile = currentUser?.profile?.id === parseInt(id); // Check if viewing own profile
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -111,7 +92,7 @@ const ProfilePage = () => {
         />
         <ProfileWorkouts 
           workouts={profileData.workouts?.results || []} 
-          isOwnProfile={isOwnProfile}
+          isOwnProfile={isOwnProfile} 
         />
       </div>
     </div>

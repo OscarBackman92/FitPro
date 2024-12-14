@@ -6,7 +6,7 @@ import Avatar from '../common/Avatar';
 
 const StatBadge = ({ icon: Icon, label, value }) => {
   if (!value) return null;
-  
+
   return (
     <div className="flex items-center gap-3 p-3 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 transition-colors">
       <div className="p-2 bg-gray-700 rounded-lg">
@@ -26,21 +26,18 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
   const formatDate = (date, formatString) => {
     try {
       return format(new Date(date), formatString);
-    } catch (error) {
+    } catch {
       return 'Invalid date';
     }
   };
 
   return (
     <div className="bg-gray-800 rounded-xl shadow-lg">
-      {/* Profile Header */}
       <div className="relative h-32 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-t-xl">
         {isOwnProfile && (
           <button
             onClick={() => navigate(`/profiles/${profile.id}/edit`)}
-            className="absolute top-4 right-4 p-2.5 bg-gray-800/90 hover:bg-gray-700 
-              text-gray-300 hover:text-white rounded-lg transition-all duration-200 
-              hover:scale-105 backdrop-blur-sm flex items-center gap-2 border border-gray-700"
+            className="absolute top-4 right-4 p-2.5 bg-gray-800/90 hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg transition-all duration-200 hover:scale-105 backdrop-blur-sm flex items-center gap-2 border border-gray-700"
           >
             <Edit2 className="h-4 w-4" />
             <span className="text-sm font-medium">Edit Profile</span>
@@ -48,10 +45,8 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
         )}
       </div>
 
-      {/* Profile Content */}
       <div className="p-6 -mt-16">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Left Column: Avatar and Basic Info */}
           <div className="flex flex-col items-center md:items-start">
             <Avatar
               src={profile.profile_image}
@@ -69,37 +64,19 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
             </div>
           </div>
 
-          {/* Right Column: Profile Details */}
           <div className="flex-1 space-y-6">
-            {/* Bio Section */}
             {profile.bio && (
               <div className="bg-gray-700/30 p-4 rounded-lg border border-gray-700/50">
-                <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                  {profile.bio}
-                </p>
+                <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
               </div>
             )}
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <StatBadge 
-                icon={Scale} 
-                label="Weight"
-                value={profile.weight ? `${profile.weight} kg` : null}
-              />
-              <StatBadge 
-                icon={RulerIcon} 
-                label="Height"
-                value={profile.height ? `${profile.height} cm` : null}
-              />
-              <StatBadge 
-                icon={Calendar} 
-                label="Birth Date"
-                value={profile.date_of_birth ? formatDate(profile.date_of_birth, 'PP') : null}
-              />
+              <StatBadge icon={Scale} label="Weight" value={profile.weight && `${profile.weight} kg`} />
+              <StatBadge icon={RulerIcon} label="Height" value={profile.height && `${profile.height} cm`} />
+              <StatBadge icon={Calendar} label="Birth Date" value={profile.date_of_birth && formatDate(profile.date_of_birth, 'PP')} />
             </div>
 
-            {/* Additional Info */}
             <div className="flex flex-wrap gap-4 mt-4">
               {profile.email && (
                 <div className="flex items-center gap-2 text-gray-400">
