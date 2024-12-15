@@ -1,102 +1,49 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useContext } from 'react';
 import { profileService } from '../services/profileService';
 
-// Create contexts for data and actions
-const ProfileDataContext = createContext(null);
-const SetProfileDataContext = createContext(null);
+const ProfileDataContext = createContext();
+const SetProfileDataContext = createContext();
 
-export const useProfileData = () => {
-  const context = useContext(ProfileDataContext);
-  if (!context) {
-    console.error('useProfileData used outside of ProfileDataProvider');
-    throw new Error('useProfileData must be used within a ProfileDataProvider');
-  }
-  return context;
-};
-
-export const useSetProfileData = () => {
-  const context = useContext(SetProfileDataContext);
-  if (!context) {
-    console.error('useSetProfileData used outside of ProfileDataProvider');
-    throw new Error('useSetProfileData must be used within a ProfileDataProvider');
-  }
-  return context;
-};
+export const useProfileData = () => useContext(ProfileDataContext);
+export const useSetProfileData = () => useContext(SetProfileDataContext);
 
 export const ProfileDataProvider = ({ children }) => {
-  console.log('ProfileDataProvider: Initializing');
-  
-  const [profileData, setProfileData] = useState({
-    pageProfile: { results: [] },
-    workouts: { results: [], count: 0, next: null },
-    stats: {
-      total_workouts: 0,
-      total_duration: 0,
-      workouts_this_week: 0,
-      current_streak: 0
-    }
-  });
+  const [profileData, setProfileData] = useState(null);
 
   const fetchProfileData = useCallback(async (profileId) => {
-    console.log('ProfileDataProvider: fetchProfileData called with ID:', profileId);
-    
-    if (!profileId) {
-      console.error('ProfileDataProvider: No profile ID provided');
-      throw new Error('Profile ID is required');
-    }
+    console.log('ProfileDataProvider: Fetching profile data for ID:', profileId);
 
     try {
-      console.log('ProfileDataProvider: Starting parallel API requests');
-      
       const [profile, workouts, stats] = await Promise.all([
         profileService.getProfile(profileId),
         profileService.getProfileWorkouts(profileId),
-        profileService.getProfileStats(profileId)
+        profileService.getProfileStats(profileId),
       ]);
 
-      console.log('ProfileDataProvider: All data received', {
-        profile,
-        workouts,
-        stats
-      });
+      console.log('ProfileDataProvider: Fetched profile:', profile);
+      console.log('ProfileDataProvider: Fetched workouts:', workouts);
+      console.log('ProfileDataProvider: Fetched stats:', stats);
 
-      const newState = {
-        pageProfile: { results: [profile] },
-        workouts: workouts,
-        stats: stats
-      };
-
-      console.log('ProfileDataProvider: State update details', {
-        newProfile: profile,
-        newWorkouts: workouts,
-        newStats: stats,
-        fullState: newState
-      });
-
-      setProfileData(newState);
-      
-      console.log('ProfileDataProvider: State updated with new data');
-      
+      setProfileData({ pageProfile: { results: [profile] }, workouts, stats });
     } catch (err) {
-      console.error('ProfileDataProvider: Error in fetchProfileData:', err);
+      console.error('ProfileDataProvider: Error fetching profile data:', err);
       throw err;
     }
   }, []);
 
-  const setContextValue = {
-    fetchProfileData,
-    updateProfileData: setProfileData
-  };
-
-  console.log('ProfileDataProvider: Current context value:', { profileData, setContextValue });
+  const updateProfileData = useCallback((updatedProfile) => {
+    console.log('ProfileDataProvider: Updating profile data with:', updatedProfile);
+    setProfileData((prev) => ({
+      ...prev,
+      pageProfile: { results: [updatedProfile] },
+    }));
+  }, []);
 
   return (
     <ProfileDataContext.Provider value={profileData}>
-      <SetProfileDataContext.Provider value={setContextValue}>
+      <SetProfileDataContext.Provider value={{ fetchProfileData, updateProfileData }}>
         {children}
       </SetProfileDataContext.Provider>
     </ProfileDataContext.Provider>
   );
 };
-
-export default ProfileDataProvider;

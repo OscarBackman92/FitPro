@@ -4,7 +4,7 @@ import { useCurrentUser, useSetCurrentUser } from '../../contexts/CurrentUserCon
 import { 
   Menu, X, DumbbellIcon, LogOut,
   LayoutDashboard, LogIn, UserPlus, 
-  Home, PlusSquare, HelpCircle,
+  Home, HelpCircle,
   Users
 } from 'lucide-react';
 import Avatar from './Avatar';
@@ -12,7 +12,8 @@ import authService from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const NavBar = () => {
-  const { currentUser } = useCurrentUser();
+  const currentUserContext = useCurrentUser(); // Guard against null
+  const currentUser = currentUserContext?.currentUser || null; // Extract safely
   const setCurrentUser = useSetCurrentUser();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const NavBar = () => {
     }
   };
 
-  const navLinkClasses = ({ isActive }) => ` 
+  const navLinkClasses = ({ isActive }) => `
     flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200
     ${isActive 
       ? 'bg-green-500 text-white font-semibold' 
@@ -81,30 +82,27 @@ const NavBar = () => {
                   ))}
                 </div>
 
-                {/* Action Buttons */}
+                {/* User Menu */}
                 <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-800">
-                  {/* User Menu */}
-                  <div className="flex items-center gap-4">
-                    <NavLink
-                      to={`/profiles/${currentUser?.profile?.id}`}
-                      className="flex items-center gap-2 hover:text-white transition-colors"
-                    >
-                      <Avatar
-                        src={currentUser?.profile?.image}
-                        text={currentUser?.username}
-                        height={32}
-                      />
-                    </NavLink>
+                  <NavLink
+                    to={`/profiles/${currentUser?.profile?.id}`}
+                    className="flex items-center gap-2 hover:text-white transition-colors"
+                  >
+                    <Avatar
+                      src={currentUser?.profile?.image}
+                      text={currentUser?.username}
+                      height={32}
+                    />
+                  </NavLink>
 
-                    <button
-                      onClick={handleSignOut}
-                      className="flex items-center gap-2 px-4 py-2 text-gray-400 
-                        hover:text-red-500 rounded-lg transition-colors"
-                    >
-                      <LogOut size={20} />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-400 
+                      hover:text-red-500 rounded-lg transition-colors"
+                  >
+                    <LogOut size={20} />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
               </>
             ) : (
@@ -144,7 +142,7 @@ const NavBar = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white 
@@ -156,119 +154,34 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <div
-        className={`md:hidden fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
-        
-        <div className="relative w-4/5 max-w-sm h-full bg-gray-900 text-white p-6 overflow-y-auto">
-          {currentUser ? (
-            <>
-              {/* User Profile Section */}
-              <div className="flex items-center gap-4 pb-6 mb-6 border-b border-gray-800">
-                <Avatar
-                  src={currentUser?.profile?.image}
-                  text={currentUser?.username}
-                  height={40}
-                />
-                <div>
-                  <h3 className="font-semibold text-white">{currentUser?.username}</h3>
-                  <p className="text-sm text-gray-400">
-                    <NavLink 
-                      to={`/profiles/${currentUser?.profile?.id}`} 
-                      onClick={() => setIsOpen(false)}
-                    >
-                      View Profile
-                    </NavLink>
-                  </p>
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <button
-                onClick={() => {
-                  navigate('/workouts/create');
-                  setIsOpen(false);
-                }}
-                className="w-full flex items-center gap-2 px-4 py-3 mb-6 bg-green-500 text-white 
-                  rounded-lg hover:bg-green-600 transition-colors"
+      {/* Mobile Navigation */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-gray-900/90 z-50">
+          <div className="flex flex-col items-start p-6 space-y-4">
+            {mainNavLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={mobileNavLinkClasses}
+                onClick={() => setIsOpen(false)}
               >
-                <PlusSquare size={20} />
-                <span>Log Workout</span>
-              </button>
-
-              {/* Navigation Links */}
-              <div className="space-y-2">
-                {mainNavLinks.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    className={mobileNavLinkClasses}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <link.icon size={20} />
-                    <span>{link.label}</span>
-                  </NavLink>
-                ))}
-              </div>
-
-              {/* Sign Out */}
+                <link.icon size={20} />
+                <span>{link.label}</span>
+              </NavLink>
+            ))}
+            {currentUser && (
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-2 px-4 py-3 mt-6 text-red-500
+                className="w-full text-left flex items-center gap-2 px-4 py-2 text-red-500 
                   hover:bg-red-500/10 rounded-lg transition-colors"
               >
                 <LogOut size={20} />
                 <span>Sign Out</span>
               </button>
-            </>
-          ) : (
-            <>
-              {/* Public Navigation */}
-              <div className="space-y-2 mb-6">
-                {mainNavLinks.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    className={mobileNavLinkClasses}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <link.icon size={20} />
-                    <span>{link.label}</span>
-                  </NavLink>
-                ))}
-              </div>
-
-              {/* Auth Buttons */}
-              <div className="space-y-3">
-                <NavLink
-                  to="/signin"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 
-                    text-green-500 border border-green-500 rounded-lg 
-                    hover:bg-green-500 hover:text-white transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <LogIn size={20} />
-                  <span>Sign In</span>
-                </NavLink>
-
-                <NavLink
-                  to="/signup"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 
-                    bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <UserPlus size={20} />
-                  <span>Sign Up</span>
-                </NavLink>
-              </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 };

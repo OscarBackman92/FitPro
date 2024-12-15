@@ -5,7 +5,7 @@ import { useCurrentUser } from "./contexts/CurrentUserContext";
 import styles from "./App.module.css";
 
 // Common Components
-import { NavBar, PrivateRoute, NotFound, Footer } from "../src/components/common/CommonIndex";
+import { NavBar, PrivateRoute, NotFound, Footer } from "./components/common/CommonIndex";
 
 // Loading Component
 const Loading = () => (
@@ -16,7 +16,7 @@ const Loading = () => (
 
 // Lazy-loaded Components
 const Home = lazy(() => import("./pages/Home"));
-const Dashboard = lazy(() => import('./components/dashboard/Dashboard'));
+const Dashboard = lazy(() => import("./components/dashboard/Dashboard"));
 const About = lazy(() => import("./pages/About"));
 const SignUpForm = lazy(() => import("./pages/auth/SignUpForm"));
 const SignInForm = lazy(() => import("./pages/auth/SignInForm"));
@@ -38,31 +38,28 @@ function App() {
       <Suspense fallback={<Loading />}>
         <Routes>
           {/* Public Routes */}
-          <Route 
-            path="/" 
-            element={currentUser ? <Navigate to="/dashboard" /> : <Home />} 
+          <Route
+            path="/"
+            element={currentUser ? <Navigate to="/dashboard" replace /> : <Home />}
           />
-          <Route 
-            path="/about" 
-            element={<About />} 
+          <Route path="/about" element={<About />} />
+
+          {/* Auth Routes */}
+          <Route
+            path="/signin"
+            element={currentUser ? <Navigate to="/dashboard" replace /> : <SignInForm />}
           />
-          
-          {/* Auth Routes - Redirect if already logged in */}
-          <Route 
-            path="/signin" 
-            element={currentUser ? <Navigate to="/dashboard" /> : <SignInForm />} 
+          <Route
+            path="/signup"
+            element={currentUser ? <Navigate to="/dashboard" replace /> : <SignUpForm />}
           />
-          <Route 
-            path="/signup" 
-            element={currentUser ? <Navigate to="/dashboard" /> : <SignUpForm />} 
+          <Route
+            path="/forgot-password"
+            element={currentUser ? <Navigate to="/dashboard" replace /> : <ForgotPassword />}
           />
-          <Route 
-            path="/forgot-password" 
-            element={currentUser ? <Navigate to="/dashboard" /> : <ForgotPassword />} 
-          />
-          <Route 
-            path="/reset-password" 
-            element={currentUser ? <Navigate to="/dashboard" /> : <ResetPassword />} 
+          <Route
+            path="/reset-password"
+            element={currentUser ? <Navigate to="/dashboard" replace /> : <ResetPassword />}
           />
 
           {/* Protected Routes */}
@@ -74,8 +71,6 @@ function App() {
               </PrivateRoute>
             }
           />
-          
-          {/* Workout Routes */}
           <Route
             path="/workouts"
             element={
@@ -100,16 +95,8 @@ function App() {
               </PrivateRoute>
             }
           />
-          
+
           {/* Profile Routes */}
-          <Route
-            path="/profiles"
-            element={
-              <PrivateRoute>
-                <ProfilePage />
-              </PrivateRoute>
-            }
-          />
           <Route
             path="/profiles/:id"
             element={
@@ -126,8 +113,8 @@ function App() {
               </PrivateRoute>
             }
           />
-          
-          {/* Social Routes */}
+
+          {/* Social Feed */}
           <Route
             path="/feed"
             element={
@@ -136,7 +123,7 @@ function App() {
               </PrivateRoute>
             }
           />
-          
+
           {/* 404 Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
