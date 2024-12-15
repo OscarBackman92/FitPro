@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import authService from '../services/authService';
+import axios from 'axios';
 
 const CurrentUserContext = createContext();
 const SetCurrentUserContext = createContext();
@@ -13,30 +14,48 @@ export const CurrentUserProvider = ({ children }) => {
 
   const fetchCurrentUser = useCallback(async () => {
     try {
-      // Check if we have a token
-      const token = authService.getToken();
-      if (!token) {
+      if (!authService.isAuthenticated()) {
         setCurrentUser(null);
         setIsLoading(false);
         return;
       }
 
-      // Attempt to get current user
       const userData = await authService.getCurrentUser();
       setCurrentUser(userData);
     } catch (err) {
       console.error('Error fetching current user:', err);
-      // Clear token and user data on error
-      authService.clearToken();
-      setCurrentUser(null);
+      // Handle token expiration or invalid token
+      if (err.response?.status === 401) {
+        authService.logout();
+        setCurrentUser(null);
+      }
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // Initial load of user data
   useEffect(() => {
     fetchCurrentUser();
   }, [fetchCurrentUser]);
+
+  // Set up axios interceptor for token expiration
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response?.status === 401) {
+          setCurrentUser(null);
+          authService.logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []);
 
   return (
     <CurrentUserContext.Provider value={{ currentUser, isLoading }}>
