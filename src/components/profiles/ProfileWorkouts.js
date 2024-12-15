@@ -17,11 +17,19 @@ const ProfileWorkouts = ({ profileId, isOwnProfile, profileUsername }) => {
       setError(null);
 
       try {
+        console.log(`Fetching workouts for Profile ID: ${profileId}`);
         const response = await workoutService.listWorkouts({ owner: profileId });
-        console.log('ProfileWorkouts: Fetched workouts:', response);
-        setWorkouts(response.results || []);
+        console.log('Fetched workouts response:', response);
+
+        // Only keep workouts that belong to this profile ID
+        const filteredWorkouts = response.results.filter(
+          (workout) => workout.owner === profileId
+        );
+        console.log('Filtered workouts:', filteredWorkouts);
+
+        setWorkouts(filteredWorkouts);
       } catch (err) {
-        console.error('ProfileWorkouts: Error fetching workouts:', err);
+        console.error('Error fetching workouts:', err);
         setError('Failed to fetch workouts');
         toast.error('Error fetching workouts. Please try again later.');
       } finally {

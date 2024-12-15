@@ -8,27 +8,27 @@ import ProfileWorkouts from './ProfileWorkouts';
 import LoadingSpinner from '../common/LoadingSpinner';
 
 const ProfilePage = () => {
-  const { id } = useParams(); // ID from the URL
+  const { id } = useParams(); // ID of the profile to view
   const navigate = useNavigate();
-  const { currentUser } = useCurrentUser(); // Current logged-in user context
-  const profileData = useProfileData(); // Profile data from context
-  const { fetchProfileData } = useSetProfileData(); // Fetch method from context
+  const { currentUser } = useCurrentUser();
+  const profileData = useProfileData();
+  const { fetchProfileData } = useSetProfileData();
 
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadProfileData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const profileId = id; // Always use the URL ID for the viewed profile
+        const profileId = id;
         if (!profileId) {
-          throw new Error('No profile ID available');
+          throw new Error('No profile ID available.');
         }
 
-        await fetchProfileData(profileId); // Fetch data for the specific profile
+        await fetchProfileData(profileId);
       } catch (err) {
         console.error('Error loading profile data:', err);
         setError('Failed to load profile data');
@@ -37,7 +37,7 @@ const ProfilePage = () => {
       }
     };
 
-    loadData();
+    loadProfileData();
   }, [id, fetchProfileData]);
 
   if (loading) {
@@ -62,7 +62,8 @@ const ProfilePage = () => {
     );
   }
 
-  const profile = profileData?.pageProfile?.results?.[0]; // Extract the profile being viewed
+  const profile = profileData?.pageProfile?.results?.[0];
+  const isOwnProfile = currentUser?.profile?.id === parseInt(id);
 
   if (!profile) {
     return (
@@ -78,21 +79,15 @@ const ProfilePage = () => {
     );
   }
 
-  const isOwnProfile = currentUser?.profile?.id === parseInt(id); // Check if viewing own profile
-
   return (
     <div className="min-h-screen bg-gray-900 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        <ProfileHeader 
-          profile={profile} 
-          isOwnProfile={isOwnProfile} 
-        />
-        <ProfileStats 
-          stats={profileData.stats} 
-        />
-        <ProfileWorkouts 
-          workouts={profileData.workouts?.results || []} 
-          isOwnProfile={isOwnProfile} 
+        <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
+        <ProfileStats stats={profileData.stats} />
+        <ProfileWorkouts
+          profileId={profile.id}
+          profileUsername={profile.username}
+          isOwnProfile={isOwnProfile}
         />
       </div>
     </div>
