@@ -67,12 +67,31 @@ const ProfileEditForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    profileService.updateProfile(id, {
-      ...formData,
-      weight: formData.weight ? parseFloat(formData.weight) : null,
-      height: formData.height ? parseFloat(formData.height) : null
-    })
-      .then(() => { toast.success('Profile updated successfully'); navigate(`/profiles/${id}`); })
+      
+    // Create FormData instance for multipart/form-data
+    const formDataToSend = new FormData();
+        
+    // Manually append each field
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('bio', formData.bio);
+    if (formData.weight) {
+      formDataToSend.append('weight', parseFloat(formData.weight));
+    }
+    if (formData.height) {
+      formDataToSend.append('height', parseFloat(formData.height));
+    }
+    if (formData.gender) {
+      formDataToSend.append('gender', formData.gender);
+    }
+    if (formData.date_of_birth) {
+      formDataToSend.append('date_of_birth', formData.date_of_birth);
+    }
+  
+    profileService.updateProfile(id, formDataToSend)
+      .then(() => {
+        toast.success('Profile updated successfully');
+        navigate(`/profiles/${id}`);
+      })
       .catch(err => {
         console.error('Failed to update profile:', err);
         toast.error('Failed to update profile');

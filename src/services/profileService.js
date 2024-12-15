@@ -23,14 +23,26 @@ class ProfileService {
     if (!profileId) throw new Error('Profile ID is required');
 
     try {
-      const formData = new FormData();
-      if (data.profile_image instanceof File) {
-        console.log('ProfileService: Adding profile image to FormData');
-        formData.append('profile_image', data.profile_image, data.profile_image.name);
+      let requestData;
+      let headers = {};
+
+      // Check if we're dealing with FormData (for image uploads)
+      if (data instanceof FormData) {
+        requestData = data;
+        headers = { 'Content-Type': 'multipart/form-data' };
+      } else {
+        // For regular data, create a new FormData and append all fields
+        requestData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '') {
+            // Convert numbers to strings
+            requestData.append(key, value.toString());
+          }
+        });
       }
 
-      const response = await axiosReq.patch(`/api/profiles/${profileId}/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const response = await axiosReq.patch(`/api/profiles/${profileId}/`, requestData, {
+        headers: headers
       });
 
       console.log('ProfileService: Profile updated successfully:', response.data);
