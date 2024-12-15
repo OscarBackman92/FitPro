@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { axiosReq } from '../services/axiosDefaults';
+import authService from '../services/authService';
 
 const CurrentUserContext = createContext();
 const SetCurrentUserContext = createContext();
@@ -13,11 +13,21 @@ export const CurrentUserProvider = ({ children }) => {
 
   const fetchCurrentUser = useCallback(async () => {
     try {
-      const { data } = await axiosReq.get('/dj-rest-auth/user/');
-      setCurrentUser(data);
-      console.log('CurrentUserProvider: User fetched successfully:', data);
+      // Check if we have a token
+      const token = authService.getToken();
+      if (!token) {
+        setCurrentUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      // Attempt to get current user
+      const userData = await authService.getCurrentUser();
+      setCurrentUser(userData);
     } catch (err) {
-      console.error('CurrentUserProvider: Error fetching user:', err);
+      console.error('Error fetching current user:', err);
+      // Clear token and user data on error
+      authService.clearToken();
       setCurrentUser(null);
     } finally {
       setIsLoading(false);

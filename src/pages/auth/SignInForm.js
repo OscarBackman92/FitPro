@@ -33,50 +33,35 @@ export default function SignInForm() {
     setErrors({});
 
     try {
-      const response = await authService.login(signInData);
-      console.log('Login response:', response); // Debugging line
+      // First, attempt to login
+      const loginResponse = await authService.login(signInData);
+      console.log('Login successful:', loginResponse);
 
-      if (response?.key) {
-        // Store the authentication token
-        localStorage.setItem('token', response.key);
+      // After successful login, get user details
+      try {
+        const userResponse = await authService.getCurrentUser();
+        console.log('User details retrieved:', userResponse);
         
-        // Get user details using the token
-        try {
-          const userResponse = await authService.getCurrentUser();
-          setCurrentUser(userResponse);
-          toast.success('Welcome back!');
-          navigate('/dashboard');
-        } catch (userError) {
-          console.error('Error fetching user details:', userError);
-          throw new Error('Failed to get user details');
-        }
-      } else {
-        throw new Error('No authentication token received');
+        setCurrentUser(userResponse);
+        toast.success('Welcome back!');
+        navigate('/dashboard');
+      } catch (userError) {
+        console.error('Error fetching user details:', userError);
+        // If we can't get user details, clear everything and show error
+        authService.clearToken();
+        setCurrentUser(null);
+        throw new Error('Unable to get user details. Please try logging in again.');
       }
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('Login process error:', err);
       
       if (err.response?.data) {
-        // Handle specific error messages from the API
         const errorData = err.response.data;
-        
-        if (typeof errorData === 'string') {
-          setErrors({ non_field_errors: [errorData] });
-        } else if (typeof errorData === 'object') {
-          setErrors(errorData);
-        }
-
-        // Show the most relevant error message
-        const errorMessage = 
-          errorData.non_field_errors?.[0] || 
-          errorData.detail || 
-          'Invalid username or password';
-        
-        toast.error(errorMessage);
+        setErrors(typeof errorData === 'object' ? errorData : { non_field_errors: [errorData] });
+        toast.error(errorData.non_field_errors?.[0] || 'Invalid username or password');
       } else {
-        // Handle generic error
-        setErrors({ non_field_errors: ['An error occurred during sign in'] });
-        toast.error('Failed to sign in');
+        setErrors({ non_field_errors: [err.message || 'An error occurred during sign in'] });
+        toast.error(err.message || 'Failed to sign in');
       }
     } finally {
       setIsLoading(false);
