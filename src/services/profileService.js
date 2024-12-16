@@ -18,37 +18,28 @@ class ProfileService {
 
   async updateProfile(profileId, data) {
     console.log('ProfileService: Updating profile with ID:', profileId);
-    console.log('ProfileService: Data for update:', data);
 
     if (!profileId) throw new Error('Profile ID is required');
+    if (!data || (!(data instanceof FormData) && Object.keys(data).length === 0)) {
+      throw new Error('No data provided for update');
+    }
 
     try {
-      let requestData;
       let headers = {};
 
-      // Check if we're dealing with FormData (for image uploads)
       if (data instanceof FormData) {
-        requestData = data;
+        console.log('FormData contents before sending:');
+        for (let [key, value] of data.entries()) {
+          console.log(`${key}: ${value instanceof File ? value.name : value}`);
+        }
         headers = { 'Content-Type': 'multipart/form-data' };
-      } else {
-        // For regular data, create a new FormData and append all fields
-        requestData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-          if (value !== null && value !== undefined && value !== '') {
-            // Convert numbers to strings
-            requestData.append(key, value.toString());
-          }
-        });
       }
 
-      const response = await axiosReq.patch(`/api/profiles/${profileId}/`, requestData, {
-        headers: headers
-      });
-
-      console.log('ProfileService: Profile updated successfully:', response.data);
+      const response = await axiosReq.patch(`/api/profiles/${profileId}/`, data, { headers });
+      console.log('ProfileService: Response from backend:', response.data);
       return response.data;
     } catch (err) {
-      console.error('ProfileService: Error updating profile:', err);
+      console.error('ProfileService: Error updating profile:', err.response?.data || err.message);
       throw err;
     }
   }

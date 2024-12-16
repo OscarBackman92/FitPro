@@ -97,7 +97,7 @@ const ProfileHeader = ({ profile, isOwnProfile }) => {
           {/* Avatar and Basic Info */}
           <div className="flex flex-col items-center md:items-start">
             <Avatar
-              src={profile.profile_image}
+              src={profile.profile_image ? `${profile.profile_image}?t=${Date.now()}` : '/default_profile_image.png'}
               text={profile.name || profile.username}
               size="xl"
               className="ring-4 ring-gray-800 w-32 h-32 bg-gray-700"

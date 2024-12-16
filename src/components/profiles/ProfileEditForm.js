@@ -1,21 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, X, Loader } from 'lucide-react';
+import { useSetProfileData } from '../../contexts/ProfileDataContext';
 import ProfileImageHandler from '../common/ProfileImageHandler';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { profileService } from '../../services/profileService';
 import toast from 'react-hot-toast';
-
-const formFields = {
-  text: [
-    { name: 'name', label: 'Name' },
-    { name: 'bio', label: 'Bio', type: 'textarea', rows: 4 }
-  ],
-  measurements: [
-    { name: 'weight', label: 'Weight', unit: 'kg', type: 'number', step: '0.1' },
-    { name: 'height', label: 'Height', unit: 'cm', type: 'number', step: '0.1' }
-  ]
-};
 
 const FormField = ({ name, value, onChange, error, ...props }) => (
   <div>
@@ -51,9 +41,9 @@ const FormField = ({ name, value, onChange, error, ...props }) => (
 const ProfileEditForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { updateProfileData } = useSetProfileData();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isImageUploading, setIsImageUploading] = useState(false);
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     name: '',
@@ -64,6 +54,7 @@ const ProfileEditForm = () => {
     profile_image: '',
     gender: ''
   });
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -76,7 +67,6 @@ const ProfileEditForm = () => {
           date_of_birth: data.date_of_birth || ''
         });
       } catch (err) {
-        console.error('Failed to load profile:', err);
         toast.error('Failed to load profile');
         navigate(-1);
       } finally {
@@ -87,49 +77,63 @@ const ProfileEditForm = () => {
     loadProfile();
   }, [id, navigate]);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleImageUpdate = async (file) => {
-    setIsImageUploading(true);
+    if (isSubmitting) return;
+  
+    const imageData = new FormData();
+    imageData.append('profile_image', file);
+  
     try {
-      const formData = new FormData();
-      formData.append('profile_image', file);
-      
-      const response = await profileService.updateProfile(id, formData);
-      setFormData(prev => ({ ...prev, profile_image: response.profile_image }));
+      console.log('Uploading image...');
+      const response = await profileService.updateProfile(id, imageData);
+      console.log('Response after upload:', response);
+  
+      // Re-fetch profile data to ensure updated image is displayed
+      const updatedProfile = await profileService.getProfile(id);
+      await updateProfileData(updatedProfile);
+  
+      setFormData(prev => ({
+        ...prev,
+        profile_image: `${updatedProfile.profile_image}?t=${Date.now()}`
+      }));
+  
       toast.success('Profile image updated');
     } catch (err) {
-      console.error('Failed to update profile image:', err);
+      console.error('Error updating profile image:', err);
       toast.error('Failed to update profile image');
-      throw err;
-    } finally {
-      setIsImageUploading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isImageUploading) {
-      toast.error('Please wait for image upload to complete');
-      return;
-    }
-
     setIsSubmitting(true);
-    setErrors({});
-
+  
+    const formDataToSend = new FormData();
+  
+    // Append profile image if file input exists
+    if (fileInputRef.current?.files[0]) {
+      formDataToSend.append('profile_image', fileInputRef.current.files[0]);
+    }
+  
+    // Append only editable fields
+    const editableFields = ['name', 'bio', 'weight', 'height', 'date_of_birth', 'gender'];
+    editableFields.forEach((field) => {
+      if (formData[field] !== undefined && formData[field] !== '') {
+        formDataToSend.append(field, formData[field]);
+      }
+    });
+  
     try {
-      const formDataToSend = new FormData();
-
-      // Append all form fields, converting numbers appropriately
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-          if (key === 'weight' || key === 'height') {
-            formDataToSend.append(key, parseFloat(value));
-          } else {
-            formDataToSend.append(key, value);
-          }
-        }
-      });
-
-      await profileService.updateProfile(id, formDataToSend);
+      const response = await profileService.updateProfile(id, formDataToSend);
+      await updateProfileData(response);
       toast.success('Profile updated successfully');
       navigate(`/profiles/${id}`);
     } catch (err) {
@@ -159,32 +163,53 @@ const ProfileEditForm = () => {
           <ProfileImageHandler
             src={formData.profile_image}
             onChange={handleImageUpdate}
-            size={64}
+            size="xl"
             editable
+            disabled={isSubmitting}
           />
         </div>
 
+        {/* Form Fields */}
         <div className="space-y-6">
-          {formFields.text.map(field => (
-            <FormField
-              key={field.name}
-              {...field}
-              value={formData[field.name]}
-              onChange={e => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-              error={errors[field.name]}
-            />
-          ))}
-          
+          <FormField
+            name="name"
+            label="Name"
+            value={formData.name}
+            onChange={handleChange}
+            error={errors.name}
+          />
+
+          <FormField
+            name="bio"
+            label="Bio"
+            type="textarea"
+            value={formData.bio}
+            onChange={handleChange}
+            error={errors.bio}
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {formFields.measurements.map(field => (
-              <FormField
-                key={field.name}
-                {...field}
-                value={formData[field.name]}
-                onChange={e => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-                error={errors[field.name]}
-              />
-            ))}
+            <FormField
+              name="weight"
+              label="Weight"
+              type="number"
+              step="0.1"
+              unit="kg"
+              value={formData.weight}
+              onChange={handleChange}
+              error={errors.weight}
+            />
+
+            <FormField
+              name="height"
+              label="Height"
+              type="number"
+              step="0.1"
+              unit="cm"
+              value={formData.height}
+              onChange={handleChange}
+              error={errors.height}
+            />
           </div>
 
           <FormField
@@ -192,7 +217,7 @@ const ProfileEditForm = () => {
             label="Date of Birth"
             type="date"
             value={formData.date_of_birth}
-            onChange={e => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
+            onChange={handleChange}
             error={errors.date_of_birth}
           />
 
@@ -201,7 +226,7 @@ const ProfileEditForm = () => {
             <select
               name="gender"
               value={formData.gender || ''}
-              onChange={e => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+              onChange={handleChange}
               className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                 text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
@@ -214,20 +239,20 @@ const ProfileEditForm = () => {
           </div>
         </div>
 
+        {/* Form Actions */}
         <div className="flex justify-end gap-4 pt-4 border-t border-gray-700">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            disabled={isSubmitting || isImageUploading}
-            className="px-4 py-2 text-gray-400 hover:text-gray-300 flex items-center gap-2 
-              disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-gray-400 hover:text-gray-300 flex items-center gap-2"
           >
             <X className="h-5 w-5" />
             Cancel
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || isImageUploading}
+            disabled={isSubmitting}
             className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 
               disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >

@@ -1,105 +1,60 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { UserCircle } from 'lucide-react';
-import ProfileImageHandler from './ProfileImageHandler';
 
-const Avatar = ({ 
-  src, 
-  text, 
-  size = 'md', 
-  href = null, 
-  onClick = null,
+const Avatar = ({
+  src,
+  text,
+  size = 'md',
+  className = '',
   showStatus = false,
   status = 'offline',
-  className = '' 
 }) => {
-  // Map size names to larger pixel values
   const sizeMap = {
-    xs: 32,  // Increased from 24
-    sm: 40,  // Increased from 32
-    md: 48,  // Increased from 40
-    lg: 56,  // Increased from 48
-    xl: 72   // Increased from 64
-  };
-
-  const pixelSize = sizeMap[size] || sizeMap.md; // Default to 'md'
-
-  const sizeClasses = {
-    xs: 'h-8 w-8 text-xs',  // Increased height/width
+    xs: 'h-8 w-8 text-xs',
     sm: 'h-10 w-10 text-sm',
     md: 'h-12 w-12 text-base',
     lg: 'h-14 w-14 text-lg',
-    xl: 'h-18 w-18 text-xl'  // Larger dimensions for 'xl'
+    xl: 'h-18 w-18 text-xl',
   };
 
-  const statusClasses = {
+  const statusColors = {
     online: 'bg-green-500',
     offline: 'bg-gray-400',
     away: 'bg-yellow-500',
-    busy: 'bg-red-500'
+    busy: 'bg-red-500',
   };
 
-  const resolvedStatusClass = statusClasses[status] || statusClasses.offline;
+  const statusClass = statusColors[status] || statusColors.offline;
+  const sizeClass = sizeMap[size] || sizeMap.md;
 
-  const AvatarContent = () => (
-    <div className="relative inline-flex items-center justify-center">
+  return (
+    <div className={`relative inline-flex items-center justify-center ${sizeClass} ${className}`}>
       {src ? (
-        <ProfileImageHandler
-          src={src}
-          size={pixelSize}
-          className={className}
+        <img
+          src={`${src}?t=${Date.now()}`}
+          alt={text || 'User Avatar'}
+          className="rounded-full object-cover w-full h-full bg-gray-700"
         />
       ) : (
-        <div className={`
-          ${sizeClasses[size] || sizeClasses.md}
-          rounded-full bg-gray-100
-          flex items-center justify-center
-          ${className}
-        `}>
+        <div
+          className="rounded-full bg-gray-700 flex items-center justify-center w-full h-full"
+        >
           {text ? (
-            <span className="font-medium text-gray-600">
+            <span className="font-medium text-gray-300">
               {text.charAt(0).toUpperCase()}
             </span>
           ) : (
-            <UserCircle className="w-full h-full text-gray-400" />
+            <UserCircle className="w-3/4 h-3/4 text-gray-400" />
           )}
         </div>
       )}
-
       {showStatus && (
-        <span className={`
-          absolute bottom-0 right-0
-          block h-3 w-3 rounded-full
-          ring-2 ring-white
-          ${resolvedStatusClass}
-        `} />
+        <span
+          className={`absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-gray-800 ${statusClass}`}
+        />
       )}
     </div>
   );
-
-  if (href) {
-    return (
-      <Link 
-        to={href}
-        className="inline-block hover:opacity-80 transition-opacity"
-      >
-        <AvatarContent />
-      </Link>
-    );
-  }
-
-  if (onClick) {
-    return (
-      <button 
-        onClick={onClick}
-        className="inline-block hover:opacity-80 transition-opacity"
-      >
-        <AvatarContent />
-      </button>
-    );
-  }
-
-  return <AvatarContent />;
 };
 
 export default Avatar;

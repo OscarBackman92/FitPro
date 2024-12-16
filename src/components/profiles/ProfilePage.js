@@ -47,34 +47,24 @@ const ProfilePage = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
+  const [setRetryCount] = useState(0);
 
   useEffect(() => {
     const loadProfileData = async () => {
-      if (!id) {
-        setError('No profile ID available.');
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
         setError(null);
         await fetchProfileData(id);
       } catch (err) {
         console.error('Error loading profile data:', err);
-        setError(
-          err.response?.status === 404 
-            ? 'Profile not found' 
-            : 'Failed to load profile data'
-        );
+        setError('Failed to load profile data');
       } finally {
         setLoading(false);
       }
     };
 
-    loadProfileData();
-  }, [id, fetchProfileData, retryCount]);
+    if (id) loadProfileData();
+  }, [id, fetchProfileData]);
 
   // Handle loading state
   if (loading) {
