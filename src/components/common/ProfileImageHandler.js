@@ -1,5 +1,5 @@
-import React from 'react';
-import { Upload, User } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Upload, User, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ProfileImageHandler = ({ 
@@ -9,6 +9,10 @@ const ProfileImageHandler = ({
   editable = false,
   className = '' 
 }) => {
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
   const sizeClasses = {
     sm: 'h-10 w-10',
     md: 'h-16 w-16',
@@ -16,11 +20,18 @@ const ProfileImageHandler = ({
     xl: 'h-32 w-32'
   };
 
-  const handleFileChange = (event) => {
+  useEffect(() => {
+    // Cleanup preview URL on unmount or when preview changes
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleFileChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    console.log('ProfileImageHandler: Selected file:', file);
 
     // Validate file type and size
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -35,19 +46,30 @@ const ProfileImageHandler = ({
       return;
     }
 
-    // Call onChange with the validated file
-    if (onChange) {
-      onChange(file);
+    // Create preview
+    setImagePreview(URL.createObjectURL(file));
+    
+    setIsUploading(true);
+    try {
+      // Call onChange handler passed from parent
+      if (onChange) {
+        await onChange(file);
+      }
+    } catch (error) {
+      toast.error('Failed to upload image');
+      setImagePreview(null);
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return (
     <div className={`relative ${sizeClasses[size]} ${className}`}>
-      {/* Profile Image or Placeholder */}
+      {/* Profile Image or Preview */}
       <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
-        {src ? (
+        {imagePreview || src ? (
           <img
-            src={src}
+            src={imagePreview || src}
             alt="Profile"
             className="w-full h-full object-cover"
           />
@@ -62,13 +84,19 @@ const ProfileImageHandler = ({
       {editable && (
         <label className="absolute inset-0 rounded-full cursor-pointer group">
           <input
+            ref={fileInputRef}
             type="file"
-            accept="image/*"
             onChange={handleFileChange}
+            accept="image/jpeg,image/png,image/webp"
             className="hidden"
+            disabled={isUploading}
           />
           <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <Upload className="h-6 w-6 text-white" />
+            {isUploading ? (
+              <Loader className="h-6 w-6 text-white animate-spin" />
+            ) : (
+              <Upload className="h-6 w-6 text-white" />
+            )}
           </div>
         </label>
       )}
