@@ -254,106 +254,173 @@ The dashboard serves as the central hub for users, providing:
 
 ## Components
 
-### Reusable Components
+### Common Components
 
-#### Avatar Component
-```javascript
-const Avatar = ({
-  src,
-  text,
-  size = 'md',
-  className = '',
-  showStatus = false,
-  status = 'offline',
-}) => {
-  // Component implementation for user avatars
-  // Supports different sizes and status indicators
-}
+The application features a set of reusable components located in `/src/components/common`:
+
+#### Avatar
+- Versatile user avatar display
+- Multiple size options (xs, sm, md, lg, xl)
+- Image loading and fallback handling
+- Status indicators
+- Cloudinary image optimization
+
+```jsx
+<Avatar 
+  src={userImage}
+  size="md"
+  showStatus={true}
+  status="online"
+/>
 ```
 
 #### LoadingSpinner
-```javascript
-const LoadingSpinner = ({ color = 'green', size = 'md' }) => {
-  // Reusable loading animation component
-  // Configurable size and color
-}
+- Configurable loading animation
+- Multiple size options (sm, md, lg)
+- Color variants (green, white, blue)
+- Screen reader support
+
+```jsx
+<LoadingSpinner 
+  size="md"
+  color="green"
+/>
 ```
 
 #### ErrorMessage
-```javascript
-const ErrorMessage = ({ error }) => {
-  // Standardized error display component
-  // Consistent error styling across application
-}
+- Standardized error display
+- Consistent styling
+- Built-in accessibility features
+
+#### PrivateRoute
+- Authentication route wrapper
+- Redirect logic
+- Loading state management
+- Location state preservation
+
+```jsx
+<PrivateRoute>
+  <ProtectedComponent />
+</PrivateRoute>
 ```
 
-#### Common/Navigation Components
-- NavBar: Main navigation component
-- PrivateRoute: Protected route wrapper
-- Footer: Application footer
-- NotFound: 404 page component
+#### NavBar
+- Responsive navigation
+- Dynamic menu based on auth state
+- Mobile-friendly menu
+- Smooth transitions
 
-### Core Features Components
+#### Footer
+- Responsive layout
+- Social media links
+- Copyright information
 
-#### Authentication Components
-- SignUpForm
-- SignInForm
-- ForgotPassword
-- ResetPassword
+### Profile Components
 
-#### Workout Components
-- WorkoutForm
-- WorkoutList
-- WorkoutEdit
-- WorkoutDetail
+#### ProfileImageHandler
+- Image upload and preview
+- File validation
+- Progress indicators
+- Cloudinary optimization
 
-#### Profile Components
-- ProfilePage
-- ProfileHeader
-- ProfileStats
-- ProfileWorkouts
-- ProfileEditForm
+```jsx
+<ProfileImageHandler
+  src={profileImage}
+  onChange={handleImageChange}
+  size="lg"
+  editable={true}
+/>
+```
 
-#### Social Components
-- SocialFeed
-- SocialActions
-- Comments
-- WorkoutShareModal
+#### ProfileHeader
+- User information display
+- Stats visualization
+- Action buttons
+- Responsive design
+
+### Dashboard Components
+
+#### DashboardHeader
+- Welcome message
+- Date display
+- User context integration
+
+#### DashboardStats
+- Statistics cards
+- Dynamic data display
+- Icon integration
+- Responsive grid
+
+### Social Components
+
+#### SocialActions
+- Like functionality
+- Comment system
+- Share capabilities
+- Interactive feedback
+
+#### WorkoutShareModal
+- Workout sharing interface
+- Preview functionality
+- Social integration
+
+### Props API
+
+Key component props and interfaces:
+
+```typescript
+// Avatar Props
+interface AvatarProps {
+  src?: string;
+  text?: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  showStatus?: boolean;
+  status?: 'online' | 'offline' | 'away' | 'busy';
+}
+
+// LoadingSpinner Props
+interface LoadingSpinnerProps {
+  size?: 'sm' | 'md' | 'lg';
+  color?: 'green' | 'white' | 'blue';
+}
+
+// ProfileImageHandler Props
+interface ProfileImageHandlerProps {
+  src?: string;
+  onChange: (file: File) => Promise<void>;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  editable?: boolean;
+  disabled?: boolean;
+}
+```
 
 ### Context Providers
 
 #### CurrentUserContext
-```javascript
-export const CurrentUserProvider = ({ children }) => {
-  // Manages authentication state
-  // Handles user session
-}
-```
+- Authentication state management
+- User session handling
+- Token management
 
 #### ProfileDataContext
-```javascript
-export const ProfileDataProvider = ({ children }) => {
-  // Manages profile state
-  // Handles profile data operations
-}
-```
+- Profile state management
+- Profile data operations
+- Cache handling
 
 #### WorkoutContext
-```javascript
-export const WorkoutProvider = ({ children }) => {
-  // Manages workout state
-  // Handles workout CRUD operations
-}
-```
+- Workout state management
+- CRUD operations
+- Data synchronization
 
 ### Custom Hooks
 
 #### useClickOutsideToggle
 ```javascript
 const useClickOutsideToggle = () => {
-  // Handles click outside functionality
-  // Used for dropdowns and modals
-}
+  // Handles click outside events for dropdowns/modals
+  const [expanded, setExpanded] = useState(false);
+  const ref = useRef(null);
+  // ... implementation
+};
 ```
 
 #### useRedirect
@@ -361,8 +428,17 @@ const useClickOutsideToggle = () => {
 const useRedirect = (userAuthStatus) => {
   // Handles authentication redirects
   // Manages protected routes
-}
+};
 ```
+
+### Best Practices
+
+When using these components:
+1. Always provide alt text for images
+2. Implement proper error handling
+3. Use appropriate size props for consistent UI
+4. Follow established prop patterns
+5. Maintain responsive design principles
 
 ## Design & UX
 
