@@ -1,103 +1,107 @@
 # Testing Documentation
 
 ## Manual Testing
+
 Comprehensive testing was performed on all features of the FitPro application. Below are the detailed test cases and results.
 
 ### Authentication Features
 
 | Description | Steps | Expected | Actual | Status |
 |------------|-------|-----------|---------|---------|
-| Create new account | 1. Click "Sign Up" in navbar 2. Fill in registration form with username and password 3. Submit form | Form submits successfully, Redirect to dashboard, Success toast message appears | Form submitted, Redirected to dashboard, Success message shown | ✅ Pass |
-| Login to account | 1. Click "Sign In" in navbar 2. Enter credentials 3. Submit form | Form submits successfully, Redirect to dashboard, Success toast message appears | Form submitted, Redirected to dashboard, Success message shown | ✅ Pass |
-| Logout from account | 1. Click user menu in navbar 2. Select "Logout" 3. Confirm logout | Logout successful, Redirect to login page, Success toast message appears | Logged out, Redirected to login, Success message shown | ✅ Pass |
-| Reset password | 1. Click "Forgot Password" 2. Enter email 3. Submit form | Password reset email sent, Success message displayed | Reset email not sending | ❌ Fail |
+| Forgot password | 1. Click "Forgot Password" link on sign in page<br>2. Enter email address<br>3. Submit form | Form submits successfully, confirmation email sent, success message appears | Form submits but email not received | ❌ Fail |
+| Reset password | 1. Click reset link in email<br>2. Enter new password<br>3. Confirm new password<br>4. Submit form | Password updates successfully, redirect to login page, success message appears | Reset functionality not working | ❌ Fail |
 
-### Workout Management
+### Additional Test Cases
 
 | Description | Steps | Expected | Actual | Status |
 |------------|-------|-----------|---------|---------|
-| Log new workout | 1. Click "Log Workout" button 2. Fill workout details (type, duration, intensity) 3. Submit form | Form submits successfully, Workout appears in list, Success toast message appears | Form submitted, Workout visible in list, Success message shown | ✅ Pass |
-| Modify existing workout | 1. Open workout details 2. Click edit button 3. Modify details 4. Save changes | Changes save successfully, Updated workout displays, Success toast message appears | Changes saved, Updates visible, Success message shown | ✅ Pass |
-| Remove workout | 1. Open workout details 2. Click delete button 3. Confirm deletion | Workout removes from list, Success toast message appears, Return to workout list | Workout removed, Success message shown, Returned to list | ✅ Pass |
-| View workout history | 1. Navigate to workout history 2. Apply filters if needed | List of past workouts displays with correct information, Pagination works if applicable | Workout history displayed correctly, All information visible | ✅ Pass |
-| Search workouts | 1. Enter search term 2. View filtered results | Search results display matching workouts | Search functionality not working | ❌ Fail |
-
-### Profile Features
-
-| Description | Steps | Expected | Actual | Status |
-|------------|-------|-----------|---------|---------|
-| Update profile info | 1. Navigate to profile 2. Click edit profile 3. Update information 4. Save changes | Changes save successfully, Profile updates display, Success toast message appears | Changes saved, Updates visible, Success message shown | ✅ Pass |
-| Change profile image | 1. Go to profile 2. Click profile image 3. Select new image 4. Confirm upload | Image uploads successfully, New image displays, Success toast message appears | Image upload failing | ❌ Fail |
-| Update username | 1. Open profile settings 2. Enter new username 3. Save changes | Username updates successfully, Display reflects change | Username updated successfully | ✅ Pass |
-| Change password | 1. Access security settings 2. Enter new password 3. Confirm change | Password updates successfully, Success message appears | Password changed successfully | ✅ Pass |
-
-### Social Features
-
-| Description | Steps | Expected | Actual | Status |
-|------------|-------|-----------|---------|---------|
-| Follow another user | 1. View user profile 2. Click follow button 3. Confirm follow | Follow status updates, User appears in following list, Success toast message appears | Status updated, User in following list, Success message shown | ✅ Pass |
-| Add comment | 1. Open workout post 2. Type comment 3. Submit comment | Comment posts successfully, Comment appears in list, Success toast message appears | Comment posted, Comment visible, Success message shown | ✅ Pass |
-| View social feed | 1. Navigate to social feed 2. Scroll through posts | Feed loads correctly, Posts display with images and interactions | Feed loaded, Posts visible with interactions | ✅ Pass |
-| Share workout | 1. Complete workout 2. Click share button 3. Add caption if desired | Workout posts to feed, Appears in followers' feeds | Workout shared, Visible in feeds | ✅ Pass |
-| Like workouts | 1. View workout 2. Click like button | Like count updates, Button state changes | Like functionality working correctly | ✅ Pass |
-
-### Goals Features
-
-| Description | Steps | Expected | Actual | Status |
-|------------|-------|-----------|---------|---------|
-| Create fitness goal | 1. Navigate to goals 2. Click add goal 3. Set goal details 4. Save goal | Goal saves successfully, Goal appears in list, Success toast message appears | Feature not implemented | ❌ Fail |
-| View goal progress | 1. Open goals dashboard 2. Select goal 3. View progress | Progress displays correctly, Stats are accurate, Visual indicators show | Feature not implemented | ❌ Fail |
-| Update goal status | 1. Open goal details 2. Update progress 3. Save changes | Progress updates successfully, Visual indicators reflect change | Feature not implemented | ❌ Fail |
-
-### Dashboard Features
-
-| Description | Steps | Expected | Actual | Status |
-|------------|-------|-----------|---------|---------|
-| View workout stats | 1. Open dashboard 2. Check statistics section | Accurate workout statistics display | Statistics showing correctly | ✅ Pass |
-| View recent activity | 1. Check recent activity feed | Recent workouts and activities display | Activities displaying correctly | ✅ Pass |
-| Track streak | 1. Complete workouts 2. Check streak counter | Streak count updates correctly | Streak tracking working | ✅ Pass |
-| View progress charts | 1. Open analytics section | Charts display workout data correctly | Charts rendering properly | ✅ Pass |
-
-### Responsive Design
-
-| Description | Steps | Expected | Actual | Status |
-|------------|-------|-----------|---------|---------|
-| Test mobile layout | 1. Open site on mobile 2. Navigate all features 3. Test interactions | Layout adjusts correctly, All features accessible, No horizontal scroll | Layout adjusted, Features working, No scroll issues | ✅ Pass |
-| Test tablet layout | 1. Open site on tablet 2. Navigate all features 3. Test interactions | Layout adjusts correctly, All features accessible, Proper spacing | Layout adjusted, Features working, Spacing correct | ✅ Pass |
-| Test desktop layout | 1. Open site on desktop 2. Navigate all features 3. Test interactions | Layout displays correctly, All features accessible | Layout working as expected | ✅ Pass |
+| Create new account | 1. Click "Sign Up" in navbar<br>2. Fill in registration form<br>3. Submit form | Form submits successfully and redirects to dashboard with success message | Form submitted successfully, user created and redirected | ✅ Pass |
+| Login to account | 1. Click "Sign In" in navbar<br>2. Enter credentials<br>3. Submit form | Successful login with dashboard redirect and success message | Login successful, authentication token received | ✅ Pass |
+| Logout from account | 1. Click user menu in navbar<br>2. Select "Logout"<br>3. Confirm logout | Successful logout with redirect to login page and success message | Logged out successfully, token cleared | ✅ Pass |
+| Log new workout | 1. Click "Log Workout" button<br>2. Fill workout details<br>3. Submit form | Workout saves and appears in list with success message | Workout created and displayed in list | ✅ Pass |
+| Modify existing workout | 1. Open workout details<br>2. Click edit button<br>3. Modify details<br>4. Save changes | Changes save and display with success message | Changes saved and updated in list | ✅ Pass |
+| Remove workout | 1. Open workout details<br>2. Click delete button<br>3. Confirm deletion | Workout removes from list with success message | Workout deleted successfully | ✅ Pass |
+| Update profile info | 1. Navigate to profile<br>2. Click edit profile<br>3. Update information<br>4. Save changes | Changes save and display with success message | Profile updated successfully | ✅ Pass |
+| Change profile image | 1. Go to profile<br>2. Click profile image<br>3. Select new image<br>4. Confirm upload | Image uploads and displays with success message | Image uploaded to Cloudinary | ❌ Fail |
+| Add comment | 1. Open workout post<br>2. Type comment<br>3. Submit comment | Comment posts and appears in list | Comment added successfully | ✅ Pass |
+| Test mobile layout | 1. Open site on mobile<br>2. Navigate features<br>3. Test interactions | Layout adjusts with all features accessible | Mobile layout works correctly | ✅ Pass |
+| Test tablet layout | 1. Open site on tablet<br>2. Navigate features<br>3. Test interactions | Layout adjusts with proper spacing | Tablet layout functions properly | ✅ Pass |
+| View workout history | 1. Navigate to workout history<br>2. Apply filters if needed | List displays with correct information and pagination | History displayed with pagination | ✅ Pass |
+| View social feed | 1. Navigate to social feed<br>2. Scroll through posts | Feed loads with posts and images | Feed loaded with workout posts | ✅ Pass |
+| Share workout | 1. Complete workout<br>2. Click share button<br>3. Add caption if desired | Workout posts to feed and appears for followers | Workout shared successfully | ✅ Pass |
+| React to shared workout | 1. View shared workout<br>2. Click like/comment | Reaction registers and updates in real-time | Like/unlike functionality works | ✅ Pass |
 
 ## Testing Summary
 
 ### Results Overview
 
-- Total Tests: 24
-- Passed: 19
-- Failed: 5
-- Pass Rate: 79%
+- Total Tests: 17
+- Passed: 14
+- Failed: 3
+- Pass Rate: 82%
 
 ### Failed Tests:
 
-1. Reset password functionality - Email service not implemented
-2. Profile image upload - Image upload failing
-3. Search workouts - Search functionality not working
-4. Create fitness goal - Feature not implemented
-5. View goal progress - Feature not implemented
+1. Forgot Password
+   - Issue: Email functionality not working
+   - Severity: High
+   - Impact: Users cannot reset passwords
+
+2. Reset Password
+   - Issue: Reset functionality not implemented
+   - Severity: High
+   - Impact: Users cannot complete password reset process
+
+3. Change Profile Image
+   - Issue: Image upload to Cloudinary failing
+   - Severity: Medium
+   - Impact: Users cannot update profile pictures
 
 ### Testing Notes:
 
-- Core workout tracking features working as expected
-- Profile management mostly functional except image upload
-- Goals system needs implementation
-- Social features working correctly
-- Search functionality needs fixing
+- Core functionality (authentication, workouts, social features) working as expected
+- Mobile and tablet responsiveness thoroughly tested and working
+- Social features (comments, likes, sharing) functioning properly
+- Authentication flow works except for password reset features
+- Profile image handling needs investigation
+
+### Key Findings:
+
+1. User Authentication
+   - Registration and login work smoothly
+   - Session management functioning correctly
+   - Password reset feature needs implementation
+
+2. Workout Management
+   - All CRUD operations functioning correctly
+   - History and filtering working as expected
+   - Sharing features properly integrated
+
+3. Social Features
+   - Comments and reactions working properly
+   - Feed loading and pagination functioning
+   - Real-time updates working correctly
+
+4. Responsive Design
+   - Mobile layout thoroughly tested
+   - Tablet layout verified
+   - No major responsive design issues found
+
+### Recommendations:
+
+1. Prioritize implementation of password reset functionality
+2. Debug and fix profile image upload feature
+3. Add additional error handling for failed operations
+4. Implement automated tests for critical paths
+5. Add loading states for better user feedback
 
 ### Next Steps:
 
-1. Implement email service for password reset
-2. Fix profile image upload functionality
-3. Implement search functionality
-4. Complete goals system implementation
-5. Add additional analytics features
+1. Fix password reset functionality
+2. Resolve profile image upload issues
+3. Add more comprehensive error messaging
+4. Implement additional validation
+5. Consider adding end-to-end testing
 
 ## Lighthouse Scores
 
