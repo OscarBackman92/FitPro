@@ -6,7 +6,7 @@
 
 FitPro is a comprehensive fitness tracking platform designed to help users stay on top of their workouts, monitor progress, and engage with a supportive community. Whether you're a fitness enthusiast, personal trainer, or someone looking to improve their health, this application provides the tools and features necessary to manage your fitness goals efficiently.
 
-![Mockup](/documentation/readme_images/mockup.png)
+![Mockup](/documentation/readme_images/fitpro_mockup.png)
 
 The live link can be found here: [Live Site - FitPro](https://frontendfitness-e0476c66fecb.herokuapp.com/)
 
@@ -133,7 +133,7 @@ The application features a responsive navigation system that adapts to different
 - Sign Out
 - Users Icon and Username
 
-![Navbar Logged In](/documentation/readme_images/navbar_loggedin_expanded.png)
+![Navbar Logged In](/documentation/readme_images/)
 
 #### Logged Out Users See:
 - Home
