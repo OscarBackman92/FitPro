@@ -1,71 +1,87 @@
 # FitPro Frontend Application
 
-FitPro is a comprehensive fitness tracking and social platform designed to help users monitor their workout progress, connect with fellow fitness enthusiasts, and maintain their health goals. Whether you're a beginner starting your fitness journey or an experienced athlete, FitPro provides the tools and community support needed to achieve your fitness objectives.
+[![React](https://img.shields.io/badge/react-18.3.1-blue.svg)](https://reactjs.org/)
+[![Bootstrap](https://img.shields.io/badge/bootstrap-5.3.3-purple.svg)](https://getbootstrap.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+FitPro is a comprehensive fitness tracking platform designed to help users stay on top of their workouts, monitor progress, and engage with a supportive community. Whether you're a fitness enthusiast, personal trainer, or someone looking to improve their health, this application provides the tools and features necessary to manage your fitness goals efficiently.
 
 ![Mockup](/documentation/readme_images/mockup.png)
+
+The live link can be found here: [Live Site - FitPro](https://frontendfitness-e0476c66fecb.herokuapp.com/)
+
+## Table of Contents
+
+1. [Strategy Plane](#strategy-plane)
+2. [Epics](#epics)
+3. [User Stories](#user-stories)
+4. [Features](#features)
+5. [Components](#components)
+6. [Design & UX](#design--ux)
+7. [Technologies Used](#technologies-used)
+8. [Testing](#testing)
+9. [Deployment](#deployment)
+10. [Credits](#credits)
 
 ## The Strategy Plane
 
 ### Site Goals
 
 FitPro aims to create a supportive fitness community where users can:
-
 - Track and log their workouts
 - Monitor progress through detailed analytics
 - Connect with other fitness enthusiasts
 - Share achievements and motivate others
 - Access workout history and statistics
 
-### Agile Planning
+### Project Management
 
-This project was developed using agile methodologies, delivering small features in incremental sprints. There were 4 sprints in total, spaced out evenly over four weeks.
+This project was developed using agile methodologies by delivering small features in incremental sprints. There were 4 sprints in total, spaced out evenly over four weeks.
 
-All stories were assigned to epics, prioritized under the labels Must have, Should have, and Could have, then assigned to sprints. "Must have" stories were completed first to ensure core functionality, followed by "should haves" and "could haves" as time permitted.
+All stories were assigned to epics, prioritized under the labels Must have, Should have, Could have and assigned to sprints. "Must have" stories were completed first to ensure core functionality, followed by "should haves" and "could haves" as time permitted.
 
-The Kanban board was created using GitHub Projects and can be found [here](https://github.com/yourusername/project-board-link). All user stories have detailed acceptance criteria defining the functionality required for completion.
+The Kanban board was created using github projects and can be located [here](https://github.com/users/OscarBackman92/projects/11/views/1) and can be viewed to see more information on the project cards. All stories except the documentation tasks have a full set of acceptance criteria to define the functionality that marks that story as complete.
 
-![Kanban Board](/documentation/readme_images/kanban.png)
+### Target Audience
+
+- Fitness enthusiasts
+- Personal trainers
+- Gym-goers
+- Health-conscious individuals
 
 ## Epics
 
-**Setup**
-
+### Setup
 - Initial React application configuration
 - Dependencies installation
 - Basic routing structure
 - Authentication setup
 
-**Authentication & User Management**
-
+### Authentication & User Management
 - User registration
 - Login/Logout functionality
 - Password management
 - Profile creation
 
-**Workout Management**
-
+### Workout Management
 - Create workout entries
 - View workout history
 - Edit workout details
 - Delete workouts
 - Track workout statistics
 
-**Social Features**
-
+### Social Features
 - Social feed
 - Like/comment functionality
-- User following system
 - Activity sharing
 
-**Profile Management**
-
+### Profile Management
 - View/edit profile information
 - Track user statistics
 - Manage personal preferences
 - View workout history
 
-**Dashboard & Analytics**
-
+### Dashboard & Analytics
 - Personal dashboard
 - Progress tracking
 - Workout statistics
@@ -88,11 +104,9 @@ The Kanban board was created using GitHub Projects and can be found [here](https
 * As a user, I can edit my workout details
 * As a user, I can delete my workouts
 * As a user, I can track my workout statistics
-* As a user, I can categorize my workouts by type
 
 ### Social Features
 
-* As a user, I can follow other users
 * As a user, I can like and comment on workouts
 * As a user, I can share my workouts
 * As a user, I can view a social feed of workouts
@@ -103,264 +117,513 @@ The Kanban board was created using GitHub Projects and can be found [here](https
 * As a user, I can edit my profile information
 * As a user, I can upload a profile picture
 * As a user, I can view my workout statistics
-* As a user, I can set my fitness goals
 * As a user, I can track my progress
 
-### Dashboard & Analytics
+## Features
 
-* As a user, I can view my workout trends
-* As a user, I can track my personal records
-* As a user, I can see my recent activity
-* As a user, I can view my achievement badges
-* As a user, I can analyze my workout data
-
-## The Structure Plane
-
-### Features
-
-#### Navigation
+### Navigation
 
 The application features a responsive navigation system that adapts to different screen sizes and user authentication states.
 
-**Logged In Users See:**
-
+#### Logged In Users See:
 - Dashboard
 - Workouts
 - Social Feed
 - Profile
 - Sign Out
+- Users Icon and Username
 
-![Logged In Navigation](/documentation/readme_images/nav_logged_in.png)
+![Navbar Logged In](/documentation/readme_images/navbar_loggedin_expanded.png)
 
-**Logged Out Users See:**
-
+#### Logged Out Users See:
 - Home
-- About
 - Sign In
 - Sign Up
 
-![Logged Out Navigation](/documentation/readme_images/nav_logged_out.png)
+![Navbar Logged Out](/documentation/readme_images/navbar_logged_out.png)
 
-#### Authentication System
+### Authentication Features
 
-The application implements a comprehensive authentication system with the following features:
+#### Sign Up
+- Username validation and availability check
+- Email format validation
+- Password strength indicators
+- Form validation with error messages
+- Automatic login on successful registration
+- Success/error toast notifications
 
-**Sign Up:**
+![Sign Up Form](/documentation/readme_images/sign_up.png)
 
-- Username/email validation
-- Password strength requirements
-- Account creation confirmation
-
-![Sign Up Form](/documentation/readme_images/signup_form.png)
-
-**Sign In:**
-
-- Secure login process
+#### Sign In
 - Remember me functionality
-- Password reset option
+- Forgot password link
+- Form validation
+- Error handling
+- JWT token management
+- Success/error notifications
 
-![Sign In Form](/documentation/readme_images/signin_form.png)
+![Sign In Form](/documentation/readme_images/login.png)
 
-#### Dashboard
+#### Password Reset
+- Email verification
+- Secure token generation
+- Reset form validation
+- Success confirmation
+- Security measures
 
-The dashboard provides users with an overview of their fitness journey:
+![Reset Password](/documentation/readme_images/reset_pw.png)
 
-- Recent workout summary
-- Progress charts
-- Activity feed
-- Quick action buttons
+### Dashboard
 
-![Dashboard Overview](/documentation/readme_images/dashboard_overview.png)
+The dashboard serves as the central hub for users, providing:
 
-#### Workout Management
+#### Overview Section
+- Total workout count
+- Current week's workouts
+- Workout streak counter
+- Total workout minutes
 
-Users can manage their workouts through an intuitive interface:
+#### Recent Activity
+- Latest workouts display
+- Quick access to workout details
+- Edit/delete functionality
+- Activity timestamps
 
-**Create Workout:**
-- Type selection
-- Duration tracking
-- Intensity setting
-- Notes addition
+![Dashboard Overview](/documentation/readme_images/dashboard_hero_image.png)
 
-![Create Workout Form](/documentation/readme_images/workout_form.png)
+### Workout Management
 
-**Workout History:**
-- Filterable list view
-- Detailed workout information
-- Edit/delete capabilities
+#### Create Workout
+- Workout type selection
+- Duration input
+- Intensity level selection
+- Date picker
+- Notes section
+- Form validation
+- Success/error handling
 
-![Workout History](/documentation/readme_images/workout_history.png)
+![Workout Form](/documentation/readme_images/workout_form.png)
 
-#### Social Features
+#### Workout History
+- Chronological workout list
+- Filter by type/date
+- Sort functionality
+- Edit option
+- Delete confirmation
+- Pagination
 
-The social aspects of the application include:
+#### Workout Details
+- Complete workout information
+- Edit functionality
+- Delete option
+- Share capability
+- Comments section
 
-**Social Feed:**
-- Activity stream
-- Like/comment functionality
+### Social Features
+
+#### Activity Feed
+- Recent workouts from all users
+- Like functionality
+- Comment system
 - Share workouts
-- Follow other users
+- Infinite scroll
 
-![Social Feed](/documentation/readme_images/social_feed.png)
+![Social Feed](/documentation/readme_images/feed.png)
 
-#### Profile Management
+#### Interaction Features
+- Like/unlike workouts
+- Add/edit/delete comments
+- Share workouts
+- User profile links
 
-Users can manage their profiles with features including:
+### Profile Features
 
-- Profile information editing
-- Profile picture upload
-- Statistics viewing
-- Achievement tracking
+#### Profile View
+- User information display
+- Profile image
+- Workout statistics
+- Recent activity
+- Edit capabilities
 
-![Profile Management](/documentation/readme_images/profile_management.png)
+#### Profile Edit
+- Update personal information
+- Change profile picture
+- Modify preferences
+- Password change
+- Success/error handling
 
-### Future Features
+## Components
 
-1. **Advanced Analytics Dashboard**
-   - Detailed performance metrics
-   - Custom report generation
-   - Goal tracking visualization
+### Reusable Components
 
-2. **Workout Plans**
-   - Pre-made workout templates
-   - Custom plan creation
-   - Progress tracking
+#### Avatar Component
+```javascript
+const Avatar = ({
+  src,
+  text,
+  size = 'md',
+  className = '',
+  showStatus = false,
+  status = 'offline',
+}) => {
+  // Component implementation for user avatars
+  // Supports different sizes and status indicators
+}
+```
 
-3. **Social Features Enhancement**
-   - Direct messaging
-   - Group creation
-   - Challenges system
+#### LoadingSpinner
+```javascript
+const LoadingSpinner = ({ color = 'green', size = 'md' }) => {
+  // Reusable loading animation component
+  // Configurable size and color
+}
+```
 
-4. **Mobile Application**
-   - Native mobile experience
-   - Offline functionality
-   - Push notifications
+#### ErrorMessage
+```javascript
+const ErrorMessage = ({ error }) => {
+  // Standardized error display component
+  // Consistent error styling across application
+}
+```
 
-## The Skeleton Plane
+#### Common/Navigation Components
+- NavBar: Main navigation component
+- PrivateRoute: Protected route wrapper
+- Footer: Application footer
+- NotFound: 404 page component
 
-## The Surface Plane
+### Core Features Components
 
-### Design
+#### Authentication Components
+- SignUpForm
+- SignInForm
+- ForgotPassword
+- ResetPassword
 
-#### Color Scheme
+#### Workout Components
+- WorkoutForm
+- WorkoutList
+- WorkoutEdit
+- WorkoutDetail
+
+#### Profile Components
+- ProfilePage
+- ProfileHeader
+- ProfileStats
+- ProfileWorkouts
+- ProfileEditForm
+
+#### Social Components
+- SocialFeed
+- SocialActions
+- Comments
+- WorkoutShareModal
+
+### Context Providers
+
+#### CurrentUserContext
+```javascript
+export const CurrentUserProvider = ({ children }) => {
+  // Manages authentication state
+  // Handles user session
+}
+```
+
+#### ProfileDataContext
+```javascript
+export const ProfileDataProvider = ({ children }) => {
+  // Manages profile state
+  // Handles profile data operations
+}
+```
+
+#### WorkoutContext
+```javascript
+export const WorkoutProvider = ({ children }) => {
+  // Manages workout state
+  // Handles workout CRUD operations
+}
+```
+
+### Custom Hooks
+
+#### useClickOutsideToggle
+```javascript
+const useClickOutsideToggle = () => {
+  // Handles click outside functionality
+  // Used for dropdowns and modals
+}
+```
+
+#### useRedirect
+```javascript
+const useRedirect = (userAuthStatus) => {
+  // Handles authentication redirects
+  // Manages protected routes
+}
+```
+
+## Design & UX
+
+### Color Scheme
 
 The application uses a carefully selected color palette:
 
-- Primary Green: `#10B981`
-- Dark Background: `#1F2937`
-- Light Text: `#F9FAFB`
-- Accent Blue: `#3B82F6`
+Primary Colors:
+- Brand Green: `#10B981` - Used for primary actions and success states
+- Dark Background: `#1F2937` - Main background color
+- Light Text: `#F9FAFB` - Primary text color
+- Accent Blue: `#3B82F6` - Used for links and secondary actions
 
-#### Typography
+Additional Colors:
+- Input Background: `#374151`
+- Border Color: `#4B5563`
+- Error Red: `#EF4444`
+- Warning Yellow: `#F59E0B`
 
-The application uses two main fonts:
+### Typography
 
-- Primary Font: Inter (Headers)
-
+#### Primary Font: Inter
+Used for headings and important text
 ```css
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 ```
 
-- Secondary Font: Open Sans (Body)
-
+#### Secondary Font: Open Sans
+Used for body text and longer content
 ```css
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
 ```
 
-#### Imagery
+### Layout & Responsive Design
 
-The application uses:
+The application follows a mobile-first approach with responsive breakpoints:
+- Mobile: < 640px
+- Tablet: 640px - 1024px
+- Desktop: > 1024px
 
-- Custom icons from Lucide React
-- User-uploaded profile images
-- Placeholder images for development
-- SVG graphics for illustrations
+Key layout principles:
+- Consistent spacing using TailwindCSS utilities
+- Flexible grid systems
+- Responsive navigation
+- Adaptive content layouts
+
+### User Interface Elements
+
+#### Buttons
+- Primary: Green background, white text
+- Secondary: Transparent with border
+- Danger: Red background for destructive actions
+- Disabled states with reduced opacity
+
+#### Forms
+- Clear label positioning
+- Intuitive input sizing
+- Visible validation states
+- Helpful error messages
+
+#### Cards
+- Consistent padding and margins
+- Subtle shadows for depth
+- Responsive scaling
+- Interactive hover states
 
 ## Technologies Used
 
 ### Core Technologies
 
+#### Languages
+- HTML5
+- CSS3 (with Tailwind)
+- JavaScript (ES6+)
+- JSX
+
+#### Frameworks & Libraries
 - React 18.3.1
 - React Router 6.27.0
 - Axios 1.7.7
-- TailwindCSS
+- TailwindCSS 3.x
 - React Query
 - React Hot Toast
+- Date-fns
+- JWT Decode
 
 ### Development Tools
 
-- ESLint
-- Prettier
-- Git
-- GitHub
-- VS Code
-- Chrome DevTools
+#### Code Quality
+- ESLint - Code linting
+- Prettier - Code formatting
+- Husky - Git hooks
+- Jest - Testing framework
+- React Testing Library - Component testing
 
-### Additional Libraries
+#### Version Control & Deployment
+- Git - Version control
+- GitHub - Code repository
+- VS Code - Code editor
+- Chrome DevTools - Development and debugging
+- Heroku - Application hosting
 
-- date-fns
-- lucide-react
-- recharts
-- shadcn/ui
+### UI Components & Libraries
 
-## Testing
+#### Icon System
+- Lucide React - Icon library
+- Custom SVG implementations
 
-Comprehensive testing information can be found in the [TESTING.md](TESTING.md) file.
+#### UI Framework
+- shadcn/ui components
+- Custom React components
+- Tailwind CSS utilities
 
-## Deployment
+#### Data Visualization
+- Recharts - Chart library
+- Custom SVG graphs
 
-### Production Deployment
+### Installation & Setup
 
-The application is deployed on Heroku. The live site can be found at: [FitPro Live Site](https://frontendfitness-e0476c66fecb.herokuapp.com/)
-
-### Local Development
-
-1. Clone the repository:
-
+#### Prerequisites
 ```bash
-git clone https://github.com/yourusername/fitpro-frontend.git
+Node.js (v18.x+)
+npm (v9.x+)
+Git
 ```
 
-2. Install dependencies:
+#### Installation Steps
 
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/fitpro-frontend.git
+cd fitpro-frontend
+```
+
+2. Install dependencies
 ```bash
 npm install
 ```
 
-3. Create environment variables:
-
+3. Create environment file
 ```bash
 cp .env.example .env.local
 ```
 
-4. Start development server:
+4. Update environment variables
+```env
+REACT_APP_API_URL=https://fitnessapi-d773a1148384.herokuapp.com
+REACT_APP_DEFAULT_PROFILE_IMAGE=https://res.cloudinary.com/dufw4ursl/image/upload/v1/default_profile_ylwpgw
+REACT_APP_CLOUDINARY_CLOUD_NAME=dufw4ursl
+```
 
+5. Start development server
 ```bash
 npm start
 ```
+
+## Deployment
+
+### Heroku Deployment
+
+The site was deployed to Heroku. The steps to deploy are as follows:
+
+1. Navigate to heroku and create an account
+2. Click the new button in the top right corner
+3. Select create new app
+4. Enter app name
+5. Select region and click create app
+6. Click the deploy tab
+7. Scroll down to Connect to GitHub and sign in / authorize when prompted
+8. In the search box, find the repository you want to deploy and click connect
+9. Scroll down to Manual deploy and choose the main branch
+10. Click deploy
+
+The live link can be found here: [Live Site - FitPro](https://frontendfitness-e0476c66fecb.herokuapp.com/)
+
+### Version Control
+
+The site was created using the Visual Studio Code editor and pushed to github to the remote repository 'fitpro-frontend'.
+
+The following git commands were used throughout development:
+
+```git add <file>``` - This command was used to add the file(s) to the staging area before they are committed.
+
+```git commit -m "commit message"``` - This command was used to commit changes to the local repository queue ready for the final step.
+
+```git push``` - This command was used to push all committed code to the remote repository on github.
+
+### Run Locally
+
+Navigate to the GitHub Repository you want to clone to use locally:
+
+1. Click on the code drop down button
+2. Click on HTTPS
+3. Copy the repository link to the clipboard
+4. Open your IDE of choice (git must be installed for the next steps)
+5. Type git clone copied-git-url into the IDE terminal
+
+The project will now have been cloned on your local machine for use.
+
+### Forking
+
+Most commonly, forks are used to either propose changes to someone else's project or to use someone else's project as a starting point for your own idea.
+
+1. Navigate to the GitHub Repository you want to fork.
+2. On the top right of the page under the header, click the fork button.
+3. This will create a duplicate of the full project in your GitHub Repository.
 
 ## Credits
 
 ### Code References
 
 - React Documentation
-- TailwindCSS Documentation
+- React Router Documentation
+- JavaScript.info
+- CSS-Tricks
 - Stack Overflow solutions
-- YouTube tutorials (referenced in comments)
+- Code Institute's React Module
 
-### Media
+### Tools & Libraries
 
-- Icons from Lucide React
-- Placeholder images from various sources
-- User-uploaded content
+- React Bootstrap
+- React Icons
+- React Toastify
+- React Hot Toast
+- Date-fns
+- Tailwind CSS
+- Shadcn/ui components
 
-### Acknowledgements
+### Known Bugs
 
+1. Profile image upload is failing, debugging needed
+2. Recent workouts in profile shows incorrect user's workouts
+3. Mobile keyboard issues with weight/height inputs
+4. Birth date display issues on mobile
+5. Member since date validation error
+6. Search and filter functionality incomplete
+7. Missing home/about page images
+8. Password reset not functional
+9. Login page refresh required after logout
+
+### Planned Improvements
+
+1. Dark mode implementation
+2. Push notifications
+3. Offline support
+4. Performance optimizations
+5. Enhanced analytics
+6. Resolution of all known bugs
+
+### Acknowledgments
+
+Special thanks to:
 - Code Institute tutors
-- Mentor support
+- Mentor Daisy
+- Testing team/family
 - Fellow developers who provided feedback
 - Stack Overflow community
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+For testing documentation, visit the [TESTING.md](TESTING.md) file.
