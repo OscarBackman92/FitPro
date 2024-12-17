@@ -1,3 +1,4 @@
+// Avatar.js
 import React from 'react';
 import { UserCircle } from 'lucide-react';
 
@@ -24,6 +25,34 @@ const Avatar = ({
     busy: 'bg-red-500',
   };
 
+  // Function to get optimized Cloudinary URL
+  const getOptimizedImageUrl = (url) => {
+    if (!url || url.includes('default_profile')) {
+      return url;
+    }
+    
+    const transformations = [
+      'c_fill',
+      'g_face',
+      'f_auto',
+      'q_auto:eco'
+    ];
+    
+    // Map component sizes to Cloudinary dimensions
+    const sizes = {
+      xs: 'w_32,h_32',
+      sm: 'w_40,h_40',
+      md: 'w_48,h_48',
+      lg: 'w_56,h_56',
+      xl: 'w_72,h_72'
+    };
+    
+    const baseUrl = url.split('/upload/')[0] + '/upload/';
+    const imageId = url.split('/upload/')[1];
+    
+    return `${baseUrl}${transformations.join(',')}/${sizes[size]}/${imageId}`;
+  };
+
   const statusClass = statusColors[status] || statusColors.offline;
   const sizeClass = sizeMap[size] || sizeMap.md;
 
@@ -31,14 +60,12 @@ const Avatar = ({
     <div className={`relative inline-flex items-center justify-center ${sizeClass} ${className}`}>
       {src ? (
         <img
-          src={`${src}?t=${Date.now()}`}
+          src={getOptimizedImageUrl(src)}
           alt={text || 'User Avatar'}
           className="rounded-full object-cover w-full h-full bg-gray-700"
         />
       ) : (
-        <div
-          className="rounded-full bg-gray-700 flex items-center justify-center w-full h-full"
-        >
+        <div className="rounded-full bg-gray-700 flex items-center justify-center w-full h-full">
           {text ? (
             <span className="font-medium text-gray-300">
               {text.charAt(0).toUpperCase()}
@@ -49,9 +76,7 @@ const Avatar = ({
         </div>
       )}
       {showStatus && (
-        <span
-          className={`absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-gray-800 ${statusClass}`}
-        />
+        <span className={`absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-gray-800 ${statusClass}`} />
       )}
     </div>
   );

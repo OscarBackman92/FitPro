@@ -1,3 +1,4 @@
+// ProfileImageHandler.js
 import React from 'react';
 import { Upload, User } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -16,7 +17,35 @@ const ProfileImageHandler = ({
     xl: 'h-32 w-32'
   };
 
-  const handleFileChange = (event) => {
+  // Function to format Cloudinary URL with transformations
+  const getOptimizedImageUrl = (url) => {
+    if (!url || url.includes('default_profile')) {
+      return url;
+    }
+    
+    // Add Cloudinary transformations
+    const transformations = [
+      'c_fill',      // Fill mode
+      'g_face',      // Focus on face
+      'f_auto',      // Auto format
+      'q_auto:eco',  // Auto quality
+    ];
+    
+    // Add size based on the component size prop
+    const sizes = {
+      sm: 'w_40,h_40',
+      md: 'w_64,h_64',
+      lg: 'w_96,h_96',
+      xl: 'w_128,h_128'
+    };
+    
+    const baseUrl = url.split('/upload/')[0] + '/upload/';
+    const imageId = url.split('/upload/')[1];
+    
+    return `${baseUrl}${transformations.join(',')}/${sizes[size]}/${imageId}`;
+  };
+
+  const handleFileChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -34,7 +63,11 @@ const ProfileImageHandler = ({
       return;
     }
 
-    onChange(file);
+    try {
+      await onChange(file);
+    } catch (err) {
+      toast.error('Failed to update profile image');
+    }
   };
 
   return (
@@ -42,7 +75,7 @@ const ProfileImageHandler = ({
       <div className="w-full h-full rounded-full overflow-hidden bg-gray-700">
         {src ? (
           <img
-            src={src}
+            src={getOptimizedImageUrl(src)}
             alt="Profile"
             className="w-full h-full object-cover"
           />
