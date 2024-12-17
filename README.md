@@ -17,6 +17,14 @@ The live link can be found here: [Live Site - FitPro](https://frontendfitness-e0
 3. [User Stories](#user-stories)
 4. [Features](#features)
 5. [Components](#components)
+   - [Common Components](#common-components)
+   - [Profile Components](#profile-components)
+   - [Dashboard Components](#dashboard-components)
+   - [Social Components](#social-components)
+   - [Props API](#props-api)
+   - [Context Providers](#context-providers)
+   - [Custom Hooks](#custom-hooks)
+   - [Best Practices](#best-practices)
 6. [Design & UX](#design--ux)
 7. [Technologies Used](#technologies-used)
 8. [Testing](#testing)
@@ -28,6 +36,7 @@ The live link can be found here: [Live Site - FitPro](https://frontendfitness-e0
 ### Site Goals
 
 FitPro aims to create a supportive fitness community where users can:
+
 - Track and log their workouts
 - Monitor progress through detailed analytics
 - Connect with other fitness enthusiasts
@@ -52,18 +61,21 @@ The Kanban board was created using github projects and can be located [here](htt
 ## Epics
 
 ### Setup
+
 - Initial React application configuration
 - Dependencies installation
 - Basic routing structure
 - Authentication setup
 
 ### Authentication & User Management
+
 - User registration
 - Login/Logout functionality
 - Password management
 - Profile creation
 
 ### Workout Management
+
 - Create workout entries
 - View workout history
 - Edit workout details
@@ -71,17 +83,20 @@ The Kanban board was created using github projects and can be located [here](htt
 - Track workout statistics
 
 ### Social Features
+
 - Social feed
 - Like/comment functionality
 - Activity sharing
 
 ### Profile Management
+
 - View/edit profile information
 - Track user statistics
 - Manage personal preferences
 - View workout history
 
 ### Dashboard & Analytics
+
 - Personal dashboard
 - Progress tracking
 - Workout statistics
