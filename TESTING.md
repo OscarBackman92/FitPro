@@ -1,5 +1,41 @@
 # Testing Documentation
 
+## Table of Contents
+
+1. [Manual Testing](#manual-testing)
+   - [Authentication Features](#authentication-features)
+   - [Additional Test Cases](#additional-test-cases)
+
+2. [Testing Summary](#testing-summary)
+   - [Results Overview](#results-overview)
+   - [Failed Tests](#failed-tests)
+   - [Testing Notes](#testing-notes)
+   - [Key Findings](#key-findings)
+   - [Recommendations](#recommendations)
+   - [Next Steps](#next-steps)
+
+3. [Lighthouse Scores](#lighthouse-scores)
+   - [Home Page](#home-page)
+   - [Dashboard](#dashboard)
+   - [Workout Form](#workout-form)
+   - [Profile Page](#profile-page)
+   - [Social Feed](#social-feed)
+
+4. [Cross-Browser Compatibility](#cross-browser-compatibility)
+
+5. [Known Bugs](#known-bugs)
+   - [High Priority](#high-priority)
+   - [Low Priority](#low-priority)
+
+6. [Resolved Bugs](#resolved-bugs)
+   - [Major Fixes](#major-fixes)
+   - [Minor Fixes](#minor-fixes)
+
+7. [Testing Status](#testing-status)
+   - [Current Test Coverage](#current-test-coverage)
+   - [To Be Implemented](#to-be-implemented)
+   - [Next Steps](#next-steps-1)
+
 ## Manual Testing
 
 Comprehensive testing was performed on all features of the FitPro application. Below are the detailed test cases and results.
@@ -40,7 +76,7 @@ Comprehensive testing was performed on all features of the FitPro application. B
 - Failed: 3
 - Pass Rate: 82%
 
-### Failed Tests:
+### Failed Tests
 
 1. Forgot Password
    - Issue: Email functionality not working
@@ -57,7 +93,7 @@ Comprehensive testing was performed on all features of the FitPro application. B
    - Severity: Medium
    - Impact: Users cannot update profile pictures
 
-### Testing Notes:
+### Testing Notes
 
 - Core functionality (authentication, workouts, social features) working as expected
 - Mobile and tablet responsiveness thoroughly tested and working
@@ -65,7 +101,7 @@ Comprehensive testing was performed on all features of the FitPro application. B
 - Authentication flow works except for password reset features
 - Profile image handling needs investigation
 
-### Key Findings:
+### Key Findings
 
 1. User Authentication
    - Registration and login work smoothly
@@ -87,7 +123,7 @@ Comprehensive testing was performed on all features of the FitPro application. B
    - Tablet layout verified
    - No major responsive design issues found
 
-### Recommendations:
+### Recommendations
 
 1. Prioritize implementation of password reset functionality
 2. Debug and fix profile image upload feature
@@ -95,7 +131,7 @@ Comprehensive testing was performed on all features of the FitPro application. B
 4. Implement automated tests for critical paths
 5. Add loading states for better user feedback
 
-### Next Steps:
+### Next Steps
 
 1. Fix password reset functionality
 2. Resolve profile image upload issues
@@ -135,73 +171,74 @@ Testing was performed across multiple browsers to ensure compatibility:
 
 ## Known Bugs
 
-1. Profile image upload is failing, the code is present but debugging is needed
-2. Goals tracking feature is incomplete and not implemented
-3. Workout search functionality is not working correctly
-4. Password reset email functionality is not working
-5. On mobile, the birth date input displays incorrectly
-6. Member since date shows as invalid
-7. When logging out and logging back in, page refresh is required
-8. Height and weight inputs have keyboard input issues on mobile
+### High Priority
+
+1. Password Reset Functionality
+   - Reset email system not working
+   - Password reset form not processing requests
+   - No email notifications being sent
+
+2. Profile Image Management
+   - Profile image upload to Cloudinary failing
+   - Image preview not updating correctly
+   - Upload progress indicators not functioning
+
+3. Authentication Issues
+   - Session persistence issues on mobile
+
+### Low Priority
+
+1. UI/UX Improvements Needed
+   - Missing images on home and about pages
+
+2. Performance Issues
+   - Occasional lag in social feed loading
 
 ## Resolved Bugs
 
-1. Fixed memory leak in useEffect hooks
-2. Resolved infinite re-render in workout form
-3. Fixed authentication token refresh logic
-4. Corrected social feed pagination
-5. Resolved profile data persistence issues
+### Major Fixes
 
-## Testing Tools Used
+1. Fixed memory leaks in useEffect hooks
+   - Implemented proper cleanup functions
+   - Resolved component unmounting issues
 
-- Jest for unit testing
-- React Testing Library for component testing
-- Chrome DevTools for responsive design testing
-- Lighthouse for performance testing
-- ESLint for code quality
-- Prettier for code formatting
+2. Resolved infinite re-render issues
+   - Fixed dependency arrays in useEffect
+   - Optimized state updates in workout form
 
-## Code Validation
+3. Authentication improvements
+   - Corrected token refresh logic
+   - Fixed session persistence
+   - Improved error handling
 
-### HTML Validation
-- All pages passed the W3C Markup Validation Service with no errors
+### Minor Fixes
 
-### CSS Validation
-- CSS validated with W3C CSS Validation Service
-- No errors found in custom CSS
-- Warnings present for vendor prefixes (expected)
+1. Social feed improvements
+   - Fixed pagination logic
+   - Resolved post ordering issues
+   - Corrected like/unlike functionality
 
-### JavaScript Validation
-- ESLint configuration used for code quality
-- All JavaScript files pass linting with no errors
-- Some warnings present for unused variables (to be addressed)
+2. Profile data handling
+   - Fixed data persistence issues
+   - Resolved cache invalidation problems
+   - Improved error state handling
 
-### Accessibility Testing
-- WAVE Web Accessibility Evaluation Tool used
-- No contrast errors found
-- All images have appropriate alt text
-- Proper ARIA labels implemented
-- Keyboard navigation fully functional
+## Testing Status
 
-## User Story Testing
+### Current Test Coverage
 
-Each user story was tested against its acceptance criteria. Full details can be found in the project tracking board.
+- Component Tests: 82%
 
-Example:
-```
-User Story: As a user, I can log my workouts
-Status: ✅ Passed
-Acceptance Criteria:
-- User can access workout form ✅
-- All required fields present ✅
-- Form submits successfully ✅
-- Workout appears in history ✅
-```
+### To Be Implemented
 
-## Future Testing Recommendations
+1. Automated accessibility testing
+2. Performance testing suite
+3. Visual regression testing
+4. Mobile device testing matrix
 
-1. Implement end-to-end testing using Cypress
-2. Add performance testing for larger datasets
-3. Implement automated accessibility testing
-4. Add visual regression testing
-5. Implement API integration testing
+### Next Steps
+
+1. Prioritize fixing password reset functionality
+2. Debug and resolve profile image upload issues
+3. Implement comprehensive error handling
+4. Add more automated tests
