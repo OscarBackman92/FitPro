@@ -194,6 +194,7 @@ The dashboard serves as the central hub for users, providing:
 ### Workout Management
 
 #### Create Workout
+
 - Workout type selection
 - Duration input
 - Intensity level selection
@@ -205,6 +206,7 @@ The dashboard serves as the central hub for users, providing:
 ![Workout Form](/documentation/readme_images/workout_form.png)
 
 #### Workout History
+
 - Chronological workout list
 - Filter by type/date
 - Sort functionality
@@ -213,6 +215,7 @@ The dashboard serves as the central hub for users, providing:
 - Pagination
 
 #### Workout Details
+
 - Complete workout information
 - Edit functionality
 - Delete option
@@ -221,7 +224,9 @@ The dashboard serves as the central hub for users, providing:
 
 ### Social Features
 
+
 #### Activity Feed
+
 - Recent workouts from all users
 - Like functionality
 - Comment system
@@ -231,6 +236,7 @@ The dashboard serves as the central hub for users, providing:
 ![Social Feed](/documentation/readme_images/feed.png)
 
 #### Interaction Features
+
 - Like/unlike workouts
 - Add/edit/delete comments
 - Share workouts
@@ -239,6 +245,7 @@ The dashboard serves as the central hub for users, providing:
 ### Profile Features
 
 #### Profile View
+
 - User information display
 - Profile image
 - Workout statistics
@@ -246,6 +253,7 @@ The dashboard serves as the central hub for users, providing:
 - Edit capabilities
 
 #### Profile Edit
+
 - Update personal information
 - Change profile picture
 - Modify preferences
@@ -259,6 +267,7 @@ The dashboard serves as the central hub for users, providing:
 The application features a set of reusable components located in `/src/components/common`:
 
 #### Avatar
+
 - Versatile user avatar display
 - Multiple size options (xs, sm, md, lg, xl)
 - Image loading and fallback handling
@@ -275,6 +284,7 @@ The application features a set of reusable components located in `/src/component
 ```
 
 #### LoadingSpinner
+
 - Configurable loading animation
 - Multiple size options (sm, md, lg)
 - Color variants (green, white, blue)
@@ -288,11 +298,13 @@ The application features a set of reusable components located in `/src/component
 ```
 
 #### ErrorMessage
+
 - Standardized error display
 - Consistent styling
 - Built-in accessibility features
 
 #### PrivateRoute
+
 - Authentication route wrapper
 - Redirect logic
 - Loading state management
@@ -305,12 +317,14 @@ The application features a set of reusable components located in `/src/component
 ```
 
 #### NavBar
+
 - Responsive navigation
 - Dynamic menu based on auth state
 - Mobile-friendly menu
 - Smooth transitions
 
 #### Footer
+
 - Responsive layout
 - Social media links
 - Copyright information
@@ -318,6 +332,7 @@ The application features a set of reusable components located in `/src/component
 ### Profile Components
 
 #### ProfileImageHandler
+
 - Image upload and preview
 - File validation
 - Progress indicators
@@ -333,6 +348,7 @@ The application features a set of reusable components located in `/src/component
 ```
 
 #### ProfileHeader
+
 - User information display
 - Stats visualization
 - Action buttons
@@ -341,11 +357,13 @@ The application features a set of reusable components located in `/src/component
 ### Dashboard Components
 
 #### DashboardHeader
+
 - Welcome message
 - Date display
 - User context integration
 
 #### DashboardStats
+
 - Statistics cards
 - Dynamic data display
 - Icon integration
@@ -354,12 +372,14 @@ The application features a set of reusable components located in `/src/component
 ### Social Components
 
 #### SocialActions
+
 - Like functionality
 - Comment system
 - Share capabilities
 - Interactive feedback
 
 #### WorkoutShareModal
+
 - Workout sharing interface
 - Preview functionality
 - Social integration
@@ -397,16 +417,19 @@ interface ProfileImageHandlerProps {
 ### Context Providers
 
 #### CurrentUserContext
+
 - Authentication state management
 - User session handling
 - Token management
 
 #### ProfileDataContext
+
 - Profile state management
 - Profile data operations
 - Cache handling
 
 #### WorkoutContext
+
 - Workout state management
 - CRUD operations
 - Data synchronization
@@ -414,6 +437,7 @@ interface ProfileImageHandlerProps {
 ### Custom Hooks
 
 #### useClickOutsideToggle
+
 ```javascript
 const useClickOutsideToggle = () => {
   // Handles click outside events for dropdowns/modals
@@ -424,6 +448,7 @@ const useClickOutsideToggle = () => {
 ```
 
 #### useRedirect
+
 ```javascript
 const useRedirect = (userAuthStatus) => {
   // Handles authentication redirects
@@ -434,6 +459,7 @@ const useRedirect = (userAuthStatus) => {
 ### Best Practices
 
 When using these components:
+
 1. Always provide alt text for images
 2. Implement proper error handling
 3. Use appropriate size props for consistent UI
