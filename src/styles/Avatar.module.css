@@ -1,0 +1,12 @@
+/* components/common/Avatar.module.css */
+.Avatar {
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #374151;
+    transition: transform 0.2s;
+  }
+  
+  .Avatar:hover {
+    transform: scale(1.05);
+  }
+  
