@@ -114,7 +114,8 @@ const SocialFeed = () => {
             {/* Post Header */}
             <div className="flex items-center gap-3 mb-4">
               <div onClick={() => navigate(`/profiles/${post.user.id}`)}>
-                <Avatar src={post.user.profile_image} text={post.user.username} />
+                {post.owner}
+                <Avatar src={post.profile_image} text={post.user.username} />
               </div>
               <div>
                 <h3 className="font-medium text-white">{post.user.username}</h3>
@@ -157,7 +158,7 @@ const SocialFeed = () => {
               <div className="mt-4 space-y-2">
                 {post.latest_comments.map((comment) => (
                   <div key={comment.id} className="flex gap-2">
-                    <Avatar src={comment.user.profile_image} text={comment.user.username} size="sm" />
+                    <Avatar src={comment.profile_image} text={comment.user.username} size="sm" />
                     <div className="bg-gray-700 rounded-lg p-2 flex-1">
                       <div className="flex justify-between items-start">
                         <span className="font-medium text-white">{comment.user.username}</span>
