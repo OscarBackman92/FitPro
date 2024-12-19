@@ -9,7 +9,7 @@ const ProfileEditForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const setCurrentUser = useSetCurrentUser();
-  const imageInputRef = useRef(null);
+  const imageInputRef = useRef();
 
   const [profileData, setProfileData] = useState({
     name: '',
