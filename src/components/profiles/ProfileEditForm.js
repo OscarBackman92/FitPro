@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
 import { Save, X, Loader, Upload } from 'lucide-react';
@@ -9,9 +9,9 @@ const ProfileEditForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const setCurrentUser = useSetCurrentUser();
-  const imageInputRef = useRef();
 
-  const [profileData, setProfileData] = useState({
+  // Form state
+  const [formData, setFormData] = useState({
     name: '',
     bio: '',
     date_of_birth: '',
@@ -19,128 +19,201 @@ const ProfileEditForm = () => {
     weight: '',
     height: '',
   });
-  const [imageFile, setImageFile] = useState(null);
-  const [profileImage, setProfileImage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Image handling
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState('');
+
+  // UI state
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Load initial profile data
   useEffect(() => {
-    const handleMount = async () => {
+    const fetchProfileData = async () => {
       try {
         const { data } = await axiosReq.get(`/api/profiles/${id}/`);
-        console.log('Loading profile data:', data);
-
-        const { 
-          name, bio, profile_image, date_of_birth, 
-          gender, weight, height 
-        } = data;
-        
-        const formattedData = {
-          name: name || '',
-          bio: bio || '',
-          date_of_birth: date_of_birth || '',
-          gender: gender || '',
-          weight: weight || '',
-          height: height || '',
-        };
-
-        console.log('Formatted profile data:', formattedData);
-        setProfileData(formattedData);
-        setProfileImage(profile_image);
+        setFormData({
+          name: data.name || '',
+          bio: data.bio || '',
+          date_of_birth: data.date_of_birth || '',
+          gender: data.gender || '',
+          weight: data.weight || '',
+          height: data.height || '',
+        });
+        // Add timestamp to force cache refresh
+        setPreviewImage(data.profile_image ? `${data.profile_image}?${Date.now()}` : '');
       } catch (err) {
-        console.error('Error loading profile:', err);
-        toast.error('Failed to load profile');
-        navigate('/');
+        toast.error('Could not load profile data');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    handleMount();
-  }, [id, navigate]);
+    fetchProfileData();
+  }, [id]);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    console.log(`Field "${name}" changed to:`, value);
-    setProfileData(prevData => ({
-      ...prevData,
-      [name]: value,
+  // Handle form input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
     }));
-  };
-
-  const handleImageChange = (event) => {
-    if (event.target.files?.length) {
-      const file = event.target.files[0];
-      console.log('Selected profile_image:', {
-        name: file.name,
-        type: file.type,
-        size: file.size
-      });
-      setImageFile(file);
-      setProfileImage(URL.createObjectURL(file));
+    // Clear any existing error for this field
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: null
+      }));
     }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsSubmitting(true);
+  // Handle image selection
+  const handleImageSelect = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Image must be smaller than 2MB');
+        return;
+      }
+      setSelectedImage(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  // Validate form data
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (formData.weight && (formData.weight < 0 || formData.weight > 500)) {
+      newErrors.weight = 'Weight must be between 0 and 500 kg';
+    }
+
+    if (formData.height && (formData.height < 0 || formData.height > 300)) {
+      newErrors.height = 'Height must be between 0 and 300 cm';
+    }
+
+    if (formData.date_of_birth) {
+      const birthDate = new Date(formData.date_of_birth);
+      const today = new Date();
+      if (birthDate > today) {
+        newErrors.date_of_birth = 'Date of birth cannot be in the future';
+      }
+    }
+
+    return newErrors;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validate form
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      toast.error('Please check form errors');
+      return;
+    }
+
+    // Start submission
+    setSaving(true);
     setErrors({});
 
     try {
-      const formData = new FormData();
-      console.log('Current profile data before submission:', profileData);
+      // Create form data
+      const submitData = new FormData();
 
-      // Append regular form fields
-      Object.keys(profileData).forEach((key) => {
-        if (profileData[key] !== null && profileData[key] !== undefined && profileData[key] !== '') {
-          formData.append(key, profileData[key]);
-          console.log(`Appending ${key}:`, profileData[key]);
+      // Append regular form fields, converting empty strings to null
+      Object.entries(formData).forEach(([key, value]) => {
+        // Handle empty strings and zero values properly
+        if (value !== '' && value !== null && value !== undefined) {
+          // Convert numbers properly
+          if (typeof value === 'number') {
+            submitData.append(key, value.toString());
+          } else {
+            submitData.append(key, value);
+          }
         }
       });
 
-      // Append image if selected
-      if (imageFile) {
-        formData.append('profile_image', imageFile);
-        console.log('Appending profile_image:', {
-          name: imageFile.name,
-          type: imageFile.type,
-          size: imageFile.size
-        });
+      // Append new image if selected, using the correct field name
+      if (selectedImage) {
+        submitData.append('profile_image', selectedImage);
       }
 
-      console.log('Final FormData entries:');
-      for (let pair of formData.entries()) {
-        console.log(pair[0], ':', pair[1]);
+      // Log the form data being sent
+      console.log('Submitting form data:');
+      for (let pair of submitData.entries()) {
+        console.log(pair[0], pair[1]);
       }
 
-      const { data } = await axiosReq.put(`/api/profiles/${id}/`, formData);
-      console.log('Server response:', data);
+      // Log request configuration
+      console.log('Making profile update request:', {
+        url: `/api/profiles/${id}/`,
+        formDataEntries: Array.from(submitData.entries()),
+      });
 
-      // Update current user context with new image
+      // Submit to API
+      const response = await axiosReq.put(`/api/profiles/${id}/`, submitData);
+
+      // Log successful response
+      console.log('Profile update response:', response.data);
+
+      // Update user context with the new data
       setCurrentUser(prevUser => ({
         ...prevUser,
-        profile_image: data.profile_image
+        profile_image: response.data.profile_image,
+        profile: {
+          ...prevUser.profile,
+          ...response.data,
+        }
       }));
 
-      // Force reload the profile image by appending timestamp
-      setProfileImage(`${data.profile_image}?t=${Date.now()}`);
-
       toast.success('Profile updated successfully');
-      navigate(`/profiles/${id}`);
+      
+      // Short delay before navigation to ensure context is updated
+      setTimeout(() => {
+        navigate(`/profiles/${id}`);
+      }, 500);
     } catch (err) {
-      console.error('Profile update error:', err.response?.data || err);
-      setErrors(err.response?.data || {});
-      toast.error('Failed to update profile');
+      console.error('Profile update failed:', {
+        error: err,
+        response: err.response,
+        data: err.response?.data,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+      });
+
+      // Handle error responses
+      const responseErrors = err.response?.data;
+      
+      if (err.response?.status === 413) {
+        toast.error('Image file is too large');
+      } else if (responseErrors) {
+        if (typeof responseErrors === 'string') {
+          toast.error(responseErrors);
+        } else if (typeof responseErrors === 'object') {
+          setErrors(responseErrors);
+          // Find the first error message
+          const firstError = Object.values(responseErrors)[0];
+          const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
+          toast.error(errorMessage || 'Failed to update profile');
+        }
+      } else {
+        toast.error('Network error occurred. Please try again.');
+      }
     } finally {
-      setIsSubmitting(false);
+      setSaving(false);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-green-500" />
       </div>
     );
   }
@@ -155,9 +228,9 @@ const ProfileEditForm = () => {
         <div className="flex flex-col items-center space-y-4">
           <div className="relative">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-700">
-              {profileImage && (
+              {previewImage && (
                 <img
-                  src={profileImage}
+                  src={previewImage}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -166,73 +239,72 @@ const ProfileEditForm = () => {
             <label
               className="absolute bottom-0 right-0 p-2 bg-green-500 rounded-full cursor-pointer 
                 hover:bg-green-600 transition-colors"
-              htmlFor="image-upload"
             >
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageSelect}
+              />
               <Upload className="h-5 w-5 text-white" />
             </label>
-            <input
-              id="image-upload"
-              ref={imageInputRef}
-              className="hidden"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
           </div>
-          {errors?.profile_image?.map((message, idx) => (
-            <p key={idx} className="text-red-500 text-sm">{message}</p>
-          ))}
+          {errors?.profile_image && (
+            <p className="text-red-500 text-sm">{errors.profile_image}</p>
+          )}
         </div>
 
         {/* Form Fields */}
-        <div className="space-y-4">
-          {/* Name Field */}
+        <div className="space-y-6">
+          {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-300">Name</label>
             <input
               type="text"
               name="name"
-              value={profileData.name}
+              value={formData.name}
               onChange={handleChange}
               className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                 text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Your name"
             />
-            {errors?.name?.map((message, idx) => (
-              <p key={idx} className="text-red-500 text-sm mt-1">{message}</p>
-            ))}
+            {errors?.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            )}
           </div>
 
-          {/* Bio Field */}
+          {/* Bio */}
           <div>
             <label className="block text-sm font-medium text-gray-300">Bio</label>
             <textarea
               name="bio"
-              value={profileData.bio}
+              value={formData.bio}
               onChange={handleChange}
               rows={4}
               className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                 text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Tell us about yourself"
             />
-            {errors?.bio?.map((message, idx) => (
-              <p key={idx} className="text-red-500 text-sm mt-1">{message}</p>
-            ))}
+            {errors?.bio && (
+              <p className="text-red-500 text-sm mt-1">{errors.bio}</p>
+            )}
           </div>
 
-          {/* Height and Weight Grid */}
+          {/* Height and Weight */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300">Height (cm)</label>
               <input
                 type="number"
                 name="height"
-                value={profileData.height}
+                value={formData.height}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                   text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
-              {errors?.height?.map((message, idx) => (
-                <p key={idx} className="text-red-500 text-sm mt-1">{message}</p>
-              ))}
+              {errors?.height && (
+                <p className="text-red-500 text-sm mt-1">{errors.height}</p>
+              )}
             </div>
 
             <div>
@@ -240,39 +312,39 @@ const ProfileEditForm = () => {
               <input
                 type="number"
                 name="weight"
-                value={profileData.weight}
+                value={formData.weight}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                   text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
-              {errors?.weight?.map((message, idx) => (
-                <p key={idx} className="text-red-500 text-sm mt-1">{message}</p>
-              ))}
+              {errors?.weight && (
+                <p className="text-red-500 text-sm mt-1">{errors.weight}</p>
+              )}
             </div>
           </div>
 
-          {/* Date of Birth Field */}
+          {/* Date of Birth */}
           <div>
             <label className="block text-sm font-medium text-gray-300">Date of Birth</label>
             <input
               type="date"
               name="date_of_birth"
-              value={profileData.date_of_birth}
+              value={formData.date_of_birth}
               onChange={handleChange}
               className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                 text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
-            {errors?.date_of_birth?.map((message, idx) => (
-              <p key={idx} className="text-red-500 text-sm mt-1">{message}</p>
-            ))}
+            {errors?.date_of_birth && (
+              <p className="text-red-500 text-sm mt-1">{errors.date_of_birth}</p>
+            )}
           </div>
 
-          {/* Gender Field */}
+          {/* Gender */}
           <div>
             <label className="block text-sm font-medium text-gray-300">Gender</label>
             <select
               name="gender"
-              value={profileData.gender}
+              value={formData.gender}
               onChange={handleChange}
               className="mt-1 block w-full rounded-lg bg-gray-700 border border-gray-600 
                 text-white px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -282,9 +354,9 @@ const ProfileEditForm = () => {
               <option value="F">Female</option>
               <option value="O">Other</option>
             </select>
-            {errors?.gender?.map((message, idx) => (
-              <p key={idx} className="text-red-500 text-sm mt-1">{message}</p>
-            ))}
+            {errors?.gender && (
+              <p className="text-red-500 text-sm mt-1">{errors.gender}</p>
+            )}
           </div>
 
           {/* Form Actions */}
@@ -292,19 +364,21 @@ const ProfileEditForm = () => {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="px-4 py-2 text-gray-400 hover:text-gray-300 flex items-center gap-2"
+              disabled={saving}
+              className="px-4 py-2 text-gray-400 hover:text-gray-300 flex items-center gap-2 
+                disabled:opacity-50"
             >
               <X className="h-5 w-5" />
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={saving}
               className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 
                 disabled:opacity-50 disabled:cursor-not-allowed transition-colors 
                 flex items-center gap-2"
             >
-              {isSubmitting ? (
+              {saving ? (
                 <>
                   <Loader className="h-5 w-5 animate-spin" />
                   Saving...

@@ -32,6 +32,7 @@ const ProfilePage = () => {
   const { currentUser } = useCurrentUser();
   const profileData = useProfileData();
   const { fetchProfileData } = useSetProfileData();
+  const [imageKey, setImageKey] = useState(Date.now());
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,6 +43,7 @@ const ProfilePage = () => {
         setLoading(true);
         setError(null);
         await fetchProfileData(id);
+        setImageKey(Date.now()); // Reset image key to force refresh
       } catch (err) {
         console.error('Error loading profile data:', err);
         setError('Failed to load profile data');
@@ -141,7 +143,10 @@ const ProfilePage = () => {
     }
   };
 
-  const age = calculateAge(profile.date_of_birth);
+  const getProfileImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    return `${imageUrl}?t=${imageKey}`;
+  };
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -171,7 +176,7 @@ const ProfilePage = () => {
               {/* Avatar and Basic Info */}
               <div className="flex flex-col items-center lg:items-start">
                 <Avatar
-                  src={profile.profile_image}
+                  src={profile.profile_image ? getProfileImageUrl(profile.profile_image) : null}
                   text={profile.name || profile.username}
                   height={128}
                   className="ring-4 ring-gray-800 bg-gray-700 rounded-full"
@@ -184,9 +189,9 @@ const ProfilePage = () => {
                     <span className="text-gray-400 text-sm">
                       Member since {formatDate(profile.created_at, 'MMMM yyyy')}
                     </span>
-                    {age && (
+                    {calculateAge(profile.date_of_birth) && (
                       <span className="text-sm bg-gray-700/30 px-2 py-0.5 rounded text-gray-300">
-                        {age} years old
+                        {calculateAge(profile.date_of_birth)} years old
                       </span>
                     )}
                   </div>

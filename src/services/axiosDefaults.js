@@ -17,8 +17,9 @@ axiosReq.interceptors.request.use(
     console.log('axiosDefaults: Request interceptor called', {
       method: config.method?.toUpperCase(),
       url: config.url,
-      data: config.data,
-      params: config.params
+      data: config.data instanceof FormData ? '[FormData]' : config.data,
+      params: config.params,
+      headers: config.headers
     });
 
     const token = localStorage.getItem('token');
@@ -26,11 +27,15 @@ axiosReq.interceptors.request.use(
       config.headers.Authorization = `Token ${token}`;
     }
 
-    // Remove default Content-Type for FormData
-    if (config.data instanceof FormData) {
-      delete config.headers['Content-Type'];
-    } else {
+    // Important: Don't set Content-Type for FormData
+    if (!(config.data instanceof FormData)) {
       config.headers['Content-Type'] = 'application/json';
+    }
+
+    // Add CSRF token if needed
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    if (csrfToken) {
+      config.headers['X-CSRFToken'] = csrfToken;
     }
 
     return config;
@@ -57,22 +62,13 @@ axiosRes.interceptors.response.use(
       data: err.response?.data
     });
 
+    // Handle 401 Unauthorized
     if (err.response?.status === 401) {
-      console.log('axiosDefaults: Attempting token refresh');
-      try {
-        const response = await axios.post(`${BASE_URL}/api/auth/token/refresh/`);
-        console.log('axiosDefaults: Token refresh successful');
-        
-        if (response.data.access) {
-          localStorage.setItem('token', response.data.access);
-          return axios(err.config);
-        }
-      } catch (refreshError) {
-        console.error('axiosDefaults: Token refresh failed:', refreshError);
-        localStorage.removeItem('token');
-        window.location.href = '/signin';
-      }
+      // Remove token and redirect to login
+      localStorage.removeItem('token');
+      window.location.href = '/signin';
     }
+
     return Promise.reject(err);
   }
 );
