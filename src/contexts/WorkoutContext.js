@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import workoutService from '../services/workoutService';
-import toast from 'react-hot-toast';
 
 const WorkoutContext = createContext();
 const SetWorkoutContext = createContext();
@@ -18,11 +17,9 @@ export const WorkoutProvider = ({ children }) => {
       try {
         setLoading(true);
         const workoutList = await workoutService.listWorkouts();
-        console.log('Fetched Workouts:', workoutList.results || workoutList); // Debugging fetched workouts
-        setWorkouts(workoutList.results || workoutList); // Use `results` if pagination is used
+        console.log('Fetched Workouts:', workoutList.results || workoutList);
+        setWorkouts(workoutList.results || workoutList);
       } catch (err) {
-        toast.error('Failed to load workouts');
-        console.error('Error loading workouts:', err); // Debugging error
       } finally {
         setLoading(false);
       }

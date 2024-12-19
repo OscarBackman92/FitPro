@@ -4,9 +4,8 @@ import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { useProfileData, useSetProfileData } from '../../contexts/ProfileDataContext';
 import ProfileHeader from './ProfileHeader';
 import ProfileStats from './ProfileStats';
-import ProfileWorkouts from './ProfileWorkouts';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { AlertCircle, ArrowLeft, DumbbellIcon } from 'lucide-react';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 
 const ProfilePage = () => {
   const { id } = useParams();
@@ -80,18 +79,6 @@ const ProfilePage = () => {
           onEdit={() => navigate(`/profiles/${id}/edit`)}
         />
         <ProfileStats stats={profileData?.stats || {}} />
-        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <DumbbellIcon className="h-5 w-5 text-green-500" />
-              <h2 className="text-lg font-semibold text-white">Workouts</h2>
-            </div>
-            <span className="text-sm text-gray-400">
-              Total: {profileData?.stats?.total_workouts || 0}
-            </span>
-          </div>
-          <ProfileWorkouts profileId={profile.id} profileUsername={profile.username} />
-        </div>
       </div>
     </div>
   );
