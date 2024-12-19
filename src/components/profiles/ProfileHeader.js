@@ -65,14 +65,14 @@ const ProfileHeader = ({ profile, isOwnProfile, onEdit }) => {
 
   useEffect(() => {
     const profileImageURL = profile.profile_image
-      ? `${process.env.REACT_APP_API_URL}images/${profile.profile_image}`
-      : '/default_profile_image.png';
+      ? `${profile.profile_image}`
+      : 'https://res.cloudinary.com/dufw4ursl/image/upload/v1734633670/default_profile_ylwpgw_yz6v1r.jpg';
     console.log(`Loading profile image: ${profileImageURL}`);
   }, [profile.profile_image]);
 
   const profileImageURL = profile.profile_image
-    ? `${process.env.REACT_APP_API_URL}images/${profile.profile_image}`
-    : '/default_profile_image.png';
+    ? `${profile.profile_image}`
+    : 'https://res.cloudinary.com/dufw4ursl/image/upload/v1734633670/default_profile_ylwpgw_yz6v1r.jpg';
 
   return (
     <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden relative">

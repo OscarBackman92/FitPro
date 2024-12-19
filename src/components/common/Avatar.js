@@ -1,7 +1,8 @@
 import React from 'react';
 import { User } from 'lucide-react';
 
-const Avatar = ({ src, height = 45, text, className = '' }) => {
+
+const Avatar = ({ src, height = 128, text, className = '' }) => {
   const showInitials = !src && text;
 
   return (
