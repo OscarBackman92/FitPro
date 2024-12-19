@@ -42,7 +42,6 @@ const ProfileEditForm = () => {
           weight: data.weight || '',
           height: data.height || '',
         });
-        // Add timestamp to force cache refresh
         setPreviewImage(data.profile_image ? `${data.profile_image}?${Date.now()}` : '');
       } catch (err) {
         toast.error('Could not load profile data');
@@ -61,7 +60,6 @@ const ProfileEditForm = () => {
       ...prev,
       [name]: value
     }));
-    // Clear any existing error for this field
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -80,6 +78,7 @@ const ProfileEditForm = () => {
       }
       setSelectedImage(file);
       setPreviewImage(URL.createObjectURL(file));
+      console.log('Selected image:', file.name);
     }
   };
 
@@ -110,7 +109,6 @@ const ProfileEditForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -118,51 +116,24 @@ const ProfileEditForm = () => {
       return;
     }
 
-    // Start submission
     setSaving(true);
     setErrors({});
 
     try {
-      // Create form data
       const submitData = new FormData();
 
-      // Append regular form fields, converting empty strings to null
       Object.entries(formData).forEach(([key, value]) => {
-        // Handle empty strings and zero values properly
         if (value !== '' && value !== null && value !== undefined) {
-          // Convert numbers properly
-          if (typeof value === 'number') {
-            submitData.append(key, value.toString());
-          } else {
-            submitData.append(key, value);
-          }
+          submitData.append(key, value);
         }
       });
 
-      // Append new image if selected, using the correct field name
       if (selectedImage) {
         submitData.append('profile_image', selectedImage);
       }
 
-      // Log the form data being sent
-      console.log('Submitting form data:');
-      for (let pair of submitData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-
-      // Log request configuration
-      console.log('Making profile update request:', {
-        url: `/api/profiles/${id}/`,
-        formDataEntries: Array.from(submitData.entries()),
-      });
-
-      // Submit to API
       const response = await axiosReq.put(`/api/profiles/${id}/`, submitData);
 
-      // Log successful response
-      console.log('Profile update response:', response.data);
-
-      // Update user context with the new data
       setCurrentUser(prevUser => ({
         ...prevUser,
         profile_image: response.data.profile_image,
@@ -173,23 +144,11 @@ const ProfileEditForm = () => {
       }));
 
       toast.success('Profile updated successfully');
-      
-      // Short delay before navigation to ensure context is updated
       setTimeout(() => {
         navigate(`/profiles/${id}`);
       }, 500);
     } catch (err) {
-      console.error('Profile update failed:', {
-        error: err,
-        response: err.response,
-        data: err.response?.data,
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-      });
-
-      // Handle error responses
       const responseErrors = err.response?.data;
-      
       if (err.response?.status === 413) {
         toast.error('Image file is too large');
       } else if (responseErrors) {
@@ -197,7 +156,6 @@ const ProfileEditForm = () => {
           toast.error(responseErrors);
         } else if (typeof responseErrors === 'object') {
           setErrors(responseErrors);
-          // Find the first error message
           const firstError = Object.values(responseErrors)[0];
           const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
           toast.error(errorMessage || 'Failed to update profile');
@@ -224,7 +182,6 @@ const ProfileEditForm = () => {
         onSubmit={handleSubmit} 
         className="max-w-2xl mx-auto space-y-6 bg-gray-800 rounded-lg p-6 shadow-xl"
       >
-        {/* Image Upload */}
         <div className="flex flex-col items-center space-y-4">
           <div className="relative">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-700">
@@ -236,10 +193,7 @@ const ProfileEditForm = () => {
                 />
               )}
             </div>
-            <label
-              className="absolute bottom-0 right-0 p-2 bg-green-500 rounded-full cursor-pointer 
-                hover:bg-green-600 transition-colors"
-            >
+            <label className="absolute bottom-0 right-0 p-2 bg-green-500 rounded-full cursor-pointer hover:bg-green-600 transition-colors">
               <input
                 type="file"
                 className="hidden"
