@@ -10,10 +10,8 @@ const workoutService = {
   async listWorkouts(params = {}) {
     try {
       const response = await axiosReq.get('/api/workouts/', { params });
-      logger.debug('Workouts fetched:', response.data);
       return response.data;
     } catch (err) {
-      logger.error('Error listing workouts:', err);
       throw err;
     }
   },
@@ -26,10 +24,8 @@ const workoutService = {
   async getWorkout(id) {
     try {
       const response = await axiosReq.get(`/api/workouts/${id}/`);
-      logger.debug(`Workout fetched with ID ${id}:`, response.data);
       return response.data;
     } catch (err) {
-      logger.error(`Error fetching workout with ID ${id}:`, err);
       throw err;
     }
   },
@@ -42,7 +38,6 @@ const workoutService = {
   async createWorkout(data) {
     try {
       const response = await axiosReq.post('/api/workouts/', data);
-      logger.debug('Workout created:', response.data);
       return response.data;
     } catch (err) {
       logger.error('Error creating workout:', err);
@@ -59,10 +54,8 @@ const workoutService = {
   async updateWorkout(id, data) {
     try {
       const response = await axiosReq.patch(`/api/workouts/${id}/`, data);
-      logger.debug(`Workout updated with ID ${id}:`, response.data);
       return response.data;
     } catch (err) {
-      logger.error(`Error updating workout with ID ${id}:`, err);
       throw err;
     }
   },
@@ -75,10 +68,8 @@ const workoutService = {
   async deleteWorkout(id) {
     try {
       await axiosReq.delete(`/api/workouts/${id}/`);
-      logger.debug(`Workout deleted with ID ${id}`);
       return { success: true };
     } catch (err) {
-      logger.error(`Error deleting workout with ID ${id}:`, err);
       throw err;
     }
   },
@@ -90,10 +81,8 @@ const workoutService = {
   async getStatistics() {
     try {
       const response = await axiosReq.get('/api/workouts/statistics/');
-      logger.debug('Statistics fetched:', response.data);
       return response.data;
     } catch (err) {
-      logger.error('Error fetching workout statistics:', err);
       throw err;
     }
   },
@@ -121,10 +110,8 @@ const workoutService = {
         workouts: workouts.results || [],
       };
 
-      logger.debug('Dashboard data fetched:', dashboardData);
       return dashboardData;
     } catch (err) {
-      logger.error('Error fetching dashboard data:', err);
       throw err;
     }
   },
@@ -137,10 +124,8 @@ const workoutService = {
   async fetchPaginatedWorkouts(url) {
     try {
       const response = await axiosReq.get(url);
-      logger.debug('Paginated workouts fetched:', response.data);
       return response.data;
     } catch (err) {
-      logger.error('Error fetching paginated workouts:', err);
       throw err;
     }
   },

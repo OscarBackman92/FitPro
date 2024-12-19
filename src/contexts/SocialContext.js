@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { socialService } from '../services/socialService';
-import logger from '../services/loggerService';
 
 const SocialContext = createContext(undefined);
 
@@ -31,7 +30,6 @@ const initialState = {
 };
 
 function socialReducer(state, action) {
-  logger.debug('Social reducer:', { type: action.type, payload: action.payload });
 
   switch (action.type) {
     case ACTIONS.SET_LOADING:

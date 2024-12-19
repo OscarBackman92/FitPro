@@ -17,7 +17,6 @@ export const WorkoutProvider = ({ children }) => {
       try {
         setLoading(true);
         const workoutList = await workoutService.listWorkouts();
-        console.log('Fetched Workouts:', workoutList.results || workoutList);
         setWorkouts(workoutList.results || workoutList);
       } catch (err) {
       } finally {

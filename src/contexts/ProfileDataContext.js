@@ -12,9 +12,8 @@ export const ProfileDataProvider = ({ children }) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchProfileData = useCallback(async (profileId) => {
-    if (isUpdating) return; // Don't fetch if we're updating
+    if (isUpdating) return;
     
-    console.log('ProfileDataProvider: Fetching profile data for ID:', profileId);
 
     try {
       const [profile, workouts, stats] = await Promise.all([

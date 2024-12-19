@@ -2,7 +2,6 @@ import logger from '../services/loggerService';
 
 export const workoutValidation = {
   validateWorkoutData: (data) => {
-    logger.debug('Validating workout data', { data });
     const errors = {};
 
     if (!data.workout_type) {
@@ -35,7 +34,6 @@ export const workoutValidation = {
 
 export const profileValidation = {
   validateProfileData: (data) => {
-    logger.debug('Validating profile data', { data });
     const errors = {};
 
     if (data.weight && (data.weight < 0 || data.weight > 500)) {
@@ -62,7 +60,6 @@ export const profileValidation = {
   },
 
   validateProfileImage: (file) => {
-    logger.debug('Validating profile image', { fileName: file.name });
     const errors = {};
 
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];

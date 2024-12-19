@@ -78,14 +78,12 @@ const SignUpForm = () => {
         password2: formData.password2
       };
       
-      console.log('Registration payload:', data);
       await authService.register(data);
       
       toast.success('Account created successfully! Please sign in.');
       navigate('/signin');
     } catch (err) {
       console.error('Registration error:', err);
-      console.log('Error details:', err.response?.data);
       
       // Handle different types of errors
       if (err.response?.data) {

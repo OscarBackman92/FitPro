@@ -16,8 +16,7 @@ const WorkoutList = () => {
       setError(null);
       try {
         const response = await workoutService.listWorkouts();
-        console.log('Workouts response:', response); // Debug log
-        setWorkouts(response.results || []); // Handle paginated response
+        setWorkouts(response.results || []);
       } catch (err) {
         console.error('Error fetching workouts:', err);
         setError('Failed to fetch workouts');

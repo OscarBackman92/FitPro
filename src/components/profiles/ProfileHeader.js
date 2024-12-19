@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react';
 import { format, isValid, parseISO } from 'date-fns';
 import { Scale, RulerIcon, Calendar, Mail, MapPin, User, Cake, Edit2 } from 'lucide-react';
 import Avatar from '../common/Avatar';
@@ -62,13 +61,6 @@ const ProfileHeader = ({ profile, isOwnProfile, onEdit }) => {
   };
 
   const age = calculateAge(profile.date_of_birth);
-
-  useEffect(() => {
-    const profileImageURL = profile.profile_image
-      ? `${profile.profile_image}`
-      : 'https://res.cloudinary.com/dufw4ursl/image/upload/v1734633670/default_profile_ylwpgw_yz6v1r.jpg';
-    console.log(`Loading profile image: ${profileImageURL}`);
-  }, [profile.profile_image]);
 
   const profileImageURL = profile.profile_image
     ? `${profile.profile_image}`

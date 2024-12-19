@@ -34,27 +34,21 @@ export default function SignInForm() {
 
     try {
       // First, attempt to login
-      const loginResponse = await authService.login(signInData);
-      console.log('Login successful:', loginResponse);
+      await authService.login(signInData);
 
       // After successful login, get user details
       try {
         const userResponse = await authService.getCurrentUser();
-        console.log('User details retrieved:', userResponse);
-        
         setCurrentUser(userResponse);
         toast.success('Welcome back!');
         navigate('/dashboard');
       } catch (userError) {
-        console.error('Error fetching user details:', userError);
         // If we can't get user details, clear everything and show error
         authService.clearToken();
         setCurrentUser(null);
         throw new Error('Unable to get user details. Please try logging in again.');
       }
     } catch (err) {
-      console.error('Login process error:', err);
-      
       if (err.response?.data) {
         const errorData = err.response.data;
         setErrors(typeof errorData === 'object' ? errorData : { non_field_errors: [errorData] });

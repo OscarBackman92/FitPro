@@ -78,7 +78,6 @@ const ProfileEditForm = () => {
       }
       setSelectedImage(file);
       setPreviewImage(URL.createObjectURL(file));
-      console.log('Selected image:', file.name);
     }
   };
 

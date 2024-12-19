@@ -1,5 +1,4 @@
 import { useCallback, useRef, useEffect } from 'react';
-import logger from '../services/loggerService';
 
 export const useInfiniteScroll = (callback, hasMore) => {
   const observer = useRef();
@@ -11,7 +10,6 @@ export const useInfiniteScroll = (callback, hasMore) => {
 
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
-        logger.debug('Infinite scroll threshold reached');
         callback();
       }
     }, {
@@ -22,7 +20,6 @@ export const useInfiniteScroll = (callback, hasMore) => {
 
     if (node) {
       observer.current.observe(node);
-      logger.debug('Infinite scroll observer attached to element');
     }
   }, [callback, hasMore]);
 
@@ -30,7 +27,6 @@ export const useInfiniteScroll = (callback, hasMore) => {
     return () => {
       if (observer.current) {
         observer.current.disconnect();
-        logger.debug('Infinite scroll observer disconnected');
       }
     };
   }, []);

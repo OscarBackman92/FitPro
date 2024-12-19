@@ -5,7 +5,6 @@ import {
 } from 'lucide-react';
 
 const ProfileStats = ({ stats }) => {
-  console.log('ProfileStats: Rendering with stats:', stats);
   
   const statCards = [
     {
