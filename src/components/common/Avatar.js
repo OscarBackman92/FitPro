@@ -1,29 +1,25 @@
-// components/common/Avatar.js
 import React from 'react';
-import styles from '../../styles/Avatar.module.css';
 import { User } from 'lucide-react';
 
 const Avatar = ({ src, height = 45, text, className = '' }) => {
-  const style = {
-    width: `${height}px`,
-    height: `${height}px`,
-  };
+  // Only show text if there's no image
+  const showText = !src && text;
 
   return (
     <span className={`inline-flex items-center ${className}`}>
       {src ? (
         <img
-          className={`rounded-full object-cover ${styles.Avatar}`}
-          src={src} 
-          style={style}
+          className="rounded-full object-cover"
+          src={src}
           alt={text || "avatar"}
+          style={{ width: `${height}px`, height: `${height}px` }}
         />
       ) : (
         <div 
           className="rounded-full bg-gray-700 flex items-center justify-center"
-          style={style}
+          style={{ width: `${height}px`, height: `${height}px` }}
         >
-          {text ? (
+          {showText ? (
             <span className="font-medium text-gray-300">
               {text.charAt(0).toUpperCase()}
             </span>
@@ -32,7 +28,7 @@ const Avatar = ({ src, height = 45, text, className = '' }) => {
           )}
         </div>
       )}
-      {text && <span className="ml-2">{text}</span>}
+      {text && <span className="ml-2 text-gray-300">{text}</span>}
     </span>
   );
 };

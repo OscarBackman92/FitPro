@@ -4,7 +4,7 @@ import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { useProfileData, useSetProfileData } from '../../contexts/ProfileDataContext';
 import { 
   AlertCircle, ArrowLeft, Edit2, Scale, RulerIcon, 
-  Calendar, Mail, MapPin, User, Cake 
+  Calendar, User, DumbbellIcon 
 } from 'lucide-react';
 import ProfileStats from './ProfileStats';
 import ProfileWorkouts from './ProfileWorkouts';
@@ -12,59 +12,16 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import Avatar from '../common/Avatar';
 import { format, isValid, parseISO } from 'date-fns';
 
-const ErrorState = ({ message, onRetry }) => (
-  <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
-    <div className="flex items-center gap-3 text-red-500 mb-4">
-      <AlertCircle className="h-6 w-6" />
-      <h2 className="text-2xl font-bold text-white">{message}</h2>
-    </div>
-    <div className="flex gap-4">
-      <button
-        onClick={() => window.location.reload()}
-        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-      >
-        Try Again
-      </button>
-      <button
-        onClick={() => onRetry()}
-        className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Go Back
-      </button>
-    </div>
-  </div>
-);
-
-const LoadingState = () => (
-  <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-    <LoadingSpinner color="green" size="lg" />
-  </div>
-);
-
-const StatBadge = ({ icon: Icon, label, value }) => {
+const InfoBadge = ({ icon: Icon, label, value }) => {
   if (!value) return null;
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-gray-700/30 rounded-lg">
-      <div className="p-2 bg-gray-700 rounded-lg">
-        <Icon className="h-4 w-4 text-green-500" />
+    <div className="flex items-center gap-2 px-3 py-2 bg-gray-700/30 rounded-lg">
+      <Icon className="h-4 w-4 text-green-400" />
+      <div>
+        <p className="text-sm text-gray-400">{label}</p>
+        <p className="text-sm font-medium text-white">{value}</p>
       </div>
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-400">{label}</span>
-        <span className="text-white font-medium">{value}</span>
-      </div>
-    </div>
-  );
-};
-
-const InfoBadge = ({ icon: Icon, text }) => {
-  if (!text) return null;
-
-  return (
-    <div className="flex items-center gap-2 text-gray-400 bg-gray-700/20 px-3 py-1.5 rounded-lg">
-      <Icon className="h-4 w-4" />
-      <span className="text-sm">{text}</span>
     </div>
   );
 };
@@ -78,7 +35,6 @@ const ProfilePage = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [setRetryCount] = useState(0);
 
   useEffect(() => {
     const loadProfileData = async () => {
@@ -97,36 +53,53 @@ const ProfilePage = () => {
     if (id) loadProfileData();
   }, [id, fetchProfileData]);
 
-  // Handle loading state
   if (loading) {
-    return <LoadingState />;
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <LoadingSpinner color="green" size="lg" />
+      </div>
+    );
   }
 
-  // Handle error states
   if (error) {
     return (
-      <ErrorState 
-        message={error} 
-        onRetry={() => {
-          if (error === 'Profile not found') {
-            navigate(-1);
-          } else {
-            setRetryCount(count => count + 1);
-          }
-        }} 
-      />
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
+        <div className="flex items-center gap-3 text-red-500 mb-4">
+          <AlertCircle className="h-6 w-6" />
+          <h2 className="text-2xl font-bold text-white">{error}</h2>
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            Try Again
+          </button>
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </button>
+        </div>
+      </div>
     );
   }
 
   const profile = profileData?.pageProfile?.results?.[0];
   
-  // Handle missing profile data
   if (!profile) {
     return (
-      <ErrorState 
-        message="Profile not found" 
-        onRetry={() => navigate(-1)} 
-      />
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
+        <h2 className="text-2xl font-bold text-white mb-4">Profile not found</h2>
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Go Back
+        </button>
+      </div>
     );
   }
 
@@ -174,42 +147,43 @@ const ProfilePage = () => {
     <div className="min-h-screen bg-gray-900">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Profile Header Card */}
-        <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-          {/* Header Banner */}
-          <div className="relative h-32 bg-gradient-to-r from-green-500/10 to-blue-500/10">
-            {isOwnProfile && (
-              <button
-                onClick={() => navigate(`/profiles/${id}/edit`)}
-                className="absolute top-4 right-4 p-2.5 bg-gray-800/90 hover:bg-gray-700 
-                  text-gray-300 hover:text-white rounded-lg transition-all duration-200 
-                  hover:scale-105 backdrop-blur-sm flex items-center gap-2 
-                  border border-gray-700 group"
-              >
-                <Edit2 className="h-4 w-4 group-hover:text-green-500 transition-colors" />
-                <span className="text-sm font-medium">Edit Profile</span>
-              </button>
-            )}
-          </div>
+        <div className="relative bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+          {/* Banner */}
+          <div className="h-32 bg-gradient-to-r from-green-500/10 to-blue-500/10" />
+          
+          {/* Edit Button */}
+          {isOwnProfile && (
+            <button
+              onClick={() => navigate(`/profiles/${id}/edit`)}
+              className="absolute top-4 right-4 px-4 py-2 bg-gray-800/90 hover:bg-gray-700 
+                text-gray-300 hover:text-white rounded-lg transition-all duration-200 
+                hover:scale-105 backdrop-blur-sm flex items-center gap-2 
+                border border-gray-700"
+            >
+              <Edit2 className="h-4 w-4" />
+              <span>Edit Profile</span>
+            </button>
+          )}
 
           {/* Profile Content */}
           <div className="p-6 -mt-16">
-            <div className="flex flex-col md:flex-row gap-8">
+            <div className="flex flex-col lg:flex-row gap-8">
               {/* Avatar and Basic Info */}
-              <div className="flex flex-col items-center md:items-start">
+              <div className="flex flex-col items-center lg:items-start">
                 <Avatar
                   src={profile.profile_image}
                   text={profile.name || profile.username}
                   height={128}
-                  className="ring-4 ring-gray-800 bg-gray-700"
+                  className="ring-4 ring-gray-800 bg-gray-700 rounded-full"
                 />
-                <div className="mt-4 text-center md:text-left">
+                <div className="mt-4 text-center lg:text-left">
                   <h1 className="text-2xl font-bold text-white">
                     {profile.name || profile.username}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <p className="text-gray-400 text-sm">
+                  <div className="mt-1 flex flex-wrap gap-2 justify-center lg:justify-start">
+                    <span className="text-gray-400 text-sm">
                       Member since {formatDate(profile.created_at, 'MMMM yyyy')}
-                    </p>
+                    </span>
                     {age && (
                       <span className="text-sm bg-gray-700/30 px-2 py-0.5 rounded text-gray-300">
                         {age} years old
@@ -223,62 +197,70 @@ const ProfilePage = () => {
               <div className="flex-1 space-y-6">
                 {/* Bio */}
                 {profile.bio && (
-                  <div className="bg-gray-700/30 p-4 rounded-lg border border-gray-700/50">
+                  <div className="bg-gray-700/30 p-4 rounded-lg">
                     <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
                       {profile.bio}
                     </p>
                   </div>
                 )}
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <StatBadge 
-                    icon={Scale} 
-                    label="Weight" 
-                    value={profile.weight && `${profile.weight} kg`} 
-                  />
-                  <StatBadge 
-                    icon={RulerIcon} 
-                    label="Height" 
-                    value={profile.height && `${profile.height} cm`} 
-                  />
-                  <StatBadge 
-                    icon={Calendar} 
-                    label="Birth Date" 
-                    value={profile.date_of_birth && formatDate(profile.date_of_birth, 'PP')} 
-                  />
-                </div>
-
-                {/* Additional Info */}
-                <div className="flex flex-wrap gap-3">
-                  <InfoBadge icon={Mail} text={profile.email} />
-                  <InfoBadge icon={MapPin} text={profile.location} />
-                  {profile.gender && (
+                {/* Info Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {profile.weight && (
                     <InfoBadge 
-                      icon={User} 
-                      text={profile.gender === 'M' ? 'Male' : profile.gender === 'F' ? 'Female' : 'Other'} 
+                      icon={Scale} 
+                      label="Weight"
+                      value={`${profile.weight} kg`}
                     />
                   )}
-                  {age && <InfoBadge icon={Cake} text={`${age} years old`} />}
+                  {profile.height && (
+                    <InfoBadge 
+                      icon={RulerIcon}
+                      label="Height"
+                      value={`${profile.height} cm`}
+                    />
+                  )}
+                  {profile.date_of_birth && (
+                    <InfoBadge 
+                      icon={Calendar}
+                      label="Birth Date"
+                      value={formatDate(profile.date_of_birth, 'PP')}
+                    />
+                  )}
+                  {profile.gender && (
+                    <InfoBadge 
+                      icon={User}
+                      label="Gender"
+                      value={profile.gender === 'M' ? 'Male' : profile.gender === 'F' ? 'Female' : 'Other'}
+                    />
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats Section */}
-        <ProfileStats 
-          stats={stats}
-          isLoading={!profileData?.stats}
-        />
+        {/* Profile Stats */}
+        <ProfileStats stats={stats} />
 
         {/* Workouts Section */}
-        <ProfileWorkouts
-          profileId={profile.id}
-          profileUsername={profile.username}
-          isOwnProfile={isOwnProfile}
-          stats={stats}
-        />
+        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <DumbbellIcon className="h-5 w-5 text-green-500" />
+              <h2 className="text-lg font-semibold text-white">Workouts</h2>
+            </div>
+            <span className="text-sm text-gray-400">
+              Total: {stats.total_workouts}
+            </span>
+          </div>
+          <ProfileWorkouts
+            profileId={profile.id}
+            profileUsername={profile.username}
+            isOwnProfile={isOwnProfile}
+            stats={stats}
+          />
+        </div>
       </div>
     </div>
   );
