@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSetCurrentUser } from '../../contexts/CurrentUserContext';
 import { Save, X, Loader, Upload } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { axiosReq } from '../../services/axiosDefaults';
+import toast from 'react-hot-toast';
 
 const ProfileEditForm = () => {
   const { id } = useParams();
@@ -117,10 +117,14 @@ const ProfileEditForm = () => {
       const { data } = await axiosReq.put(`/api/profiles/${id}/`, formData);
       console.log('Server response:', data);
 
+      // Update current user context with new image
       setCurrentUser(prevUser => ({
         ...prevUser,
-        profile_image: data.profile_image,
+        profile_image: data.profile_image
       }));
+
+      // Force reload the profile image by appending timestamp
+      setProfileImage(`${data.profile_image}?t=${Date.now()}`);
 
       toast.success('Profile updated successfully');
       navigate(`/profiles/${id}`);

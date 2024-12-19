@@ -26,8 +26,10 @@ axiosReq.interceptors.request.use(
       config.headers.Authorization = `Token ${token}`;
     }
 
-    // Don't modify content-type for FormData
-    if (!(config.data instanceof FormData)) {
+    // Remove default Content-Type for FormData
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    } else {
       config.headers['Content-Type'] = 'application/json';
     }
 
