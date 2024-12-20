@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { Share2, MessageCircle, Heart, X } from 'lucide-react';
 import { socialService } from '../../services/socialService';
 import WorkoutShareModal from './WorkoutShareModal';
@@ -8,40 +9,48 @@ import toast from 'react-hot-toast';
 
 const SocialFeed = () => {
   const navigate = useNavigate();
+  const { currentUser } = useCurrentUser();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [commentingOnPost, setCommentingOnPost] = useState(null);
 
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
   const fetchPosts = async () => {
+    console.log('Fetching posts...');
     try {
-      const response = await socialService.getFeed();
-      setPosts(response.results);
+      setLoading(true);
+      const data = await socialService.getFeed();
+      const firstPost = data.results[0];
+      console.log('First post full data:', JSON.stringify(firstPost, null, 2));
+      console.log('User object:', JSON.stringify(firstPost.user, null, 2));
+      setPosts(data.results);
     } catch (err) {
+      console.error('Error fetching feed:', err);
       toast.error('Failed to load feed');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
   const handleLike = async (postId, isLiked) => {
     try {
       await socialService.toggleLike(postId);
       setPosts(posts.map(post => 
         post.id === postId 
-          ? { 
-              ...post, 
+          ? {
+              ...post,
               likes_count: isLiked ? post.likes_count - 1 : post.likes_count + 1,
-              has_liked: !isLiked 
+              has_liked: !isLiked
             }
           : post
       ));
     } catch (err) {
+      console.error('Error updating like:', err);
       toast.error('Failed to update like');
     }
   };
@@ -50,20 +59,22 @@ const SocialFeed = () => {
     if (!newComment.trim()) return;
     
     try {
-      const response = await socialService.addComment(postId, newComment);
+      const comment = await socialService.addComment(postId, newComment.trim());
       setPosts(posts.map(post =>
         post.id === postId
           ? {
               ...post,
               comments_count: post.comments_count + 1,
-              latest_comments: [response, ...(post.latest_comments || [])]
+              latest_comments: [comment, ...(post.latest_comments || [])]
             }
           : post
       ));
+      
       setNewComment('');
       setCommentingOnPost(null);
       toast.success('Comment added');
     } catch (err) {
+      console.error('Error adding comment:', err);
       toast.error('Failed to add comment');
     }
   };
@@ -82,13 +93,14 @@ const SocialFeed = () => {
       ));
       toast.success('Comment deleted');
     } catch (err) {
+      console.error('Error deleting comment:', err);
       toast.error('Failed to delete comment');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-900">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500" />
       </div>
     );
@@ -113,13 +125,21 @@ const SocialFeed = () => {
           <div key={post.id} className="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-6">
             {/* Post Header */}
             <div className="flex items-center gap-3 mb-4">
-              <div onClick={() => navigate(`/profiles/${post.user.id}`)}>
-                {post.owner}
-                <Avatar src={post.profile_image} text={post.user.username} />
+              <div 
+                onClick={() => navigate(`/profiles/${post.user.id}`)}
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                <Avatar
+                  src={`https://res.cloudinary.com/dufw4ursl/image/upload/${post.user?.profile_image}`}
+                  text={post.user?.username}
+                  height={40}
+                />
               </div>
               <div>
                 <h3 className="font-medium text-white">{post.user.username}</h3>
-                <p className="text-sm text-gray-400">{new Date(post.created_at).toLocaleDateString()}</p>
+                <p className="text-sm text-gray-400">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </p>
               </div>
             </div>
 
@@ -127,10 +147,19 @@ const SocialFeed = () => {
             {post.workout && (
               <div className="mb-4">
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-sm">{post.workout.workout_type}</span>
-                  <span className="px-3 py-1 bg-blue-500/20 text-blue-500 rounded-full text-sm">{post.workout.duration} mins</span>
+                  <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-sm">
+                    {post.workout.workout_type}
+                  </span>
+                  <span className="px-3 py-1 bg-blue-500/20 text-blue-500 rounded-full text-sm">
+                    {post.workout.duration} mins
+                  </span>
+                  <span className="px-3 py-1 bg-purple-500/20 text-purple-500 rounded-full text-sm">
+                    {post.workout.intensity}
+                  </span>
                 </div>
-                {post.workout.notes && <p className="mt-2 text-gray-300">{post.workout.notes}</p>}
+                {post.workout.notes && (
+                  <p className="mt-2 text-gray-300">{post.workout.notes}</p>
+                )}
               </div>
             )}
 
@@ -138,7 +167,9 @@ const SocialFeed = () => {
             <div className="flex items-center gap-6 text-gray-400">
               <button
                 onClick={() => handleLike(post.id, post.has_liked)}
-                className={`flex items-center gap-2 ${post.has_liked ? 'text-red-500' : 'hover:text-red-500'} transition-colors`}
+                className={`flex items-center gap-2 ${
+                  post.has_liked ? 'text-red-500' : 'hover:text-red-500'
+                } transition-colors`}
               >
                 <Heart className={`h-5 w-5 ${post.has_liked ? 'fill-current' : ''}`} />
                 <span>{post.likes_count}</span>
@@ -153,21 +184,29 @@ const SocialFeed = () => {
               </button>
             </div>
 
-            {/* Display Latest Comments */}
+            {/* Comments Section */}
             {post.latest_comments?.length > 0 && (
               <div className="mt-4 space-y-2">
                 {post.latest_comments.map((comment) => (
                   <div key={comment.id} className="flex gap-2">
-                    <Avatar src={comment.profile_image} text={comment.user.username} size="sm" />
+                    <Avatar 
+                      src={`https://res.cloudinary.com/dufw4ursl/image/upload/${comment.user?.profile_image}`}
+                      text={comment.user?.username}
+                      height={32}
+                    />
                     <div className="bg-gray-700 rounded-lg p-2 flex-1">
                       <div className="flex justify-between items-start">
-                        <span className="font-medium text-white">{comment.user.username}</span>
-                        <button
-                          onClick={() => handleDeleteComment(post.id, comment.id)}
-                          className="text-gray-400 hover:text-red-500"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
+                        <span className="font-medium text-white">
+                          {comment.user.username}
+                        </span>
+                        {comment.user.id === currentUser?.id && (
+                          <button
+                            onClick={() => handleDeleteComment(post.id, comment.id)}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                       <p className="text-gray-300 text-sm">{comment.content}</p>
                     </div>
@@ -213,7 +252,7 @@ const SocialFeed = () => {
         <WorkoutShareModal
           onClose={() => {
             setShowShareModal(false);
-            fetchPosts();
+            fetchPosts();  // Refresh feed after sharing
           }}
         />
       )}
