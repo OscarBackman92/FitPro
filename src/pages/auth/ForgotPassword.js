@@ -1,21 +1,28 @@
 import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
-import  authService from '../../services/authService';
+import authService from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
+  // State to store the email input
   const [email, setEmail] = useState('');
+  // State to manage loading state
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      // Call the forgotPassword service with the email
       await authService.forgotPassword(email);
+      // Show success message
       toast.success('Password reset instructions sent to your email');
     } catch (err) {
+      // Show error message
       toast.error('Failed to process password reset request');
     } finally {
+      // Reset loading state
       setIsLoading(false);
     }
   };

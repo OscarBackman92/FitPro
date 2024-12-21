@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// Delete confirmation modal component
 const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, isDeleting }) => {
   if (!isOpen) return null;
 
@@ -53,6 +54,7 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, isDeleting }) => {
   );
 };
 
+// Main component for editing a workout
 const WorkoutEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -69,6 +71,7 @@ const WorkoutEdit = () => {
     date_logged: new Date().toISOString().split('T')[0],
   });
 
+  // Load workout data on component mount
   useEffect(() => {
     const loadWorkout = async () => {
       try {
@@ -83,6 +86,7 @@ const WorkoutEdit = () => {
     loadWorkout();
   }, [id, navigate]);
 
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setWorkoutData((prev) => ({
@@ -92,6 +96,7 @@ const WorkoutEdit = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
+  // Validate form data
   const validateForm = () => {
     const newErrors = {};
     if (!workoutData.title) newErrors.title = 'Title is required';
@@ -103,6 +108,7 @@ const WorkoutEdit = () => {
     return newErrors;
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
@@ -123,6 +129,7 @@ const WorkoutEdit = () => {
     }
   };
 
+  // Handle workout deletion
   const handleDelete = async () => {
     setIsDeleting(true);
     try {

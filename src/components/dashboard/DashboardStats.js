@@ -1,7 +1,9 @@
 import React from 'react';
 import { DumbbellIcon, Calendar, Award, Activity } from 'lucide-react';
 
+// DashboardStats component to display various workout statistics
 const DashboardStats = ({ stats }) => {
+  // Define the stat cards with their respective icons, labels, values, and formatters
   const statCards = [
     {
       id: 'total',
@@ -34,6 +36,7 @@ const DashboardStats = ({ stats }) => {
   ];
 
   return (
+    // Render the stat cards in a responsive grid layout
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 max-w-4xl mx-auto">
       {statCards.map((card) => (
         <div

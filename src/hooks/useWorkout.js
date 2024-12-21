@@ -3,6 +3,16 @@ import { workoutService } from '../services/workoutService';
 import { useWorkout as useWorkoutContext } from '../contexts/WorkoutContext';
 import toast from 'react-hot-toast';
 
+/**
+ * Custom hook to manage workout operations.
+ *
+ * @returns {Object} - The workout operations and state.
+ * @returns {Array} workouts - The list of workouts from the context.
+ * @returns {boolean} loading - The loading state.
+ * @returns {Function} createWorkout - Function to create a new workout.
+ * @returns {Function} updateWorkout - Function to update an existing workout.
+ * @returns {Function} deleteWorkout - Function to delete a workout.
+ */
 export const useWorkout = () => {
   const [loading, setLoading] = useState(false);
   const { workouts, setWorkouts } = useWorkoutContext();

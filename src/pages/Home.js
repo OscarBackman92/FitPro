@@ -8,12 +8,14 @@ const Home = () => {
   const currentUserContext = useCurrentUser(); // Safely access the context
   const currentUser = currentUserContext?.currentUser || null;
 
+  // Redirect to dashboard if the user is logged in
   React.useEffect(() => {
     if (currentUser) {
       navigate('/dashboard');
     }
   }, [currentUser, navigate]);
 
+  // Features data
   const features = [
     {
       icon: <DumbbellIcon className="w-6 h-6" />,

@@ -16,10 +16,12 @@ const SocialFeed = () => {
   const [newComment, setNewComment] = useState('');
   const [commentingOnPost, setCommentingOnPost] = useState(null);
 
+  // Fetch posts when the component mounts
   useEffect(() => {
     fetchPosts();
   }, []);
 
+  // Function to fetch posts from the social service
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -33,6 +35,7 @@ const SocialFeed = () => {
     }
   };
 
+  // Function to handle liking a post
   const handleLike = async (postId, isLiked) => {
     try {
       await socialService.toggleLike(postId);
@@ -51,6 +54,7 @@ const SocialFeed = () => {
     }
   };
 
+  // Function to handle adding a comment to a post
   const handleComment = async (postId) => {
     if (!newComment.trim()) return;
     
@@ -75,6 +79,7 @@ const SocialFeed = () => {
     }
   };
 
+  // Function to handle deleting a comment from a post
   const handleDeleteComment = async (postId, commentId) => {
     try {
       await socialService.deleteComment(commentId);
@@ -94,6 +99,7 @@ const SocialFeed = () => {
     }
   };
 
+  // Show loading spinner while fetching posts
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">

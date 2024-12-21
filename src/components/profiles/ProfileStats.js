@@ -6,6 +6,7 @@ import {
 
 const ProfileStats = ({ stats }) => {
   
+  // Define the stat cards with their respective icons, labels, and values
   const statCards = [
     {
       icon: DumbbellIcon,
@@ -34,9 +35,11 @@ const ProfileStats = ({ stats }) => {
       {statCards.map((stat, index) => (
         <div key={index} className="bg-gray-800 p-6 rounded-lg border border-gray-700">
           <div className="inline-flex p-3 rounded-lg bg-gray-700/50 mb-4">
+            {/* Render the icon for each stat card */}
             <stat.icon className="h-6 w-6 text-green-500" />
           </div>
           <p className="text-2xl font-bold text-white mb-1">
+            {/* Format the value if it's a number, otherwise display it as is */}
             {typeof stat.value === 'number' ? 
               stat.value.toLocaleString() : stat.value}
           </p>

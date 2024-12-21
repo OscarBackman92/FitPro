@@ -9,15 +9,21 @@ import { Toaster } from 'react-hot-toast';
 import './index.css';
 import App from './App';
 
+// Create a router with a single route that matches all paths
 const router = createBrowserRouter(
   [
     {
       path: "*",
       element: (
+        // Provide current user context to the entire app
         <CurrentUserProvider>
+          {/* Provide profile data context to the entire app */}
           <ProfileDataProvider>
+            {/* Provide workout context to the entire app */}
             <WorkoutProvider>
+              {/* Provide social context to the entire app */}
               <SocialProvider>
+                {/* Configure and display toast notifications */}
                 <Toaster
                   position="top-right"
                   toastOptions={{
@@ -33,6 +39,7 @@ const router = createBrowserRouter(
                     },
                   }}
                 />
+                {/* Render the main App component */}
                 <App />
               </SocialProvider>
             </WorkoutProvider>
@@ -43,11 +50,16 @@ const router = createBrowserRouter(
   ],
   {
     future: {
-      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+      v7_fetcherPersist: true,
+      v7_normalizeFormMethod: true,
+      v7_partialHydration: true,
+      v7_skipActionErrorRevalidation: true
     }
   }
 );
 
+// Create a root element and render the router provider
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <RouterProvider router={router} />

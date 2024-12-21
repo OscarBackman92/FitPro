@@ -2,6 +2,7 @@ import { format, isValid, parseISO } from 'date-fns';
 import { Scale, RulerIcon, Calendar, Mail, MapPin, User, Cake, Edit2 } from 'lucide-react';
 import Avatar from '../common/Avatar';
 
+// Component to display a stat badge with an icon, label, and value
 const StatBadge = ({ icon: Icon, label, value }) => {
   if (!value) return null;
 
@@ -18,6 +19,7 @@ const StatBadge = ({ icon: Icon, label, value }) => {
   );
 };
 
+// Component to display an info badge with an icon and text
 const InfoBadge = ({ icon: Icon, text }) => {
   if (!text) return null;
 
@@ -29,7 +31,9 @@ const InfoBadge = ({ icon: Icon, text }) => {
   );
 };
 
+// Main ProfileHeader component
 const ProfileHeader = ({ profile, isOwnProfile, onEdit }) => {
+  // Function to format date strings
   const formatDate = (dateString, formatString) => {
     if (!dateString) return null;
     try {
@@ -40,6 +44,7 @@ const ProfileHeader = ({ profile, isOwnProfile, onEdit }) => {
     }
   };
 
+  // Function to calculate age from birth date
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
     try {
@@ -62,6 +67,7 @@ const ProfileHeader = ({ profile, isOwnProfile, onEdit }) => {
 
   const age = calculateAge(profile.date_of_birth);
 
+  // Determine profile image URL
   const profileImageURL = profile.profile_image
     ? `${profile.profile_image}`
     : 'https://res.cloudinary.com/dufw4ursl/image/upload/v1734633670/default_profile_ylwpgw_yz6v1r.jpg';

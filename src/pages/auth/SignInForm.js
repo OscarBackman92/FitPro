@@ -15,6 +15,7 @@ export default function SignInForm() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle input changes and clear errors for the modified field
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSignInData(prev => ({
@@ -27,6 +28,7 @@ export default function SignInForm() {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);

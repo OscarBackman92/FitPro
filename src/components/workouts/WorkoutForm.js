@@ -10,6 +10,20 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+/**
+ * WorkoutForm component renders a form for creating a new workout.
+ * It includes fields for title, workout type, duration, intensity, date, and notes.
+ * The form validates the input data and displays error messages for invalid fields.
+ * On successful submission, it sends the workout data to the server and navigates to the workouts page.
+ *
+ * @component
+ * @example
+ * return (
+ *   <WorkoutForm />
+ * )
+ *
+ * @returns {JSX.Element} The WorkoutForm component.
+ */
 const WorkoutForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -1,5 +1,3 @@
-import logger from '../services/loggerService';
-
 export const workoutValidation = {
   validateWorkoutData: (data) => {
     const errors = {};

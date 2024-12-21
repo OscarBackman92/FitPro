@@ -4,6 +4,24 @@ import { DumbbellIcon, PlusCircle } from 'lucide-react';
 import workoutService from '../../services/workoutService';
 import toast from 'react-hot-toast';
 
+/**
+ * WorkoutList component fetches and displays a list of workouts.
+ * 
+ * This component handles the following functionalities:
+ * - Fetches workouts from the workoutService and displays them in a table.
+ * - Provides a loading spinner while fetching data.
+ * - Displays an error message if fetching data fails.
+ * - Allows users to delete a workout with a confirmation prompt.
+ * - Provides a button to navigate to the workout creation page.
+ * 
+ * @component
+ * @example
+ * return (
+ *   <WorkoutList />
+ * )
+ * 
+ * @returns {JSX.Element} The rendered WorkoutList component.
+ */
 const WorkoutList = () => {
   const navigate = useNavigate();
   const [workouts, setWorkouts] = useState([]);

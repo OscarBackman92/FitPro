@@ -8,16 +8,20 @@ import {
 import toast from 'react-hot-toast';
 
 const SignUpForm = () => {
+  // State to manage form data
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password1: '',
     password2: ''
   });
+  // State to manage form errors
   const [errors, setErrors] = useState({});
+  // State to manage loading state
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -25,11 +29,13 @@ const SignUpForm = () => {
       [name]: value
     }));
     
+    // Clear error for the field being edited
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
+  // Validate form data
   const validateForm = () => {
     const newErrors = {};
 
@@ -60,6 +66,7 @@ const SignUpForm = () => {
     return newErrors;
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -105,6 +112,7 @@ const SignUpForm = () => {
     }
   };
 
+  // Check password strength
   const passwordStrength = (password) => {
     const checks = {
       length: password.length >= 8,

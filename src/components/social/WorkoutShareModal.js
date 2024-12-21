@@ -10,6 +10,7 @@ const WorkoutShareModal = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [sharing, setSharing] = useState(false);
 
+  // Fetch workouts when the component mounts
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
@@ -26,6 +27,7 @@ const WorkoutShareModal = ({ onClose }) => {
     fetchWorkouts();
   }, []);
 
+  // Handle sharing a workout
   const handleShare = async (workoutId) => {
     setSharing(true);
     try {

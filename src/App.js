@@ -29,6 +29,25 @@ const WorkoutList = lazy(() => import("./components/workouts/WorkoutList"));
 const WorkoutEdit = lazy(() => import("./components/workouts/WorkoutEdit"));
 const SocialFeed = lazy(() => import("./components/social/SocialFeed"));
 
+/**
+ * The main application component that sets up the routing for the app.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered component.
+ *
+ * @example
+ * return <App />;
+ *
+ * @description
+ * This component uses React Router to define the routes for the application. It includes public routes, authentication routes, protected routes, profile routes, and a social feed route. It also handles redirection based on the user's authentication status.
+ *
+ * @requires useCurrentUser - A custom hook to get the current user.
+ * @requires NavBar - The navigation bar component.
+ * @requires Loading - A loading component to show while routes are being loaded.
+ * @requires Routes, Route, Navigate - Components from React Router for defining routes and navigation.
+ * @requires PrivateRoute - A component that protects routes from unauthorized access.
+ * @requires Home, About, SignInForm, SignUpForm, ForgotPassword, ResetPassword, Dashboard, WorkoutList, WorkoutForm, WorkoutEdit, ProfilePage, ProfileEditForm, SocialFeed, NotFound, Footer - Various components used in the routes.
+ */
 function App() {
   const { currentUser } = useCurrentUser() || {};
 

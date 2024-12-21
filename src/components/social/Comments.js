@@ -7,12 +7,14 @@ import ProfileImageHandler from './ProfileImageHandler';
 import toast from 'react-hot-toast';
 
 const Comments = ({ workoutId }) => {
+  // State variables to manage comments, new comment input, loading and submitting status
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const { currentUser } = useCurrentUser();
 
+  // Fetch comments when the component mounts or workoutId changes
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -28,6 +30,7 @@ const Comments = ({ workoutId }) => {
     fetchComments();
   }, [workoutId]);
 
+  // Handle form submission to add a new comment
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || submitting) return;
@@ -45,6 +48,7 @@ const Comments = ({ workoutId }) => {
     }
   };
 
+  // Handle comment deletion
   const handleDelete = async (commentId) => {
     if (!window.confirm('Are you sure you want to delete this comment?')) return;
 
@@ -57,6 +61,7 @@ const Comments = ({ workoutId }) => {
     }
   };
 
+  // Show loading spinner while comments are being fetched
   if (loading) {
     return (
       <div className="flex justify-center items-center p-4">

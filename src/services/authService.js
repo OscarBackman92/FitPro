@@ -1,8 +1,9 @@
 import axios from 'axios';
 
+// Set the API URL from environment variable or default to a specific URL
 const API_URL = process.env.REACT_APP_API_URL || 'https://fitnessapi-d773a1148384.herokuapp.com';
 
-// Setup axios defaults
+// Function to set up axios defaults with the provided token
 const setupAxiosDefaults = (token) => {
   if (token) {
     axios.defaults.headers.common['Authorization'] = `Token ${token}`;
@@ -11,13 +12,14 @@ const setupAxiosDefaults = (token) => {
   }
 };
 
-// Initialize token from localStorage
+// Initialize token from localStorage and set axios defaults if token exists
 const token = localStorage.getItem('token');
 if (token) {
   setupAxiosDefaults(token);
 }
 
 const authService = {
+  // Register a new user with provided credentials
   async register(credentials) {
     try {
       const response = await axios.post(`${API_URL}/api/auth/registration/`, credentials);
@@ -32,6 +34,7 @@ const authService = {
     }
   },
 
+  // Log in a user with provided credentials
   async login(credentials) {
     try {
       const response = await axios.post(`${API_URL}/api/auth/login/`, credentials);
@@ -46,6 +49,7 @@ const authService = {
     }
   },
 
+  // Get the current authenticated user's information
   async getCurrentUser() {
     try {
       const token = localStorage.getItem('token');
@@ -61,6 +65,7 @@ const authService = {
     }
   },
 
+  // Log out the current user
   async logout() {
     try {
       await axios.post(`${API_URL}/api/auth/logout/`);
@@ -72,10 +77,12 @@ const authService = {
     }
   },
 
+  // Get the current authentication token from localStorage
   getToken() {
     return localStorage.getItem('token');
   },
 
+  // Check if the user is authenticated
   isAuthenticated() {
     return !!this.getToken();
   }

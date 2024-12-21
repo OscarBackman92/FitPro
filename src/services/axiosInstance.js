@@ -1,8 +1,10 @@
 import axios from 'axios';
 import errorHandler from './errorHandlerService';
 
+// Set the API URL from environment variable or default to a specific URL
 const API_URL = process.env.REACT_APP_API_URL || 'https://fitpro1-bc76e0450a19.herokuapp.com/';
 
+// Create an axios instance with default configurations
 const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
@@ -12,7 +14,7 @@ const axiosInstance = axios.create({
   timeout: 10000, // 10-second timeout
 });
 
-// Request interceptor
+// Request interceptor to add authorization token to headers
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -26,7 +28,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor to handle responses and errors
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -51,6 +53,7 @@ axiosInstance.interceptors.response.use(
           }
         }
       } catch (refreshError) {
+        // Remove tokens and redirect to signin page on refresh failure
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         window.location.href = '/signin';

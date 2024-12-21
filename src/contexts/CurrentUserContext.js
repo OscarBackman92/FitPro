@@ -2,16 +2,19 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import authService from '../services/authService';
 import axios from 'axios';
 
+// Create contexts for current user and setter function
 const CurrentUserContext = createContext();
 const SetCurrentUserContext = createContext();
 
+// Custom hooks to use the contexts
 export const useCurrentUser = () => useContext(CurrentUserContext);
 export const useSetCurrentUser = () => useContext(SetCurrentUserContext);
 
 export const CurrentUserProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null); // State to store current user
+  const [isLoading, setIsLoading] = useState(true); // State to manage loading status
 
+  // Function to fetch current user data
   const fetchCurrentUser = useCallback(async () => {
     try {
       if (!authService.isAuthenticated()) {
@@ -52,13 +55,16 @@ export const CurrentUserProvider = ({ children }) => {
       }
     );
 
+    // Cleanup interceptor on component unmount
     return () => {
       axios.interceptors.response.eject(interceptor);
     };
   }, []);
 
   return (
+    // Provide current user and loading status to children
     <CurrentUserContext.Provider value={{ currentUser, isLoading }}>
+      {/* Provide setter function for current user to children */}
       <SetCurrentUserContext.Provider value={setCurrentUser}>
         {children}
       </SetCurrentUserContext.Provider>

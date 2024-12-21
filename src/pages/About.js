@@ -2,6 +2,7 @@ import React from 'react';
 import { DumbbellIcon, Heart, Shield, Users } from 'lucide-react';
 
 const About = () => {
+  // Define the features to be displayed on the About page
   const features = [
     {
       icon: DumbbellIcon,
@@ -40,6 +41,7 @@ const About = () => {
         {features.map((feature, index) => (
           <div key={index} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              {/* Render the feature icon */}
               <feature.icon className="w-6 h-6 text-green-600" />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>

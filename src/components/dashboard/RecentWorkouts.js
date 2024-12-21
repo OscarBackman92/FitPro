@@ -3,6 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { DumbbellIcon, PlusCircle } from 'lucide-react';
 
+/**
+ * RecentWorkouts component displays a list of recent workouts.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Array} props.workouts - An array of workout objects.
+ * @param {Object} props.workouts[].id - The unique identifier for the workout.
+ * @param {string} props.workouts[].title - The title of the workout.
+ * @param {string} props.workouts[].date_logged - The date when the workout was logged.
+ * @param {number} props.workouts[].duration - The duration of the workout in minutes.
+ * @param {string} props.workouts[].intensity - The intensity level of the workout (e.g., 'high', 'moderate', 'low').
+ * 
+ * @returns {JSX.Element} The RecentWorkouts component.
+ */
 const RecentWorkouts = ({ workouts }) => {
   const navigate = useNavigate();
 

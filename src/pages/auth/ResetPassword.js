@@ -1,21 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import  authService from '../../services/authService';
+import authService from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const ResetPassword = () => {
+  // Get search parameters from the URL
   const [searchParams] = useSearchParams();
+  // Hook to navigate programmatically
   const navigate = useNavigate();
+  // Extract the token from the search parameters
   const token = searchParams.get('token');
+  // State to manage form data
   const [formData, setFormData] = useState({
     password1: '',
     password2: ''
   });
+  // State to manage loading state
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Check if passwords match
     if (formData.password1 !== formData.password2) {
       toast.error('Passwords do not match');
       return;
@@ -23,8 +30,10 @@ const ResetPassword = () => {
 
     setIsLoading(true);
     try {
+      // Call the reset password service
       await authService.resetPassword(token, formData.password1);
       toast.success('Password reset successful');
+      // Navigate to the sign-in page
       navigate('/signin');
     } catch (err) {
       toast.error('Failed to reset password');

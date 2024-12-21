@@ -7,6 +7,27 @@ const SetWorkoutContext = createContext();
 export const useWorkouts = () => useContext(WorkoutContext);
 export const useSetWorkouts = () => useContext(SetWorkoutContext);
 
+/**
+ * WorkoutProvider component that provides workout-related context to its children.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components that will have access to the context.
+ * @returns {JSX.Element} The provider component that wraps its children with workout context.
+ *
+ * @example
+ * <WorkoutProvider>
+ *   <YourComponent />
+ * </WorkoutProvider>
+ *
+ * @context
+ * @property {Array} workouts - The list of workouts.
+ * @property {Object|null} stats - The workout statistics.
+ * @property {boolean} loading - The loading state indicating if workouts are being loaded.
+ * @context
+ * @property {Function} setWorkouts - Function to update the workouts state.
+ * @property {Function} setStats - Function to update the stats state.
+ */
 export const WorkoutProvider = ({ children }) => {
   const [workouts, setWorkouts] = useState([]);
   const [stats, setStats] = useState(null);

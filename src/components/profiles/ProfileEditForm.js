@@ -6,9 +6,9 @@ import { axiosReq } from '../../services/axiosDefaults';
 import toast from 'react-hot-toast';
 
 const ProfileEditForm = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const setCurrentUser = useSetCurrentUser();
+  const { id } = useParams(); // Get the profile ID from the URL parameters
+  const navigate = useNavigate(); // Hook to navigate programmatically
+  const setCurrentUser = useSetCurrentUser(); // Hook to set the current user context
 
   // Form state
   const [formData, setFormData] = useState({
@@ -21,19 +21,19 @@ const ProfileEditForm = () => {
   });
 
   // Image handling
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [previewImage, setPreviewImage] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null); // State to store the selected image file
+  const [previewImage, setPreviewImage] = useState(''); // State to store the preview URL of the selected image
 
   // UI state
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true); // State to indicate if the profile data is being loaded
+  const [saving, setSaving] = useState(false); // State to indicate if the form is being saved
+  const [errors, setErrors] = useState({}); // State to store form validation errors
 
   // Load initial profile data
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const { data } = await axiosReq.get(`/api/profiles/${id}/`);
+        const { data } = await axiosReq.get(`/api/profiles/${id}/`); // Fetch profile data from the API
         setFormData({
           name: data.name || '',
           bio: data.bio || '',
@@ -42,11 +42,11 @@ const ProfileEditForm = () => {
           weight: data.weight || '',
           height: data.height || '',
         });
-        setPreviewImage(data.profile_image ? `${data.profile_image}?${Date.now()}` : '');
+        setPreviewImage(data.profile_image ? `${data.profile_image}?${Date.now()}` : ''); // Set the preview image URL
       } catch (err) {
-        toast.error('Could not load profile data');
+        toast.error('Could not load profile data'); // Show error toast if profile data could not be loaded
       } finally {
-        setLoading(false);
+        setLoading(false); // Set loading to false after fetching data
       }
     };
 
@@ -73,11 +73,11 @@ const ProfileEditForm = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 2 * 1024 * 1024) {
-        toast.error('Image must be smaller than 2MB');
+        toast.error('Image must be smaller than 2MB'); // Show error toast if image size is greater than 2MB
         return;
       }
-      setSelectedImage(file);
-      setPreviewImage(URL.createObjectURL(file));
+      setSelectedImage(file); // Set the selected image file
+      setPreviewImage(URL.createObjectURL(file)); // Set the preview image URL
     }
   };
 
@@ -86,18 +86,18 @@ const ProfileEditForm = () => {
     const newErrors = {};
 
     if (formData.weight && (formData.weight < 0 || formData.weight > 500)) {
-      newErrors.weight = 'Weight must be between 0 and 500 kg';
+      newErrors.weight = 'Weight must be between 0 and 500 kg'; // Validate weight
     }
 
     if (formData.height && (formData.height < 0 || formData.height > 300)) {
-      newErrors.height = 'Height must be between 0 and 300 cm';
+      newErrors.height = 'Height must be between 0 and 300 cm'; // Validate height
     }
 
     if (formData.date_of_birth) {
       const birthDate = new Date(formData.date_of_birth);
       const today = new Date();
       if (birthDate > today) {
-        newErrors.date_of_birth = 'Date of birth cannot be in the future';
+        newErrors.date_of_birth = 'Date of birth cannot be in the future'; // Validate date of birth
       }
     }
 
@@ -111,7 +111,7 @@ const ProfileEditForm = () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      toast.error('Please check form errors');
+      toast.error('Please check form errors'); // Show error toast if there are validation errors
       return;
     }
 
@@ -123,15 +123,15 @@ const ProfileEditForm = () => {
 
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== '' && value !== null && value !== undefined) {
-          submitData.append(key, value);
+          submitData.append(key, value); // Append form data to FormData object
         }
       });
 
       if (selectedImage) {
-        submitData.append('profile_image', selectedImage);
+        submitData.append('profile_image', selectedImage); // Append selected image to FormData object
       }
 
-      const response = await axiosReq.put(`/api/profiles/${id}/`, submitData);
+      const response = await axiosReq.put(`/api/profiles/${id}/`, submitData); // Send PUT request to update profile
 
       setCurrentUser(prevUser => ({
         ...prevUser,
@@ -142,28 +142,28 @@ const ProfileEditForm = () => {
         }
       }));
 
-      toast.success('Profile updated successfully');
+      toast.success('Profile updated successfully'); // Show success toast
       setTimeout(() => {
-        navigate(`/profiles/${id}`);
+        navigate(`/profiles/${id}`); // Navigate to the profile page after a short delay
       }, 500);
     } catch (err) {
       const responseErrors = err.response?.data;
       if (err.response?.status === 413) {
-        toast.error('Image file is too large');
+        toast.error('Image file is too large'); // Show error toast if image file is too large
       } else if (responseErrors) {
         if (typeof responseErrors === 'string') {
-          toast.error(responseErrors);
+          toast.error(responseErrors); // Show error toast if response error is a string
         } else if (typeof responseErrors === 'object') {
           setErrors(responseErrors);
           const firstError = Object.values(responseErrors)[0];
           const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
-          toast.error(errorMessage || 'Failed to update profile');
+          toast.error(errorMessage || 'Failed to update profile'); // Show error toast if response error is an object
         }
       } else {
-        toast.error('Network error occurred. Please try again.');
+        toast.error('Network error occurred. Please try again.'); // Show error toast if there is a network error
       }
     } finally {
-      setSaving(false);
+      setSaving(false); // Set saving to false after submission
     }
   };
 

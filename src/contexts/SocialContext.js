@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { socialService } from '../services/socialService';
 
+// Create a context for the social features
 const SocialContext = createContext(undefined);
 
+// Define action types
 const ACTIONS = {
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
@@ -16,6 +18,7 @@ const ACTIONS = {
   CLEAR_ERROR: 'CLEAR_ERROR'
 };
 
+// Initial state for the reducer
 const initialState = {
   feed: [],
   comments: {},
@@ -29,8 +32,8 @@ const initialState = {
   }
 };
 
+// Reducer function to handle state changes based on actions
 function socialReducer(state, action) {
-
   switch (action.type) {
     case ACTIONS.SET_LOADING:
       return { ...state, loading: action.payload };
@@ -92,6 +95,7 @@ function socialReducer(state, action) {
         likes.add(action.payload);
       }
       return { ...state, likes };
+
     case ACTIONS.SET_PAGINATION:
       return {
         ...state,
@@ -103,9 +107,11 @@ function socialReducer(state, action) {
   }
 }
 
+// Provider component to wrap the application and provide the social context
 export function SocialProvider({ children }) {
   const [state, dispatch] = useReducer(socialReducer, initialState);
 
+  // Fetch feed data from the service
   const fetchFeed = useCallback(async (page = 1) => {
     dispatch({ type: ACTIONS.SET_LOADING, payload: true });
     try {
@@ -128,6 +134,7 @@ export function SocialProvider({ children }) {
     }
   }, []);
 
+  // Context value to be provided to consumers
   const contextValue = {
     ...state,
     dispatch,
@@ -175,6 +182,7 @@ export function SocialProvider({ children }) {
   );
 }
 
+// Custom hook to use the social context
 export function useSocial() {
   const context = useContext(SocialContext);
   if (context === undefined) {
