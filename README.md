@@ -140,7 +140,8 @@ The Kanban board was created using github projects and can be located [here](htt
 
 The application features a responsive navigation system that adapts to different screen sizes and user authentication states.
 
-#### Logged In Users See:
+#### Logged In Users See
+
 - Dashboard
 - Workouts
 - Social Feed
@@ -148,18 +149,21 @@ The application features a responsive navigation system that adapts to different
 - Sign Out
 - Users Icon and Username
 
-![Navbar Logged In](/documentation/readme_images/)
+![Navbar Logged In](/documentation/readme_images/navbar_logged_in.png)
 
-#### Logged Out Users See:
+#### Logged Out Users See
+
 - Home
+- About
 - Sign In
 - Sign Up
 
-![Navbar Logged Out](/documentation/readme_images/navbar_logged_out.png)
+![Navbar Logged Out](/documentation/readme_images/navbar.png)
 
 ### Authentication Features
 
 #### Sign Up
+
 - Username validation and availability check
 - Email format validation
 - Password strength indicators
@@ -170,6 +174,7 @@ The application features a responsive navigation system that adapts to different
 ![Sign Up Form](/documentation/readme_images/sign_up.png)
 
 #### Sign In
+
 - Remember me functionality
 - Forgot password link
 - Form validation
@@ -177,9 +182,10 @@ The application features a responsive navigation system that adapts to different
 - JWT token management
 - Success/error notifications
 
-![Sign In Form](/documentation/readme_images/login.png)
+![Sign In Form](/documentation/readme_images/sign_in.png)
 
 #### Password Reset
+
 - Email verification
 - Secure token generation
 - Reset form validation
@@ -193,18 +199,20 @@ The application features a responsive navigation system that adapts to different
 The dashboard serves as the central hub for users, providing:
 
 #### Overview Section
+
 - Total workout count
 - Current week's workouts
 - Workout streak counter
 - Total workout minutes
 
 #### Recent Activity
+
 - Latest workouts display
 - Quick access to workout details
 - Edit/delete functionality
 - Activity timestamps
 
-![Dashboard Overview](/documentation/readme_images/dashboard_hero_image.png)
+![Dashboard Overview](/documentation/readme_images/dashboard.png)
 
 ### Workout Management
 
@@ -229,6 +237,8 @@ The dashboard serves as the central hub for users, providing:
 - Delete confirmation
 - Pagination
 
+![Workout History](/documentation/readme_images/workout_history.png)
+
 #### Workout Details
 
 - Complete workout information
@@ -237,8 +247,9 @@ The dashboard serves as the central hub for users, providing:
 - Share capability
 - Comments section
 
-### Social Features
+![Details](/documentation/readme_images//workout_details.png)
 
+### Social Features
 
 #### Activity Feed
 
@@ -247,6 +258,8 @@ The dashboard serves as the central hub for users, providing:
 - Comment system
 - Share workouts
 - Infinite scroll
+
+![Share modal](/documentation/readme_images/share.png)
 
 ![Social Feed](/documentation/readme_images/feed.png)
 
@@ -267,6 +280,8 @@ The dashboard serves as the central hub for users, providing:
 - Recent activity
 - Edit capabilities
 
+![Profile](/documentation/readme_images/profile.png)
+
 #### Profile Edit
 
 - Update personal information
@@ -274,6 +289,8 @@ The dashboard serves as the central hub for users, providing:
 - Modify preferences
 - Password change
 - Success/error handling
+
+![Edit](/documentation/readme_images/profile_edit.png)
 
 ## Components
 
@@ -488,12 +505,14 @@ When using these components:
 The application uses a carefully selected color palette:
 
 Primary Colors:
+
 - Brand Green: `#10B981` - Used for primary actions and success states
 - Dark Background: `#1F2937` - Main background color
 - Light Text: `#F9FAFB` - Primary text color
 - Accent Blue: `#3B82F6` - Used for links and secondary actions
 
 Additional Colors:
+
 - Input Background: `#374151`
 - Border Color: `#4B5563`
 - Error Red: `#EF4444`
@@ -502,13 +521,17 @@ Additional Colors:
 ### Typography
 
 #### Primary Font: Inter
+
 Used for headings and important text
+
 ```css
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 ```
 
 #### Secondary Font: Open Sans
+
 Used for body text and longer content
+
 ```css
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
 ```
@@ -516,11 +539,13 @@ Used for body text and longer content
 ### Layout & Responsive Design
 
 The application follows a mobile-first approach with responsive breakpoints:
+
 - Mobile: < 640px
 - Tablet: 640px - 1024px
 - Desktop: > 1024px
 
 Key layout principles:
+
 - Consistent spacing using TailwindCSS utilities
 - Flexible grid systems
 - Responsive navigation
@@ -529,18 +554,21 @@ Key layout principles:
 ### User Interface Elements
 
 #### Buttons
+
 - Primary: Green background, white text
 - Secondary: Transparent with border
 - Danger: Red background for destructive actions
 - Disabled states with reduced opacity
 
 #### Forms
+
 - Clear label positioning
 - Intuitive input sizing
 - Visible validation states
 - Helpful error messages
 
 #### Cards
+
 - Consistent padding and margins
 - Subtle shadows for depth
 - Responsive scaling
@@ -551,12 +579,14 @@ Key layout principles:
 ### Core Technologies
 
 #### Languages
+
 - HTML5
 - CSS3 (with Tailwind)
 - JavaScript (ES6+)
 - JSX
 
 #### Frameworks & Libraries
+
 - React 18.3.1
 - React Router 6.27.0
 - Axios 1.7.7
@@ -569,6 +599,7 @@ Key layout principles:
 ### Development Tools
 
 #### Code Quality
+
 - ESLint - Code linting
 - Prettier - Code formatting
 - Husky - Git hooks
@@ -576,6 +607,7 @@ Key layout principles:
 - React Testing Library - Component testing
 
 #### Version Control & Deployment
+
 - Git - Version control
 - GitHub - Code repository
 - VS Code - Code editor
@@ -585,21 +617,25 @@ Key layout principles:
 ### UI Components & Libraries
 
 #### Icon System
+
 - Lucide React - Icon library
 - Custom SVG implementations
 
 #### UI Framework
+
 - shadcn/ui components
 - Custom React components
 - Tailwind CSS utilities
 
 #### Data Visualization
+
 - Recharts - Chart library
 - Custom SVG graphs
 
 ### Installation & Setup
 
 #### Prerequisites
+
 ```bash
 Node.js (v18.x+)
 npm (v9.x+)
@@ -609,22 +645,26 @@ Git
 #### Installation Steps
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/yourusername/fitpro-frontend.git
 cd fitpro-frontend
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 3. Create environment file
+
 ```bash
 cp .env.example .env.local
 ```
 
 4. Update environment variables
+
 ```env
 REACT_APP_API_URL=https://fitnessapi-d773a1148384.herokuapp.com
 REACT_APP_DEFAULT_PROFILE_IMAGE=https://res.cloudinary.com/dufw4ursl/image/upload/v1/default_profile_ylwpgw
@@ -632,6 +672,7 @@ REACT_APP_CLOUDINARY_CLOUD_NAME=dufw4ursl
 ```
 
 5. Start development server
+
 ```bash
 npm start
 ```
@@ -710,19 +751,11 @@ Most commonly, forks are used to either propose changes to someone else's projec
 
 ### Known Bugs
 
-1. Profile image upload is failing, debugging needed
-2. Recent workouts in profile shows incorrect user's workouts
-3. Mobile keyboard issues with weight/height inputs
-4. Birth date display issues on mobile
-5. Member since date validation error
-6. Search and filter functionality incomplete
-7. Missing home/about page images
-8. Password reset not functional
-9. Login page refresh required after logout
+1. Password reset not functional
 
 ### Planned Improvements
 
-1. Dark mode implementation
+1. Light/Dark mode implementation
 2. Push notifications
 3. Offline support
 4. Performance optimizations
@@ -732,11 +765,12 @@ Most commonly, forks are used to either propose changes to someone else's projec
 ### Acknowledgments
 
 Special thanks to:
-- Code Institute tutors
+
 - Mentor Daisy
 - Testing team/family
 - Fellow developers who provided feedback
 - Stack Overflow community
+- ChatGpt/Claude AI
 
 ## License
 
