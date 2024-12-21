@@ -21,13 +21,9 @@ const SocialFeed = () => {
   }, []);
 
   const fetchPosts = async () => {
-    console.log('Fetching posts...');
     try {
       setLoading(true);
       const data = await socialService.getFeed();
-      const firstPost = data.results[0];
-      console.log('First post full data:', JSON.stringify(firstPost, null, 2));
-      console.log('User object:', JSON.stringify(firstPost.user, null, 2));
       setPosts(data.results);
     } catch (err) {
       console.error('Error fetching feed:', err);
