@@ -303,6 +303,7 @@ The application uses a combination of state management approaches:
 #### Core Components
 
 **Avatar Component**
+
 ```jsx
 // Versatile avatar display used across the application
 <Avatar 
@@ -319,6 +320,7 @@ The application uses a combination of state management approaches:
 ```
 
 **LoadingSpinner**
+
 ```jsx
 // Standardized loading indicator
 <LoadingSpinner 
@@ -333,6 +335,7 @@ The application uses a combination of state management approaches:
 ```
 
 **PrivateRoute**
+
 ```jsx
 // Authentication wrapper for protected routes
 <PrivateRoute>
@@ -350,6 +353,7 @@ The application uses a combination of state management approaches:
 The application uses several context providers for state management:
 
 **CurrentUserContext**
+
 - Manages authentication state
 - Handles user session
 - Provides user data globally
@@ -360,6 +364,7 @@ const { currentUser, isLoading } = useCurrentUser();
 ```
 
 **WorkoutContext**
+
 - Manages workout data state
 - Handles CRUD operations
 - Provides workout-related utilities
@@ -370,6 +375,7 @@ const { workouts, addWorkout, updateWorkout } = useWorkoutContext();
 ```
 
 **ProfileContext**
+
 - Manages user profile data
 - Handles profile updates
 - Provides profile-related utilities
@@ -379,18 +385,21 @@ const { workouts, addWorkout, updateWorkout } = useWorkoutContext();
 The application includes several custom hooks that encapsulate common functionality:
 
 **useDebounce**
+
 ```javascript
 // Prevents excessive API calls
 const debouncedSearch = useDebounce(searchTerm, 300);
 ```
 
 **useFetchData**
+
 ```javascript
 // Handles data fetching with loading/error states
 const { data, loading, error } = useFetchData(fetchFunction);
 ```
 
 **useInfiniteScroll**
+
 ```javascript
 // Implements infinite scrolling functionality
 const lastElementRef = useInfiniteScroll(loadMore, hasMoreData);
