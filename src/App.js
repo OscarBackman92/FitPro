@@ -20,8 +20,6 @@ const Dashboard = lazy(() => import("./components/dashboard/Dashboard"));
 const About = lazy(() => import("./pages/About"));
 const SignUpForm = lazy(() => import("./pages/auth/SignUpForm"));
 const SignInForm = lazy(() => import("./pages/auth/SignInForm"));
-const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 const ProfilePage = lazy(() => import("./components/profiles/ProfilePage"));
 const ProfileEditForm = lazy(() => import("./components/profiles/ProfileEditForm"));
 const WorkoutForm = lazy(() => import("./components/workouts/WorkoutForm"));
@@ -71,14 +69,6 @@ function App() {
           <Route
             path="/signup"
             element={currentUser ? <Navigate to="/dashboard" replace /> : <SignUpForm />}
-          />
-          <Route
-            path="/forgot-password"
-            element={currentUser ? <Navigate to="/dashboard" replace /> : <ForgotPassword />}
-          />
-          <Route
-            path="/reset-password"
-            element={currentUser ? <Navigate to="/dashboard" replace /> : <ResetPassword />}
           />
 
           {/* Protected Routes */}
