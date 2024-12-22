@@ -44,8 +44,8 @@ Comprehensive testing was performed on all features of the FitPro application. B
 
 | Description | Steps | Expected | Actual | Status |
 |------------|-------|-----------|---------|---------|
-| Forgot password | 1. Click "Forgot Password" link on sign in page<br>2. Enter email address<br>3. Submit form | Form submits successfully, confirmation email sent, success message appears | Form submits but email not received | ❌ Fail |
-| Reset password | 1. Click reset link in email<br>2. Enter new password<br>3. Confirm new password<br>4. Submit form | Password updates successfully, redirect to login page, success message appears | Reset functionality not working | ❌ Fail |
+| Forgot password | 1. Click "Forgot Password" link on sign in page<br>2. Enter email address<br>3. Submit form | Form submits successfully, confirmation email sent, success message appears | Failed to process request | ❌ Fail |
+| Reset password | 1. Click reset link in email<br>2. Enter new password<br>3. Confirm new password<br>4. Submit form | Password updates successfully, redirect to login page, success message appears | Mail is not functioning, therefore fail | ❌ Fail |
 
 ### Additional Test Cases
 
