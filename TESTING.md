@@ -129,12 +129,7 @@ Comprehensive testing was performed on all features of the FitPro application. B
    - Password reset form not processing requests
    - No email notifications being sent
 
-2. Profile Image Management
-   - Profile image upload to Cloudinary failing intermittently
-   - Image preview not updating correctly
-   - Upload progress indicators not functioning
-
-3. Authentication Issues
+2. Authentication Issues
    - Session persistence issues on mobile
 
 ### Low Priority
