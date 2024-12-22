@@ -16,20 +16,15 @@ The live link can be found here: [Live Site - FitPro](https://frontendfitness-e0
 2. [Epics](#epics)
 3. [User Stories](#user-stories)
 4. [Features](#features)
-5. [Components](#components)
+5. [React Architecture](#react-architecture)
+   - [Component Reusability](#component-reusability)
    - [Common Components](#common-components)
-   - [Profile Components](#profile-components)
-   - [Dashboard Components](#dashboard-components)
-   - [Social Components](#social-components)
-   - [Props API](#props-api)
    - [Context Providers](#context-providers)
    - [Custom Hooks](#custom-hooks)
-   - [Best Practices](#best-practices)
 6. [Design & UX](#design--ux)
 7. [Technologies Used](#technologies-used)
-8. [Testing](#testing)
-9. [Deployment](#deployment)
-10. [Credits](#credits)
+8. [Deployment](#deployment)
+9. [Credits](#credits)
 
 ## The Strategy Plane
 
@@ -108,7 +103,6 @@ The Kanban board was created using github projects and can be located [here](htt
 
 * As a user, I can create a new account so that I can access personalized features
 * As a user, I can log in to my account to access my personal data
-* As a user, I can reset my password if I forget it
 * As a user, I can logout to secure my account
 * As a user, I can view my login status so I know whether I'm authenticated
 
@@ -176,23 +170,12 @@ The application features a responsive navigation system that adapts to different
 #### Sign In
 
 - Remember me functionality
-- Forgot password link
 - Form validation
 - Error handling
 - JWT token management
 - Success/error notifications
 
 ![Sign In Form](/documentation/readme_images/sign_in.png)
-
-#### Password Reset
-
-- Email verification
-- Secure token generation
-- Reset form validation
-- Success confirmation
-- Security measures
-
-![Reset Password](/documentation/readme_images/reset_pw.png)
 
 ### Dashboard
 
@@ -292,211 +275,126 @@ The dashboard serves as the central hub for users, providing:
 
 ![Edit](/documentation/readme_images/profile_edit.png)
 
-## Components
+## React Architecture
 
-### Common Components
+The FitPro application implements a modern React architecture focusing on component reusability, state management, and custom hooks. This architecture enables efficient development, maintenance, and testing while ensuring a consistent user experience.
 
-The application features a set of reusable components located in `/src/components/common`:
+### Design Principles
 
-#### Avatar
+#### Component Architecture
 
-- Versatile user avatar display
-- Multiple size options (xs, sm, md, lg, xl)
-- Image loading and fallback handling
-- Status indicators
-- Cloudinary image optimization
+The application follows these key architectural principles:
 
+- **Separation of Concerns**: Components are organized by feature domain (auth, workouts, profiles) and type (presentation, container, layout)
+- **Single Responsibility**: Each component handles one specific aspect of the UI or logic
+- **DRY (Don't Repeat Yourself)**: Common UI patterns are abstracted into reusable components
+- **Composition Over Inheritance**: Components are composed from smaller, focused components rather than inherited
+
+### State Management
+
+The application uses a combination of state management approaches:
+
+- **Local State**: For component-specific UI states
+- **Context API**: For shared application state
+- **Custom Hooks**: For reusable stateful logic
+
+### Component Organization
+
+#### Core Components
+
+**Avatar Component**
 ```jsx
+// Versatile avatar display used across the application
 <Avatar 
   src={userImage}
   size="md"
   showStatus={true}
   status="online"
 />
+
+// Implementation benefits:
+// - Consistent user image display
+// - Handles loading and error states
+// - Configurable sizes and status indicators
 ```
 
-#### LoadingSpinner
-
-- Configurable loading animation
-- Multiple size options (sm, md, lg)
-- Color variants (green, white, blue)
-- Screen reader support
-
+**LoadingSpinner**
 ```jsx
+// Standardized loading indicator
 <LoadingSpinner 
   size="md"
   color="green"
 />
+
+// Implementation benefits:
+// - Consistent loading states
+// - Accessible by default
+// - Multiple size variants
 ```
 
-#### ErrorMessage
-
-- Standardized error display
-- Consistent styling
-- Built-in accessibility features
-
-#### PrivateRoute
-
-- Authentication route wrapper
-- Redirect logic
-- Loading state management
-- Location state preservation
-
+**PrivateRoute**
 ```jsx
+// Authentication wrapper for protected routes
 <PrivateRoute>
   <ProtectedComponent />
 </PrivateRoute>
-```
 
-#### NavBar
-
-- Responsive navigation
-- Dynamic menu based on auth state
-- Mobile-friendly menu
-- Smooth transitions
-
-#### Footer
-
-- Responsive layout
-- Social media links
-- Copyright information
-
-### Profile Components
-
-#### ProfileImageHandler
-
-- Image upload and preview
-- File validation
-- Progress indicators
-- Cloudinary optimization
-
-```jsx
-<ProfileImageHandler
-  src={profileImage}
-  onChange={handleImageChange}
-  size="lg"
-  editable={true}
-/>
-```
-
-#### ProfileHeader
-
-- User information display
-- Stats visualization
-- Action buttons
-- Responsive design
-
-### Dashboard Components
-
-#### DashboardHeader
-
-- Welcome message
-- Date display
-- User context integration
-
-#### DashboardStats
-
-- Statistics cards
-- Dynamic data display
-- Icon integration
-- Responsive grid
-
-### Social Components
-
-#### SocialActions
-
-- Like functionality
-- Comment system
-- Share capabilities
-- Interactive feedback
-
-#### WorkoutShareModal
-
-- Workout sharing interface
-- Preview functionality
-- Social integration
-
-### Props API
-
-Key component props and interfaces:
-
-```typescript
-// Avatar Props
-interface AvatarProps {
-  src?: string;
-  text?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  showStatus?: boolean;
-  status?: 'online' | 'offline' | 'away' | 'busy';
-}
-
-// LoadingSpinner Props
-interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  color?: 'green' | 'white' | 'blue';
-}
-
-// ProfileImageHandler Props
-interface ProfileImageHandlerProps {
-  src?: string;
-  onChange: (file: File) => Promise<void>;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  editable?: boolean;
-  disabled?: boolean;
-}
+// Implementation benefits:
+// - Centralized auth protection
+// - Handles loading states
+// - Preserves attempted URL
 ```
 
 ### Context Providers
 
-#### CurrentUserContext
+The application uses several context providers for state management:
 
-- Authentication state management
-- User session handling
-- Token management
+**CurrentUserContext**
+- Manages authentication state
+- Handles user session
+- Provides user data globally
 
-#### ProfileDataContext
+```jsx
+// Example usage
+const { currentUser, isLoading } = useCurrentUser();
+```
 
-- Profile state management
-- Profile data operations
-- Cache handling
+**WorkoutContext**
+- Manages workout data state
+- Handles CRUD operations
+- Provides workout-related utilities
 
-#### WorkoutContext
+```jsx
+// Example usage
+const { workouts, addWorkout, updateWorkout } = useWorkoutContext();
+```
 
-- Workout state management
-- CRUD operations
-- Data synchronization
+**ProfileContext**
+- Manages user profile data
+- Handles profile updates
+- Provides profile-related utilities
 
 ### Custom Hooks
 
-#### useClickOutsideToggle
+The application includes several custom hooks that encapsulate common functionality:
 
+**useDebounce**
 ```javascript
-const useClickOutsideToggle = () => {
-  // Handles click outside events for dropdowns/modals
-  const [expanded, setExpanded] = useState(false);
-  const ref = useRef(null);
-  // ... implementation
-};
+// Prevents excessive API calls
+const debouncedSearch = useDebounce(searchTerm, 300);
 ```
 
-#### useRedirect
-
+**useFetchData**
 ```javascript
-const useRedirect = (userAuthStatus) => {
-  // Handles authentication redirects
-  // Manages protected routes
-};
+// Handles data fetching with loading/error states
+const { data, loading, error } = useFetchData(fetchFunction);
 ```
 
-### Best Practices
-
-When using these components:
-
-1. Always provide alt text for images
-2. Implement proper error handling
-3. Use appropriate size props for consistent UI
-4. Follow established prop patterns
-5. Maintain responsive design principles
+**useInfiniteScroll**
+```javascript
+// Implements infinite scrolling functionality
+const lastElementRef = useInfiniteScroll(loadMore, hasMoreData);
+```
 
 ## Design & UX
 
@@ -550,29 +448,6 @@ Key layout principles:
 - Flexible grid systems
 - Responsive navigation
 - Adaptive content layouts
-
-### User Interface Elements
-
-#### Buttons
-
-- Primary: Green background, white text
-- Secondary: Transparent with border
-- Danger: Red background for destructive actions
-- Disabled states with reduced opacity
-
-#### Forms
-
-- Clear label positioning
-- Intuitive input sizing
-- Visible validation states
-- Helpful error messages
-
-#### Cards
-
-- Consistent padding and margins
-- Subtle shadows for depth
-- Responsive scaling
-- Interactive hover states
 
 ## Technologies Used
 
@@ -631,51 +506,6 @@ Key layout principles:
 
 - Recharts - Chart library
 - Custom SVG graphs
-
-### Installation & Setup
-
-#### Prerequisites
-
-```bash
-Node.js (v18.x+)
-npm (v9.x+)
-Git
-```
-
-#### Installation Steps
-
-1. Clone the repository
-
-```bash
-git clone https://github.com/yourusername/fitpro-frontend.git
-cd fitpro-frontend
-```
-
-2. Install dependencies
-
-```bash
-npm install
-```
-
-3. Create environment file
-
-```bash
-cp .env.example .env.local
-```
-
-4. Update environment variables
-
-```env
-REACT_APP_API_URL=https://fitnessapi-d773a1148384.herokuapp.com
-REACT_APP_DEFAULT_PROFILE_IMAGE=https://res.cloudinary.com/dufw4ursl/image/upload/v1/default_profile_ylwpgw
-REACT_APP_CLOUDINARY_CLOUD_NAME=dufw4ursl
-```
-
-5. Start development server
-
-```bash
-npm start
-```
 
 ## Deployment
 
@@ -749,10 +579,6 @@ Most commonly, forks are used to either propose changes to someone else's projec
 - Tailwind CSS
 - Shadcn/ui components
 
-### Known Bugs
-
-1. Password reset not functional
-
 ### Planned Improvements
 
 1. Light/Dark mode implementation
@@ -760,7 +586,6 @@ Most commonly, forks are used to either propose changes to someone else's projec
 3. Offline support
 4. Performance optimizations
 5. Enhanced analytics
-6. Resolution of all known bugs
 
 ### Acknowledgments
 
