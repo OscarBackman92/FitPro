@@ -302,7 +302,7 @@ The application uses a combination of state management approaches:
 
 #### Core Components
 
-**Avatar Component**
+**Avatar Component**'
 
 ```jsx
 // Versatile avatar display used across the application
