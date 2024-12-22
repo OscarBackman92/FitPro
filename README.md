@@ -12,15 +12,14 @@ The live link can be found here: [Live Site - FitPro](https://frontendfitness-e0
 
 ## Table of Contents
 
-1. [Strategy Plane](#strategy-plane)
+1. [Strategy Plane](#the-strategy-plane)
 2. [Epics](#epics)
 3. [User Stories](#user-stories)
 4. [Features](#features)
 5. [React Architecture](#react-architecture)
-   - [Component Reusability](#component-reusability)
-   - [Common Components](#common-components)
-   - [Context Providers](#context-providers)
-   - [Custom Hooks](#custom-hooks)
+   - [Component Architecture](#component-architecture)
+   - [State Management](#state-management)
+   - [Performance Optimization](#performance-optimization)
 6. [Design & UX](#design--ux)
 7. [Technologies Used](#technologies-used)
 8. [Deployment](#deployment)
@@ -277,132 +276,89 @@ The dashboard serves as the central hub for users, providing:
 
 ## React Architecture
 
-The FitPro application implements a modern React architecture focusing on component reusability, state management, and custom hooks. This architecture enables efficient development, maintenance, and testing while ensuring a consistent user experience.
+The FitPro application implements a modern React architecture focusing on component reusability, efficient state management, and performance optimization. This architectural approach enables rapid development, maintainable code, and an optimal user experience.
 
-### Design Principles
+### Component Architecture
 
-#### Component Architecture
+#### Why Reusable Components?
 
-The application follows these key architectural principles:
+The application heavily utilizes reusable components for several key benefits:
 
-- **Separation of Concerns**: Components are organized by feature domain (auth, workouts, profiles) and type (presentation, container, layout)
-- **Single Responsibility**: Each component handles one specific aspect of the UI or logic
-- **DRY (Don't Repeat Yourself)**: Common UI patterns are abstracted into reusable components
-- **Composition Over Inheritance**: Components are composed from smaller, focused components rather than inherited
+- **Development Efficiency**: Common UI elements are developed once and reused across multiple features, significantly reducing development time and effort
+- **Consistent User Experience**: Users encounter familiar, predictable component behavior throughout the application
+- **Simplified Maintenance**: Updates to a component automatically propagate to all instances, making maintenance and bug fixes more efficient
+- **Enhanced Testing**: Components can be tested in isolation, improving test coverage and reliability
+- **Optimized Bundle Size**: Code reuse results in a smaller application footprint
+- **Better Performance**: Once optimized, a component's performance improvements benefit all features using it
+
+Example of component reuse impact:
+```jsx
+// Avatar component used in multiple features
+<Avatar src={userImage} size="md" /> // Profile page
+<Avatar src={commentUser} size="sm" /> // Comments
+<Avatar src={posterImage} size="lg" /> // Social posts
+
+// Reduces what could be 100+ lines of duplicate code to just a few lines
+```
 
 ### State Management
 
-The application uses a combination of state management approaches:
+The application uses a strategic approach to state management:
 
-- **Local State**: For component-specific UI states
-- **Context API**: For shared application state
-- **Custom Hooks**: For reusable stateful logic
+#### Context Providers
 
-### Component Organization
-
-#### Core Components
-
-**Avatar Component**'
+Custom contexts handle different aspects of application state:
 
 ```jsx
-// Versatile avatar display used across the application
-<Avatar 
-  src={userImage}
-  size="md"
-  showStatus={true}
-  status="online"
-/>
-
-// Implementation benefits:
-// - Consistent user image display
-// - Handles loading and error states
-// - Configurable sizes and status indicators
-```
-
-**LoadingSpinner**
-
-```jsx
-// Standardized loading indicator
-<LoadingSpinner 
-  size="md"
-  color="green"
-/>
-
-// Implementation benefits:
-// - Consistent loading states
-// - Accessible by default
-// - Multiple size variants
-```
-
-**PrivateRoute**
-
-```jsx
-// Authentication wrapper for protected routes
-<PrivateRoute>
-  <ProtectedComponent />
-</PrivateRoute>
-
-// Implementation benefits:
-// - Centralized auth protection
-// - Handles loading states
-// - Preserves attempted URL
-```
-
-### Context Providers
-
-The application uses several context providers for state management:
-
-**CurrentUserContext**
-
-- Manages authentication state
-- Handles user session
-- Provides user data globally
-
-```jsx
-// Example usage
+// Authentication state management
 const { currentUser, isLoading } = useCurrentUser();
+
+// Workout data management
+const { workouts, addWorkout } = useWorkoutContext();
+
+// Profile data management
+const { profileData, updateProfile } = useProfileContext();
 ```
 
-**WorkoutContext**
+This separation of concerns makes the application more maintainable and easier to debug.
 
-- Manages workout data state
-- Handles CRUD operations
-- Provides workout-related utilities
+#### Custom Hooks
 
-```jsx
-// Example usage
-const { workouts, addWorkout, updateWorkout } = useWorkoutContext();
-```
-
-**ProfileContext**
-
-- Manages user profile data
-- Handles profile updates
-- Provides profile-related utilities
-
-### Custom Hooks
-
-The application includes several custom hooks that encapsulate common functionality:
-
-**useDebounce**
+The application includes several custom hooks that encapsulate complex functionality:
 
 ```javascript
-// Prevents excessive API calls
+// Prevent excessive API calls
 const debouncedSearch = useDebounce(searchTerm, 300);
-```
 
-**useFetchData**
-
-```javascript
-// Handles data fetching with loading/error states
+// Standardize data fetching with loading states
 const { data, loading, error } = useFetchData(fetchFunction);
+
+// Handle infinite scrolling
+const lastElementRef = useInfiniteScroll(loadMore, hasMoreData);
 ```
 
-**useInfiniteScroll**
+### Performance Optimization
 
+The architecture includes several performance optimizations:
+
+1. **Code Splitting**
 ```javascript
-// Implements infinite scrolling functionality
-const lastElementRef = useInfiniteScroll(loadMore, hasMoreData);
+// Lazy loading of components
+const Dashboard = lazy(() => import('./components/Dashboard'));
+```
+
+2. **Memoization**
+```javascript
+// Prevent unnecessary re-renders
+const MemoizedComponent = useMemo(() => <Component />, [dependency]);
+```
+
+3. **Efficient Rendering**
+```javascript
+// Use callback for stable function references
+const handleClick = useCallback(() => {
+  // Handle click event
+}, [dependency]);
 ```
 
 ## Design & UX
@@ -577,6 +533,7 @@ Most commonly, forks are used to either propose changes to someone else's projec
 - CSS-Tricks
 - Stack Overflow solutions
 - Code Institute's React Module
+- ClaudeAI/Chatgpt
 
 ### Tools & Libraries
 
@@ -598,13 +555,8 @@ Most commonly, forks are used to either propose changes to someone else's projec
 
 ### Acknowledgments
 
-Special thanks to:
-
-- Mentor Daisy
-- Testing team/family
-- Fellow developers who provided feedback
+- React Documentation contributors
 - Stack Overflow community
-- ChatGpt/Claude AI
 
 ## License
 
