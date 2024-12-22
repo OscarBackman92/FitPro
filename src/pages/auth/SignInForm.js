@@ -150,7 +150,7 @@ export default function SignInForm() {
               ))}
             </div>
 
-            {/* Remember Me & Forgot Password */}
+            {/* Remember Me */}
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -163,15 +163,6 @@ export default function SignInForm() {
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
                   Remember me
                 </label>
-              </div>
-
-              <div className="text-sm">
-                <Link 
-                  to="/forgot-password" 
-                  className="font-medium text-green-500 hover:text-green-400 transition-colors"
-                >
-                  Forgot password?
-                </Link>
               </div>
             </div>
 
