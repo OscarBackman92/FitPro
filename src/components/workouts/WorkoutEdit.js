@@ -7,7 +7,7 @@ import {
   Loader, 
   AlertCircle, 
   DumbbellIcon,
-  Trash2 
+  Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -56,12 +56,12 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, isDeleting }) => {
 
 // Main component for editing a workout
 const WorkoutEdit = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [errors, setErrors] = useState({});
+  const { id } = useParams(); // Get workout ID from URL parameters
+  const navigate = useNavigate(); // Hook for navigation
+  const [isSubmitting, setIsSubmitting] = useState(false); // State for form submission
+  const [isDeleting, setIsDeleting] = useState(false); // State for deletion process
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // State for delete confirmation modal
+  const [errors, setErrors] = useState({}); // State for form validation errors
   const [workoutData, setWorkoutData] = useState({
     title: '',
     workout_type: '',
